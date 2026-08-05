@@ -28,4 +28,7 @@ android/*.iml
 *.log
 .DS_Store
 .tsbuildinfo
+tsconfig.tsbuildinfo
 next-env.d.ts
+# lockfile do app web (template raiz não o rastreava; foco no Android)
+package-lock.json
