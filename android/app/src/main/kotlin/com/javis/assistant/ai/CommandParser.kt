@@ -14,7 +14,7 @@ enum class CommandType {
     OPEN_APP, CALL_CONTACT, CALL_NUMBER, SET_ALARM, SEARCH_WEB,
     SEND_WHATSAPP, READ_NOTIFICATIONS, OPEN_SETTINGS, TAKE_PHOTO,
     SEARCH_YOUTUBE, OPEN_WHATSAPP_CHAT,
-    WEATHER, ASK_CLAUDE, SET_REMINDER,
+    WEATHER, ASK_CLAUDE, SET_REMINDER, SHARE, BLUETOOTH_CONNECT,
     UNKNOWN
 }
 
@@ -104,6 +104,16 @@ class CommandParser @Inject constructor(
         // ── Clima ──
         if (isWeatherRequest(norm)) {
             return ParsedCommand(CommandType.WEATHER, target = extractCity(lower))
+        }
+
+        // ── Compartilhar (ACTION_SEND) ──
+        if (norm.contains("compartilh") || norm.contains("share")) {
+            return ParsedCommand(CommandType.SHARE, target = extractShareText(lower))
+        }
+
+        // ── Bluetooth (conectar / rotear áudio) ──
+        if (isBluetoothConnect(norm)) {
+            return ParsedCommand(CommandType.BLUETOOTH_CONNECT)
         }
 
         return when {
@@ -224,6 +234,20 @@ class CommandParser @Inject constructor(
             return it.groupValues[1].trim().split(Regex("\\s+(hoje|amanha|agora|e|com)\\b")).first().trim()
         }
         return ""
+    }
+
+    private fun isBluetoothConnect(norm: String): Boolean {
+        if (!norm.contains("bluetooth")) return false
+        return norm.matches(Regex(".*(conectar|conecte|ligar|ligue|ativar|ative|fones?|caixa|som|alto falante|speaker|audio|auricular).*"))
+    }
+
+    private fun extractShareText(lower: String): String {
+        var s = lower
+        listOf("compartilhar isso", "compartilhar", "compartilha", "compartilhe", "share")
+            .sortedByDescending { it.length }
+            .forEach { s = s.replace(it, " ", ignoreCase = true) }
+        s = s.replaceFirst(Regex("^\\s*(o|a|isso|este|esta|que|e)\\s+", RegexOption.IGNORE_CASE), "").trim()
+        return s
     }
 
     // ──────────────────────────────────────────────────────────────────

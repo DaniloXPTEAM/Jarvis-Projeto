@@ -21,9 +21,12 @@ import com.javis.assistant.data.model.Message
 import com.javis.assistant.data.model.MessageRole
 import com.javis.assistant.memory.MemoryManager
 import com.javis.assistant.notifications.JavisNotificationListenerService
+import android.media.AudioManager
+import com.javis.assistant.bluetooth.BluetoothController
 import com.javis.assistant.reminder.ReminderScheduler
 import com.javis.assistant.skills.WeatherAgent
 import com.javis.assistant.storage.JavisPreferences
+import com.javis.assistant.util.ShareHelper
 import com.javis.assistant.voice.AndroidTtsFallback
 import com.javis.assistant.voice.ElevenLabsTts
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -50,7 +53,9 @@ class JavisRepository @Inject constructor(
     private val commandParser: CommandParser,
     private val weatherAgent: WeatherAgent,
     private val claudeProvider: ClaudeProvider,
-    private val reminderScheduler: ReminderScheduler
+    private val reminderScheduler: ReminderScheduler,
+    private val shareHelper: ShareHelper,
+    private val bluetoothController: BluetoothController
 ) {
     val currentSessionId: String = UUID.randomUUID().toString()
 
@@ -129,6 +134,29 @@ class JavisRepository @Inject constructor(
                 } catch (e: Exception) {
                     "Não consegui falar com o Claude agora. Tenta de novo."
                 }
+            }
+        }
+
+        CommandType.SHARE -> {
+            val toShare = parsed.target.ifBlank {
+                messageDao.getRecentMessages(8).firstOrNull { it.role == MessageRole.ASSISTANT }?.content ?: ""
+            }
+            if (toShare.isNotBlank()) {
+                shareHelper.shareText(toShare)
+                "Abrindo pra compartilhar."
+            } else {
+                "Ainda não tenho nada pra compartilhar."
+            }
+        }
+
+        CommandType.BLUETOOTH_CONNECT -> {
+            bluetoothController.requestEnable()
+            val am = context.getSystemService(AudioManager::class.java)
+            if (bluetoothController.isEnabled()) {
+                bluetoothController.routeAudioToBluetooth(am)
+                "Pronto! Bluetooth conectado. O som da Gabi vai sair no seu fone ou caixa agora."
+            } else {
+                "Não consegui ligar o Bluetooth. Abri as configurações pra você ativar."
             }
         }
 
