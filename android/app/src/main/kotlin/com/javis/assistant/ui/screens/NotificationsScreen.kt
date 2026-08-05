@@ -117,7 +117,7 @@ fun NotificationCard(item: NotificationItem, onDismiss: () -> Unit) {
         if (!item.isRead) {
             Box(
                 modifier = Modifier
-                    .padding(top: 6.dp)
+                    .padding(top = 6.dp)
                     .size(7.dp)
                     .clip(RoundedCornerShape(50))
                     .background(CyanAccent)
