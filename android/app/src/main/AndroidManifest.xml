@@ -36,6 +36,10 @@
     <!-- Boot -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- Alarmes exatos (lembretes) -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
     <!-- Vibrate -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
@@ -106,6 +110,11 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
+
+        <!-- Reminder Receiver (dispara a notificação do lembrete) -->
+        <receiver
+            android:name=".receiver.ReminderReceiver"
+            android:exported="false" />
 
     </application>
 

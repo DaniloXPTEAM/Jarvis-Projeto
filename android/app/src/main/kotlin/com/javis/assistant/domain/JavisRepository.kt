@@ -7,6 +7,7 @@ import android.provider.AlarmClock
 import android.provider.ContactsContract
 import com.javis.assistant.accessibility.JavisAccessibilityService
 import com.javis.assistant.ai.AiModelProvider
+import com.javis.assistant.ai.ClaudeProvider
 import com.javis.assistant.ai.CommandParser
 import com.javis.assistant.ai.CommandType
 import com.javis.assistant.ai.DeepSeekProvider
@@ -20,13 +21,18 @@ import com.javis.assistant.data.model.Message
 import com.javis.assistant.data.model.MessageRole
 import com.javis.assistant.memory.MemoryManager
 import com.javis.assistant.notifications.JavisNotificationListenerService
+import com.javis.assistant.reminder.ReminderScheduler
+import com.javis.assistant.skills.WeatherAgent
 import com.javis.assistant.storage.JavisPreferences
 import com.javis.assistant.voice.AndroidTtsFallback
 import com.javis.assistant.voice.ElevenLabsTts
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -41,7 +47,10 @@ class JavisRepository @Inject constructor(
     private val prefs: JavisPreferences,
     private val elevenLabsTts: ElevenLabsTts,
     private val androidTts: AndroidTtsFallback,
-    private val commandParser: CommandParser
+    private val commandParser: CommandParser,
+    private val weatherAgent: WeatherAgent,
+    private val claudeProvider: ClaudeProvider,
+    private val reminderScheduler: ReminderScheduler
 ) {
     val currentSessionId: String = UUID.randomUUID().toString()
 
@@ -57,32 +66,36 @@ class JavisRepository @Inject constructor(
             executeCommand(parsed)
         }
 
-        val recentMessages = messageDao.getRecentMessages(20)
-        val contextSummary = memoryManager.buildContextSummary()
-        val systemPrompt = buildString {
-            append(JavisPersonality.SYSTEM_PROMPT)
-            if (contextSummary.isNotBlank()) {
-                append("\n\nO que você sabe sobre este usuário: $contextSummary")
+        // Skills que produzem a própria resposta (clima, Claude, lembrete) — pulam o Groq
+        val skillReply: String? = resolveSkillReply(parsed)
+
+        val result: Result<String> = if (skillReply != null) {
+            Result.success(skillReply)
+        } else {
+            val recentMessages = messageDao.getRecentMessages(20)
+            val contextSummary = memoryManager.buildContextSummary()
+            val systemPrompt = buildString {
+                append(JavisPersonality.SYSTEM_PROMPT)
+                if (contextSummary.isNotBlank()) {
+                    append("\n\nO que você sabe sobre este usuário: $contextSummary")
+                }
             }
-        }
 
-        val aiMessages = recentMessages
-            .filter { it.role != MessageRole.SYSTEM }
-            .takeLast(16)
-            .map { AiMessage(it.role.name.lowercase(), it.content) }
+            val aiMessages = recentMessages
+                .filter { it.role != MessageRole.SYSTEM }
+                .takeLast(16)
+                .map { AiMessage(it.role.name.lowercase(), it.content) }
 
-        val providerPref: AiProvider = prefs.aiProvider.first()
+            val providerPref: AiProvider = prefs.aiProvider.first()
+            groqProvider.apiKey = prefs.groqApiKey.first()
+            deepSeekProvider.apiKey = prefs.deepSeekApiKey.first()
 
-        groqProvider.apiKey = prefs.groqApiKey.first()
-        deepSeekProvider.apiKey = prefs.deepSeekApiKey.first()
+            val primary: AiModelProvider = if (providerPref == AiProvider.GROQ) groqProvider else deepSeekProvider
+            val fallback: AiModelProvider = if (providerPref == AiProvider.GROQ) deepSeekProvider else groqProvider
 
-        val primary: AiModelProvider = if (providerPref == AiProvider.GROQ) groqProvider else deepSeekProvider
-        val fallback: AiModelProvider = if (providerPref == AiProvider.GROQ) deepSeekProvider else groqProvider
-
-        var result = primary.chat(aiMessages, systemPrompt)
-
-        if (result.isFailure) {
-            result = fallback.chat(aiMessages, systemPrompt)
+            var r = primary.chat(aiMessages, systemPrompt)
+            if (r.isFailure) r = fallback.chat(aiMessages, systemPrompt)
+            r
         }
 
         result.onSuccess { reply ->
@@ -93,6 +106,33 @@ class JavisRepository @Inject constructor(
         }
 
         return result
+    }
+
+    /** Skills que devolvem uma resposta direta (pulam o Groq). null = deixa pro Groq. */
+    private suspend fun resolveSkillReply(parsed: ParsedCommand): String? = when (parsed.type) {
+        CommandType.WEATHER -> weatherAgent.getWeatherResponse(parsed.target)
+
+        CommandType.SET_REMINDER -> {
+            val triggerAt = parsed.extra.toLongOrNull() ?: return null
+            reminderScheduler.schedule(parsed.target, triggerAt)
+            "Pronto! Vou te lembrar de ${parsed.target} às ${formatReminderTime(triggerAt)}."
+        }
+
+        CommandType.ASK_CLAUDE -> {
+            val key = prefs.anthropicApiKey.first()
+            if (key.isBlank()) {
+                "Para falar com o Claude, adiciona a Chave da API Anthropic lá em Ajustes."
+            } else {
+                try {
+                    claudeProvider.apiKey = key
+                    "O Claude respondeu: ${claudeProvider.ask(parsed.target)}"
+                } catch (e: Exception) {
+                    "Não consegui falar com o Claude agora. Tenta de novo."
+                }
+            }
+        }
+
+        else -> null
     }
 
     suspend fun speak(text: String) {
@@ -257,6 +297,23 @@ class JavisRepository @Inject constructor(
             in 17..20 -> "Boa noite$name. A Gabi à disposição."
             else -> "Oi$name, já é tarde. Mas a Gabi tá aqui — o que houve?"
         }
+    }
+
+    private fun formatReminderTime(millis: Long): String {
+        val now = Calendar.getInstance()
+        val cal = Calendar.getInstance().apply { timeInMillis = millis }
+        val hm = SimpleDateFormat("HH:mm", Locale("pt", "BR")).format(Date(millis))
+        val today = now.get(Calendar.YEAR) == cal.get(Calendar.YEAR) &&
+            now.get(Calendar.DAY_OF_YEAR) == cal.get(Calendar.DAY_OF_YEAR)
+        val tomorrowCal = (now.clone() as Calendar).apply { add(Calendar.DAY_OF_YEAR, 1) }
+        val isTomorrow = cal.get(Calendar.YEAR) == tomorrowCal.get(Calendar.YEAR) &&
+            cal.get(Calendar.DAY_OF_YEAR) == tomorrowCal.get(Calendar.DAY_OF_YEAR)
+        val day = when {
+            today -> "hoje"
+            isTomorrow -> "amanhã"
+            else -> SimpleDateFormat("dd/MM", Locale("pt", "BR")).format(Date(millis))
+        }
+        return "$day às $hm"
     }
 
     suspend fun clearHistory() = messageDao.deleteAll()

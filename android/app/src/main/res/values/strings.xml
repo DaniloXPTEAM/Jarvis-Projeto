@@ -11,4 +11,9 @@
     <string name="greeting_afternoon">Boa tarde! A Gabi está pronta. O que você precisa?</string>
     <string name="greeting_evening">Boa noite! A Gabi à disposição.</string>
     <string name="greeting_night">Ei, já é tarde. Mas a Gabi tá aqui. O que houve?</string>
+
+    <!-- Lembretes -->
+    <string name="reminder_channel_name">Lembretes</string>
+    <string name="reminder_channel_desc">Notificações dos lembretes criados pela Gabi</string>
+    <string name="reminder_notification_title">⏰ Lembrete da Gabi</string>
 </resources>

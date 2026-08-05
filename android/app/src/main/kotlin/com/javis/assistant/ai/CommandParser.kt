@@ -6,13 +6,16 @@ import android.net.Uri
 import android.provider.ContactsContract
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.Normalizer
+import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Singleton
 
 enum class CommandType {
     OPEN_APP, CALL_CONTACT, CALL_NUMBER, SET_ALARM, SEARCH_WEB,
     SEND_WHATSAPP, READ_NOTIFICATIONS, OPEN_SETTINGS, TAKE_PHOTO,
-    SEARCH_YOUTUBE, OPEN_WHATSAPP_CHAT, UNKNOWN
+    SEARCH_YOUTUBE, OPEN_WHATSAPP_CHAT,
+    WEATHER, ASK_CLAUDE, SET_REMINDER,
+    UNKNOWN
 }
 
 data class ParsedCommand(
@@ -84,6 +87,25 @@ class CommandParser @Inject constructor(
         val lower = input.lowercase().trim()
         val norm = stripAccents(lower) // casa comandos mesmo com acentos ("ligar pra joão")
 
+        // ── Orquestração Claude ("fale com o Claude e...", "pergunte ao Claude...") ──
+        if (isClaudeRequest(norm)) {
+            return ParsedCommand(CommandType.ASK_CLAUDE, target = extractClaudeQuery(lower))
+        }
+
+        // ── Lembrete ("me lembre de X às Yh" / "em 30 minutos") ──
+        parseReminder(lower, norm)?.let { (subject, triggerAt) ->
+            return ParsedCommand(
+                CommandType.SET_REMINDER,
+                target = subject,
+                extra = triggerAt.toString()
+            )
+        }
+
+        // ── Clima ──
+        if (isWeatherRequest(norm)) {
+            return ParsedCommand(CommandType.WEATHER, target = extractCity(lower))
+        }
+
         return when {
             // ── ABRIR APP ──────────────────────────────────────────────
             norm.matches(Regex(".*(abrir|abra|abre|abri|iniciar|inicie|inicia|rodar|rode|open|launch|start|go to|take me to)\\s+(\\w+).*")) -> {
@@ -110,8 +132,8 @@ class CommandParser @Inject constructor(
                 )
             }
 
-            // ── ALARME / LEMBRETE ──────────────────────────────────────
-            norm.matches(Regex(".*(definir.*alarme|configurar.*alarme|arme.*alarme|me acorde|acordar|despertador|alarme|lembrete|me lembra|me lembrar|set.*alarm|wake me.*at|remind me.*at).*")) -> {
+            // ── ALARME ─────────────────────────────────────────────────
+            norm.matches(Regex(".*(definir.*alarme|configurar.*alarme|arme.*alarme|me acorde|acordar|despertador|alarme|set.*alarm|wake me.*at|remind me.*at).*")) -> {
                 ParsedCommand(
                     CommandType.SET_ALARM,
                     target = lower,
@@ -163,12 +185,118 @@ class CommandParser @Inject constructor(
         }
     }
 
+    // ──────────────────────────────────────────────────────────────────
+    //  CLAUDE
+    // ──────────────────────────────────────────────────────────────────
+    private fun isClaudeRequest(norm: String): Boolean = norm.contains("claude")
+
+    private fun extractClaudeQuery(lower: String): String {
+        val norm = stripAccents(lower)
+        var q = norm
+        listOf(
+            "fale com o claude e", "fale com o claude", "fale com claude",
+            "pergunte ao claude", "pergunte pro claude", "pergunte para o claude",
+            "entre em contato com o claude e", "entre em contato com o claude",
+            "consulte o claude", "consultar o claude", "consulta o claude",
+            "pede pro claude", "pede para o claude", "peca ao claude", "peca para o claude",
+            "com o claude e", "com o claude", "ao claude", "pro claude", "para o claude",
+            "claude"
+        ).sortedByDescending { it.length }.forEach { q = q.replace(it, " ", ignoreCase = true) }
+        q = q.replace(Regex("^\\s*(e|de|que|para|pra|se)\\s+", RegexOption.IGNORE_CASE), "").trim()
+        return q.ifBlank { lower.trim() }
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    //  CLIMA
+    // ──────────────────────────────────────────────────────────────────
+    private fun isWeatherRequest(norm: String): Boolean {
+        if (norm.contains("clima") || norm.contains("previsao") || norm.contains("temperatura") ||
+            norm.contains("vai chover") || norm.contains("chuva hoje")) return true
+        // "tempo" só conta se houver contexto de clima
+        if (norm.contains("tempo") && (norm.contains("agora") || norm.contains("hoje") ||
+                    norm.contains("em ") || norm.contains("voa"))) return true
+        return false
+    }
+
+    private fun extractCity(lower: String): String {
+        val norm = stripAccents(lower)
+        Regex("(?:em|no|na|de|para|do|da)\\s+([a-z\\s]{3,40})").find(norm)?.let {
+            return it.groupValues[1].trim().split(Regex("\\s+(hoje|amanha|agora|e|com)\\b")).first().trim()
+        }
+        return ""
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    //  LEMBRETE  → (assunto, millis) ou null
+    // ──────────────────────────────────────────────────────────────────
+    private fun parseReminder(lower: String, norm: String): Pair<String, Long>? {
+        val triggers = listOf(
+            "me lembre", "me lembra", "lembre me", "lembre-me", "me avise", "me avisar",
+            "avise me", "me lembrar", "novo lembrete", "crie um lembrete", "criar lembrete", "lembrete"
+        )
+        if (triggers.none { norm.contains(it) }) return null
+        if (norm.contains("alarme")) return null // é alarme, não lembrete
+
+        val now = Calendar.getInstance()
+        val cal = (now.clone() as Calendar)
+        var matched = false
+
+        // relativo: "em N (minuto|hora...)" ou "daqui a N ..."
+        val rel = Regex("(?:em|daqui a|em cerca de)\\s+(\\d+)\\s*(minuto|minutos|min|hora|horas|h|hr|hrs)")
+            .find(norm)
+        if (rel != null) {
+            val n = rel.groupValues[1].toIntOrNull() ?: return null
+            val unit = rel.groupValues[2]
+            val mins = if (unit.startsWith("hora") || unit == "h" || unit.startsWith("hr")) n * 60 else n
+            cal.add(Calendar.MINUTE, mins)
+            matched = true
+        }
+
+        if (!matched) {
+            // horário: "às HH(:MM)?h?"
+            val clk = Regex("[aàá]s\\s*(\\d{1,2})(?:h|hs|:)?(?:(\\d{2}))?").find(norm)
+            if (clk != null) {
+                val h = clk.groupValues[1].toIntOrNull()?.coerceIn(0, 23) ?: return null
+                val mm = clk.groupValues[2].takeIf { it.isNotBlank() }?.toIntOrNull()?.coerceIn(0, 59) ?: 0
+                cal.set(Calendar.HOUR_OF_DAY, h)
+                cal.set(Calendar.MINUTE, mm)
+                cal.set(Calendar.SECOND, 0)
+                cal.set(Calendar.MILLISECOND, 0)
+                if (norm.contains("depois de amanha")) cal.add(Calendar.DAY_OF_YEAR, 2)
+                else if (norm.contains("amanha")) cal.add(Calendar.DAY_OF_YEAR, 1)
+                if (cal.timeInMillis <= now.timeInMillis) cal.add(Calendar.DAY_OF_YEAR, 1)
+                matched = true
+            }
+        }
+        if (!matched) return null
+
+        // assunto = lower sem gatilhos e sem marcas de tempo (acentos preservados)
+        var subject = lower
+        triggers.sortedByDescending { it.length }.forEach {
+            subject = subject.replace(it, " ", ignoreCase = true)
+        }
+        subject = subject
+            .replace(Regex("[aàá]s\\s*\\d{1,2}(?:h|hs|:)?(?:(\\d{2}))?", RegexOption.IGNORE_CASE), " ")
+            .replace(Regex("\\bhoje\\b", RegexOption.IGNORE_CASE), " ")
+            .replace(Regex("\\bamanh[ãa]\\b", RegexOption.IGNORE_CASE), " ")
+            .replace(Regex("depois de amanh[ãa]", RegexOption.IGNORE_CASE), " ")
+            .replace(
+                Regex("(?:em|daqui a|em cerca de)\\s+\\d+\\s*(?:minuto|minutos|min|hora|horas|h|hr|hrs)",
+                    RegexOption.IGNORE_CASE), " "
+            )
+            .replace(Regex("[,;:\\.]+"), " ")
+            .replace(Regex("\\s+"), " ")
+            .trim()
+        subject = subject.replaceFirst(Regex("^\\s*(de|que|para|pra|e|se)\\s+", RegexOption.IGNORE_CASE), "").trim()
+        if (subject.isBlank()) subject = "Lembrete"
+        return subject to cal.timeInMillis
+    }
+
     private fun extractAppName(input: String, prefixes: List<String>): String {
         var result = input.trim()
         for (prefix in prefixes) {
             result = result.replace(Regex("\\b$prefix\\b"), "").trim()
         }
-        // remove artigos iniciais (pt/en)
         result = result.replaceFirst(Regex("^(o|a|os|as|the)\\s+"), "").trim()
         return appAliases[result.trim()] ?: result.trim()
     }
@@ -182,7 +310,6 @@ class CommandParser @Inject constructor(
                 break
             }
         }
-        // remove conectores iniciais (para/pro/pra/the)
         result = result.replaceFirst(Regex("^(para|pro|pra|p/|ao|a|o|the)\\s+"), "").trim()
         return result.trim()
     }

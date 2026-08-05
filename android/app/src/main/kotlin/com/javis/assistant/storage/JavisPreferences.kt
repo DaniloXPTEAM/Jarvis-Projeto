@@ -24,6 +24,7 @@ class JavisPreferences @Inject constructor(
         val KEY_GROQ_API_KEY = stringPreferencesKey("groq_api_key")
         val KEY_ELEVENLABS_API_KEY = stringPreferencesKey("elevenlabs_api_key")
         val KEY_DEEPSEEK_API_KEY = stringPreferencesKey("deepseek_api_key")
+        val KEY_ANTHROPIC_API_KEY = stringPreferencesKey("anthropic_api_key")
         val KEY_ELEVENLABS_VOICE_ID = stringPreferencesKey("elevenlabs_voice_id")
         val KEY_AI_PROVIDER = stringPreferencesKey("ai_provider")
         val KEY_SPEECH_RATE = floatPreferencesKey("speech_rate")
@@ -38,13 +39,14 @@ class JavisPreferences @Inject constructor(
     val groqApiKey: Flow<String> = ds.data.map { it[KEY_GROQ_API_KEY] ?: "" }
     val elevenLabsApiKey: Flow<String> = ds.data.map { it[KEY_ELEVENLABS_API_KEY] ?: "" }
     val deepSeekApiKey: Flow<String> = ds.data.map { it[KEY_DEEPSEEK_API_KEY] ?: "" }
+    val anthropicApiKey: Flow<String> = ds.data.map { it[KEY_ANTHROPIC_API_KEY] ?: "" }
     val elevenLabsVoiceId: Flow<String> = ds.data.map { it[KEY_ELEVENLABS_VOICE_ID] ?: "" }
     val aiProvider: Flow<AiProvider> = ds.data.map {
         try { AiProvider.valueOf(it[KEY_AI_PROVIDER] ?: AiProvider.GROQ.name) }
         catch (e: Exception) { AiProvider.GROQ }
     }
     val speechRate: Flow<Float> = ds.data.map { it[KEY_SPEECH_RATE] ?: 1.0f }
-    val ttsPitch: Flow<Float> = ds.data.map { it[KEY_TTS_PITCH] ?: 0.9f }
+    val ttsPitch: Flow<Float> = ds.data.map { it[KEY_TTS_PITCH] ?: 1.15f }
     val useElevenLabs: Flow<Boolean> = ds.data.map { it[KEY_USE_ELEVENLABS] ?: false }
     val notificationsEnabled: Flow<Boolean> = ds.data.map { it[KEY_NOTIFICATIONS_ENABLED] ?: true }
     val continuousMode: Flow<Boolean> = ds.data.map { it[KEY_CONTINUOUS_MODE] ?: false }
@@ -53,6 +55,7 @@ class JavisPreferences @Inject constructor(
     suspend fun setGroqApiKey(key: String) = ds.edit { it[KEY_GROQ_API_KEY] = key }
     suspend fun setElevenLabsApiKey(key: String) = ds.edit { it[KEY_ELEVENLABS_API_KEY] = key }
     suspend fun setDeepSeekApiKey(key: String) = ds.edit { it[KEY_DEEPSEEK_API_KEY] = key }
+    suspend fun setAnthropicApiKey(key: String) = ds.edit { it[KEY_ANTHROPIC_API_KEY] = key }
     suspend fun setElevenLabsVoiceId(id: String) = ds.edit { it[KEY_ELEVENLABS_VOICE_ID] = id }
     suspend fun setAiProvider(p: AiProvider) = ds.edit { it[KEY_AI_PROVIDER] = p.name }
     suspend fun setSpeechRate(r: Float) = ds.edit { it[KEY_SPEECH_RATE] = r }

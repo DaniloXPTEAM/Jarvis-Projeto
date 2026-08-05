@@ -6,6 +6,7 @@ import com.javis.assistant.data.db.JavisDatabase
 import com.javis.assistant.data.db.MemoryDao
 import com.javis.assistant.data.db.MessageDao
 import com.javis.assistant.data.db.NotificationDao
+import com.javis.assistant.data.db.ReminderDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -37,4 +38,7 @@ object AppModule {
 
     @Provides
     fun provideNotificationDao(db: JavisDatabase): NotificationDao = db.notificationDao()
+
+    @Provides
+    fun provideReminderDao(db: JavisDatabase): ReminderDao = db.reminderDao()
 }

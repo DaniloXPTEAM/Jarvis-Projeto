@@ -16,6 +16,7 @@ data class SettingsUiState(
     val groqApiKey: String = "",
     val elevenLabsApiKey: String = "",
     val deepSeekApiKey: String = "",
+    val anthropicApiKey: String = "",
     val elevenLabsVoiceId: String = "",
     val aiProvider: AiProvider = AiProvider.GROQ,
     val speechRate: Float = 1.0f,
@@ -50,12 +51,14 @@ class SettingsViewModel @Inject constructor(
             prefs.continuousMode
         ) { rate, pitch, useEl, notif, cont ->
             PartialB(rate, pitch, useEl, notif, cont)
-        }
-    ) { a, b ->
+        },
+        prefs.anthropicApiKey
+    ) { a, b, anthropic ->
         SettingsUiState(
             groqApiKey = a.groqApiKey,
             elevenLabsApiKey = a.elevenLabsApiKey,
             deepSeekApiKey = a.deepSeekApiKey,
+            anthropicApiKey = anthropic,
             elevenLabsVoiceId = a.elevenLabsVoiceId,
             aiProvider = a.aiProvider,
             speechRate = b.speechRate,
@@ -74,6 +77,7 @@ class SettingsViewModel @Inject constructor(
             prefs.setGroqApiKey(state.groqApiKey)
             prefs.setElevenLabsApiKey(state.elevenLabsApiKey)
             prefs.setDeepSeekApiKey(state.deepSeekApiKey)
+            prefs.setAnthropicApiKey(state.anthropicApiKey)
             prefs.setElevenLabsVoiceId(
                 state.elevenLabsVoiceId.ifBlank { ElevenLabsTts.DEFAULT_VOICE_ID }
             )

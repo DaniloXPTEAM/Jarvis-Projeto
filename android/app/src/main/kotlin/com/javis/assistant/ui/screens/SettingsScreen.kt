@@ -94,6 +94,13 @@ fun SettingsScreen(
                     hint = "sk-…",
                     onChange = { localState = localState.copy(deepSeekApiKey = it) }
                 )
+                Spacer(Modifier.height(8.dp))
+                ApiKeyField(
+                    label = "Chave da API Anthropic (Claude)",
+                    value = localState.anthropicApiKey,
+                    hint = "sk-ant-…  (opcional — para 'falar com o Claude')",
+                    onChange = { localState = localState.copy(anthropicApiKey = it) }
+                )
             }
 
             // ── Voz ───────────────────────────────────────────────────────
