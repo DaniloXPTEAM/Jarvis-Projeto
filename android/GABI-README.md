@@ -13,6 +13,17 @@ App Android nativo da **Gabi**, adaptado de `agmanly597/javis` (MIT). Voz femini
 | Voz (ElevenLabs) | "Adam" (masculino, EN) | **Roberta** (feminina, nativa pt-BR) + outras |
 | Reconhecimento de fala | Locale do aparelho | **pt-BR forçado** |
 | Comandos por voz | Só inglês ("open", "call") | **Bilíngue** ("abrir WhatsApp", "ligar para", "buscar", "mandar mensagem", "alarme"...) |
+| Clima | ❌ não tinha | **✅ Open-Meteo (grátis), padrão Fortaleza, cidades BR** |
+| Lembretes | só abria o relógio | **✅ nativos: notificação pt-BR + persiste após reiniciar** |
+| Orquestração Claude | ❌ não tinha | **✅ "fale com o Claude e..." → ela repassa e fala a resposta** |
+
+## 🆕 Comandos novos (é só falar/digitar)
+
+- **Clima:** *"como está o clima?"*, *"previsão do tempo em São Paulo"*, *"vai chover hoje?"*
+- **Lembrete:** *"me lembre de comprar pão às 18h"*, *"me lembra de ligar amanhã às 9h30"*, *"lembrete em 30 minutos de beber água"*
+- **Claude:** *"fale com o Claude e veja se dá pra criar uma apresentação de vendas"*, *"pergunte ao Claude como melhorar meu currículo"*
+
+> O Claude exige a **Chave da API Anthropic** (campo novo em Ajustes). Sem ela, a Gabi avisa. Clima e lembretes **não precisam de chave nenhuma**.
 
 ## 🎙️ Vozes femininas pt-BR (ElevenLabs) — troque se quiser
 

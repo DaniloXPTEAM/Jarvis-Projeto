@@ -4,6 +4,21 @@
 > Método: leitura do código-fonte real em `android/app/src/main/kotlin/` (verificado por busca, não por chute)
 > Data: 2026-08-05
 
+## 🆕 Atualização pós-implementação (2026-08-05)
+
+Implementados após a auditoria (commit `717b407`):
+
+| Recurso | Status anterior | Status agora |
+|---------|-----------------|--------------|
+| **#12 Consulta de clima** | ❌ Não implementada | ✅ **Completa** — `WeatherAgent` (Open-Meteo, grátis, sem chave), padrão Fortaleza, cidades BR, pt-BR |
+| **#32 Sistema de lembretes** | 🟡 Parcial (só abria relógio) | ✅ **Completa** — nativo: Room + AlarmManager + notificação pt-BR + reagenda após boot |
+| **#4 Claude como orquestrador** | ❌ Não implementada | 🟡 **Parcial** — disponível via frase "fale com o Claude e..."; exige Chave da API Anthropic |
+| **#5 Roteamento de ferramentas** | 🟡 Parcial | 🟡 Parcial (+skills clima/Claude/lembrete; ainda sem function-calling dinâmico) |
+
+> Observação: não compilei aqui (sem Android SDK). Tudo precisa validar no Android Studio.
+
+---
+
 ## Resumo executivo
 
 | Status | Qtd |
