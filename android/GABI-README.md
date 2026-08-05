@@ -25,14 +25,21 @@ Já configuradas em `ElevenLabsTts.kt`:
 
 > Para usar uma voz da Voice Library via API: acesse `elevenlabs.io/app/voice-library`, encontre a voz, clique em **"Add to VoiceLab"** (grátis) — só então o Voice ID funciona com sua chave. Também dá pra colar outro ID direto em **Ajustes → Voz → ID da voz** dentro do app.
 
-## 🔑 Onde colocar as chaves (no seu celular/PC — nunca no chat nem no repo)
+## 🔑 Onde colocar as chaves (no app — nunca no chat nem no repo)
 
-Crie `android/local.properties` (copie de `local.properties.example`):
-```
-GROQ_API_KEY=gsk_...        # IA grátis em console.groq.com  (obrigatório p/ conversar)
-ELEVENLABS_API_KEY=...      # voz premium em elevenlabs.io (opcional)
-```
-Dentro do app, em **Ajustes**, você liga "Usar voz IA da ElevenLabs" e cola a chave. Sem a ElevenLabs, a Gabi usa o TTS do próprio Android (também em pt-BR feminino).
+> ⚠️ Importante: o app lê as chaves **só da tela "Ajustes" dentro dele**. O `local.properties`/BuildConfig
+> existe no Gradle, mas **não é usado em execução**. Então o jeito certo é colar a chave no app.
+
+Depois de instalar o APK:
+1. Abra a Gabi → toque no ícone de ⚙️ (Ajustes)
+2. Em **Provedor de IA**, cole sua **Chave da API Groq** → toque em **Salvar ajustes**
+3. (Opcional, voz premium) em **Voz**, ative **Usar voz IA da ElevenLabs**, cole a **Chave da API ElevenLabs** → Salvar
+
+Sem a chave da Groq, ela não "pensa" (IA). Sem a ElevenLabs, ela usa o **TTS do próprio Android** — também em **pt-BR feminino** (já configurado), só um pouco mais robótico.
+
+### Onde pegar as chaves grátis
+- **Groq** (a "mente" — obrigatório): https://console.groq.com → API Keys → gerar (grátis, generoso)
+- **ElevenLabs** (voz premium — opcional): https://elevenlabs.io → perfil → API Keys (plano grátis)
 
 ## 📦 Como gerar o APK
 
