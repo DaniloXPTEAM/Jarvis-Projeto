@@ -1,0 +1,34 @@
+# Dependências
+node_modules/
+.pnp
+.pnp.js
+
+# Builds
+.next/
+out/
+build/
+dist/
+
+# Ambiente / segredos (NUNCA commitar chaves reais)
+.env
+.env.local
+.env.*.local
+*.keystore
+*.jks
+
+# Android (gerenciado pelo .gitignore interno de android/)
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/captures/
+android/*.iml
+
+# Cache / logs
+*.log
+.DS_Store
+.tsbuildinfo
+tsconfig.tsbuildinfo
+next-env.d.ts
+# lockfile do app web (template raiz não o rastreava; foco no Android)
+package-lock.json

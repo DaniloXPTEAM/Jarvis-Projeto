@@ -1,0 +1,40 @@
+# Render Blueprint — Servidor da Gabi (Next.js) + PostgreSQL
+# Como usar: faça push deste arquivo, depois no Render vá em New → Blueprint e
+# selecione o repositório. O Render cria o Web Service + o banco automaticamente.
+# Depois, preencha os segredos (sync: false) no painel Environment.
+
+services:
+  - type: web
+    name: gabi-server
+    runtime: node
+    plan: free                 # mude para "starter" pra ficar sempre ligado (recomendado p/ Alexa)
+    region: oregon             # pode trocar pela região mais próxima no painel
+    branch: main               # branch que dispara o deploy (troque se usar outra)
+    rootDir: .
+    buildCommand: npm install && npm run build
+    startCommand: npx next start -H 0.0.0.0 -p $PORT
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 22.11.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gabi-db
+          property: connectionString
+      - key: NEXT_PUBLIC_BASE_URL
+        sync: false            # cole a URL pública após o 1º deploy (ex.: https://gabi-server.onrender.com)
+      - key: ANTHROPIC_API_KEY
+        sync: false            # Claude (opcional)
+      - key: ALEXA_COOKIE
+        sync: false            # controle da Alexa (cookie da Amazon)
+      - key: ALEXA_CSRF
+        sync: false
+      - key: NEWS_API_KEY
+        sync: false            # notícias (opcional)
+
+databases:
+  - name: gabi-db
+    plan: free
+    region: oregon
+    ipAllowList: []            # permite conexões (o Render Web Service acessa via rede interna)

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Gabi</string>
+    <string name="accessibility_service_label">Gabi</string>
+    <string name="accessibility_service_description">A Gabi usa a acessibilidade para ler o conteúdo da tela, interagir com apps como o WhatsApp, ajudar a navegar no seu aparelho e executar comandos de voz sem usar as mãos. Nenhum dado é enviado sem a sua confirmação.</string>
+    <string name="notification_channel_voice">Voz da Gabi</string>
+    <string name="notification_channel_voice_desc">Sessão da assistente de voz em execução</string>
+    <string name="notification_title_listening">A Gabi está ouvindo…</string>
+    <string name="notification_text_tap_stop">Toque para parar</string>
+    <string name="greeting_morning">Bom dia! Aqui é a Gabi. Como posso ajudar?</string>
+    <string name="greeting_afternoon">Boa tarde! A Gabi está pronta. O que você precisa?</string>
+    <string name="greeting_evening">Boa noite! A Gabi à disposição.</string>
+    <string name="greeting_night">Ei, já é tarde. Mas a Gabi tá aqui. O que houve?</string>
+
+    <!-- Lembretes -->
+    <string name="reminder_channel_name">Lembretes</string>
+    <string name="reminder_channel_desc">Notificações dos lembretes criados pela Gabi</string>
+    <string name="reminder_notification_title">⏰ Lembrete da Gabi</string>
+</resources>
