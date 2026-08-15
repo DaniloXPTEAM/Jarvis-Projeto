@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 val CyanAccent = Color(0xFF00D4FF)
+val OrangeAccent = Color(0xFFFFB347)
 val BlueAccent = Color(0xFF0066FF)
 val DarkBg = Color(0xFF050A0F)
 val SurfaceDark = Color(0xFF0D1421)
