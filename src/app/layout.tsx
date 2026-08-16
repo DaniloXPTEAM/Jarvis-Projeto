@@ -2,10 +2,10 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'NEXUS AI',
+  title: 'Gabi — Sua IA Pessoal',
   description: 'Sua IA pessoal — voz, casa inteligente, WhatsApp, Alexa e mais',
   manifest: '/manifest.json',
-  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'NEXUS' },
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Gabi' },
 };
 export const viewport: Viewport = {
   width: 'device-width', initialScale: 1, maximumScale: 1,

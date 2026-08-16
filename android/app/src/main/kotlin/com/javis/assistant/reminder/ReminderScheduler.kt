@@ -1,4 +1,4 @@
-package com.javis.assistant.reminder
+﻿package com.javis.assistant.reminder
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -24,11 +24,11 @@ class ReminderScheduler @Inject constructor(
     suspend fun schedule(subject: String, triggerAtMillis: Long): Long {
         val id = reminderDao.insert(Reminder(subject = subject, triggerAt = triggerAtMillis))
         setAlarm(id, subject, triggerAtMillis)
-        Log.d(TAG, "Lembrete agendado id=$id às $triggerAtMillis: $subject")
+        Log.d(TAG, "Lembrete agendado id=$id Ã s $triggerAtMillis: $subject")
         return id
     }
 
-    /** Reagenda tudo pendente (usado após boot). */
+    /** Reagenda tudo pendente (usado apÃ³s boot). */
     suspend fun rescheduleAll() {
         reminderDao.getPending().forEach { setAlarm(it.id, it.subject, it.triggerAt) }
     }
@@ -50,7 +50,7 @@ class ReminderScheduler @Inject constructor(
         try {
             mgr.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi)
         } catch (se: SecurityException) {
-            // Sem permissão de alarme exato (Android 12+): cai para inexact
+            // Sem permissÃ£o de alarme exato (Android 12+): cai para inexact
             mgr.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi)
             Log.w(TAG, "Alarme exato negado; usando inexact.")
         }

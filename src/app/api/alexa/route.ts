@@ -28,7 +28,7 @@ function makeHeaders() {
     'DNT':          '1',
     'Referer':      'https://alexa.amazon.com.br/spa/index.html',
     'Origin':       'https://alexa.amazon.com.br',
-    'User-Agent':   'Mozilla/5.0 (compatible; JARVIS-OS/1.0)',
+    'User-Agent':   'Mozilla/5.0 (compatible; Gabi/1.0)',
   };
 }
 
@@ -38,8 +38,7 @@ async function listDevices() {
   });
   if (!res.ok) throw new Error(`Amazon API ${res.status}`);
   const d = await res.json();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (d.devices || []).map((dev: any) => ({
+  return (d.devices || []).map((dev: { serialNumber: string; accountName?: string; deviceType: string; online?: boolean; deviceFamily: string }) => ({
     id:     dev.serialNumber,
     name:   dev.accountName || dev.accountName,
     type:   dev.deviceType,

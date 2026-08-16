@@ -1,4 +1,4 @@
-package com.javis.assistant.data.model
+﻿package com.javis.assistant.data.model
 
 data class AppInfo(
     val packageName: String,

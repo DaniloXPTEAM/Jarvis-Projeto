@@ -1,4 +1,4 @@
-package com.javis.assistant.ui.navigation
+﻿package com.javis.assistant.ui.navigation
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween

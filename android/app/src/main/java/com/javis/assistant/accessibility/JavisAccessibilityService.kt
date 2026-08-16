@@ -1,4 +1,4 @@
-package com.javis.assistant.accessibility
+﻿package com.javis.assistant.accessibility
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
@@ -12,11 +12,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * Accessibility service — gives JAVIS eyes and hands inside other apps:
- * • WhatsApp typing + send
- * • Type in any focused search bar / text field
- * • Answer incoming phone calls
- * • Track which app is currently active
+ * Accessibility service â€” gives JAVIS eyes and hands inside other apps:
+ * â€¢ WhatsApp typing + send
+ * â€¢ Type in any focused search bar / text field
+ * â€¢ Answer incoming phone calls
+ * â€¢ Track which app is currently active
  */
 class JavisAccessibilityService : AccessibilityService() {
 
@@ -64,7 +64,7 @@ class JavisAccessibilityService : AccessibilityService() {
         _isEnabled.value = false
     }
 
-    // ─── WhatsApp Typing ──────────────────────────────────────────────────────
+    // â”€â”€â”€ WhatsApp Typing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     fun prepareToTypeInWhatsApp(message: String, onTyped: (String) -> Unit) {
         pendingMessage = message
@@ -119,7 +119,7 @@ class JavisAccessibilityService : AccessibilityService() {
 
     fun isWaitingForSend() = waState == WhatsAppState.MESSAGE_TYPED
 
-    // ─── Type in Any Focused Field ────────────────────────────────────────────
+    // â”€â”€â”€ Type in Any Focused Field â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /**
      * Types [text] into whatever text field currently has focus on screen.
@@ -163,7 +163,7 @@ class JavisAccessibilityService : AccessibilityService() {
         return btn?.performAction(AccessibilityNodeInfo.ACTION_CLICK) ?: false
     }
 
-    // ─── Answer/Decline Calls ─────────────────────────────────────────────────
+    // â”€â”€â”€ Answer/Decline Calls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /**
      * Answers an incoming call by finding and tapping the answer button.
@@ -200,7 +200,7 @@ class JavisAccessibilityService : AccessibilityService() {
         return declineNode?.performAction(AccessibilityNodeInfo.ACTION_CLICK) ?: false
     }
 
-    // ─── Node search helpers ───────────────────────────────────────────────────
+    // â”€â”€â”€ Node search helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private fun AccessibilityNodeInfo.findByViewId(idFragment: String): AccessibilityNodeInfo? {
         val pkg = packageName?.toString() ?: return null

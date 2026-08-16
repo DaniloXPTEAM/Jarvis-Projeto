@@ -1,4 +1,4 @@
-package com.javis.assistant.memory
+﻿package com.javis.assistant.memory
 
 import com.javis.assistant.domain.model.MemoryCategory
 import com.javis.assistant.domain.model.UserMemory

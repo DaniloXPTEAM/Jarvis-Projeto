@@ -1,4 +1,4 @@
-package com.javis.assistant.ui.screens.chat
+﻿package com.javis.assistant.ui.screens.chat
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
@@ -79,10 +79,18 @@ class ChatViewModel @Inject constructor(
 
     private fun observeActivationBus() = viewModelScope.launch {
         JavisActivationBus.activations.collect {
-            if (_uiState.value.voiceState is VoiceState.Idle) speakGreetingThenListen()
+            // Debounce: only greet if we're truly idle AND haven't greeted in the last 3s
+            val current = _uiState.value.voiceState
+            if (current !is VoiceState.Idle) return@collect
+            val now = System.currentTimeMillis()
+            if (now - lastActivationAt < 3_000L) return@collect
+            lastActivationAt = now
+            speakGreetingThenListen()
         }
     }
 
+    private var lastActivationAt: Long = 0L
+63378f4 (chore: finish Gabi setup)
     private fun observeMessages() = viewModelScope.launch {
         chatRepository.getMessages().collect { msgs -> _uiState.update { it.copy(messages = msgs) } }
     }

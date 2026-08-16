@@ -1,8 +1,8 @@
-package com.javis.assistant.data.repository
+﻿package com.javis.assistant.data.repository
 
 import android.content.Context
 import com.javis.assistant.ai.AiProviderFactory
-import com.javis.assistant.ai.JAVIS_SYSTEM_PROMPT_BASE
+import com.javis.assistant.ai.GABI_SYSTEM_PROMPT_BASE63378f4 (chore: finish Gabi setup)
 import com.javis.assistant.data.local.dao.ChatDao
 import com.javis.assistant.data.local.entities.ChatMessageEntity
 import com.javis.assistant.domain.model.ChatMessage
@@ -39,30 +39,7 @@ class ChatRepositoryImpl @Inject constructor(
         val apiKey = when (settings.provider) {
             com.javis.assistant.domain.model.AiProvider.GROQ -> settings.groqApiKey
             com.javis.assistant.domain.model.AiProvider.DEEPSEEK -> settings.deepSeekApiKey
-        }
-        if (apiKey.isBlank()) {
-            return Result.failure(
-                IllegalStateException("No API key for ${settings.provider.displayName}. Add it in Settings.")
-            )
-        }
-        val provider = aiProviderFactory.create(settings.provider, apiKey)
-        val systemPrompt = buildDynamicPrompt(settings.userName)
-        return provider.generateResponse(history, systemPrompt)
-    }
-
-    /**
-     * Builds a fully dynamic system prompt that includes:
-     * 1. JAVIS base personality
-     * 2. The user's name if known
-     * 3. ALL apps currently installed on the device — so "open OPay" always works
-     */
-    private fun buildDynamicPrompt(userName: String): String {
-        val appList = try {
-            AppLauncher.buildAppLabelList(context)
-        } catch (_: Exception) { "" }
-
-        return buildString {
-            append(JAVIS_SYSTEM_PROMPT_BASE)
+            append(GABI_SYSTEM_PROMPT_BASE)63378f4 (chore: finish Gabi setup)
             if (userName.isNotBlank()) {
                 append("\n\n══ USER INFO ══\nThe user's name is $userName. Always use it warmly but not robotically.")
             }

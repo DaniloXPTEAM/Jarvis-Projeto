@@ -1,4 +1,4 @@
-package com.javis.assistant.notifications
+﻿package com.javis.assistant.notifications
 
 import com.javis.assistant.data.db.NotificationDao
 import kotlinx.coroutines.CoroutineScope

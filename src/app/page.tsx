@@ -1,2 +1,2 @@
 'use client';
-export { default } from '@/components/NexusApp';
+export { default } from '@/components/GabiApp';

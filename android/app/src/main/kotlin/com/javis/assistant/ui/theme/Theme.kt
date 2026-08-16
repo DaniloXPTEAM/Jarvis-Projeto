@@ -1,4 +1,4 @@
-package com.javis.assistant.ui.theme
+﻿package com.javis.assistant.ui.theme
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme

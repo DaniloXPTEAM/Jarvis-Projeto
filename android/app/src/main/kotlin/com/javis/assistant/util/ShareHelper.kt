@@ -1,4 +1,4 @@
-package com.javis.assistant.util
+﻿package com.javis.assistant.util
 
 import android.content.Context
 import android.content.Intent

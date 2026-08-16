@@ -1,4 +1,4 @@
-package com.javis.assistant.data.remote.api
+﻿package com.javis.assistant.data.remote.api
 
 import com.javis.assistant.data.remote.models.ChatCompletionRequest
 import com.javis.assistant.data.remote.models.ChatCompletionResponse

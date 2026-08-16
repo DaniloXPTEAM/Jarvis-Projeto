@@ -1,4 +1,4 @@
-package com.javis.assistant.ui.viewmodel
+﻿package com.javis.assistant.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

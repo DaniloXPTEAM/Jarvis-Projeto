@@ -1,4 +1,4 @@
-package com.javis.assistant.voice
+﻿package com.javis.assistant.voice
 
 import android.content.Context
 import android.content.Intent
@@ -164,7 +164,7 @@ class VoiceManager @Inject constructor(
     }
 
     /**
-     * Speak text — tries ElevenLabs AI voice first, falls back to Android TTS.
+     * Speak text â€” tries ElevenLabs AI voice first, falls back to Android TTS.
      * Routes audio to speaker so JAVIS is always heard loudly.
      */
     fun speak(text: String, speechRate: Float = currentSpeechRate, onDone: (() -> Unit)? = null) {

@@ -1,4 +1,4 @@
-package com.javis.assistant.notifications
+﻿package com.javis.assistant.notifications
 
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification

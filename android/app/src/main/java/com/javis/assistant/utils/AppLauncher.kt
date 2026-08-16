@@ -1,4 +1,4 @@
-package com.javis.assistant.utils
+﻿package com.javis.assistant.utils
 
 import android.content.Context
 import android.content.Intent
@@ -46,12 +46,12 @@ object AppLauncher {
         return apps
     }
 
-    /** Invalidate cache — call when user installs/uninstalls apps */
+    /** Invalidate cache â€” call when user installs/uninstalls apps */
     fun invalidateCache() { cacheTimestamp = 0L }
 
     /**
-     * Scored fuzzy app finder — works for ANY app by name.
-     * "opay" → OPay, "kuda" → Kuda, "palm pay" → PalmPay, etc.
+     * Scored fuzzy app finder â€” works for ANY app by name.
+     * "opay" â†’ OPay, "kuda" â†’ Kuda, "palm pay" â†’ PalmPay, etc.
      */
     fun findInstalledApp(context: Context, query: String): InstalledApp? {
         val apps = getInstalledApps(context)
@@ -202,7 +202,7 @@ object AppLauncher {
         val hardcoded = matchHardcoded(lower)
         if (hardcoded != null) return hardcoded
 
-        // Dynamic lookup — works for ANY app including OPay, Kuda, PalmPay etc.
+        // Dynamic lookup â€” works for ANY app including OPay, Kuda, PalmPay etc.
         if (context != null) {
             val app = resolveAppFromInput(input, context)
             if (app != null) {

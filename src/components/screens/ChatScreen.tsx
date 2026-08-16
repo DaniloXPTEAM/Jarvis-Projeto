@@ -33,28 +33,32 @@ export default function ChatScreen({ onListeningChange }: { onListeningChange: (
   const [listen,  setListen]  = useState(false);
   const [tts,     setTts]     = useState(true);
   const endRef  = useRef<HTMLDivElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recRef  = useRef<any>(null);
+  const recRef  = useRef<SpeechRecognition | null>(null);
   const pendRef = useRef('');
+
+  const boot = useCallback(() => setMsgs([{
+    id: '0', role: 'assistant', skillRouted: null, createdAt: new Date().toISOString(),
+    content: 'Olá! Sou a Gabi, sua IA pessoal. 🌐\n\nPosso:\n• Responder qualquer pergunta\n• Criar lembretes e organizar seu dia\n• Controlar sua casa inteligente\n• Gerar imagens com IA\n• Enviar mensagens no WhatsApp\n• Dar sugestões de comida\n• Conectar com a Alexa\n\nO que você quer fazer?',
+  }]), []);
 
   useEffect(() => {
     fetch('/api/chat').then(r => r.json()).then((d: Msg[]) => {
       if (!Array.isArray(d) || d.length === 0) boot();
       else setMsgs(d);
     }).catch(boot);
-  }, []);// eslint-disable-line react-hooks/exhaustive-deps
-
-  const boot = () => setMsgs([{
-    id: '0', role: 'assistant', skillRouted: null, createdAt: new Date().toISOString(),
-    content: 'Olá! Sou o NEXUS, sua IA pessoal. 🌐\n\nPosso:\n• Responder qualquer pergunta\n• Criar lembretes e organizar seu dia\n• Controlar sua casa inteligente\n• Gerar imagens com IA\n• Enviar mensagens no WhatsApp\n• Dar sugestões de comida\n• Conectar com sua Alexa\n\nO que você quer fazer?',
-  }]);
+  }, [boot]);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs, sending]);
 
   const speak = useCallback((t: string) => {
     if (!tts) return;
     const u = new SpeechSynthesisUtterance(t.replace(/[*#`[\]>_]/g, '').slice(0, 400));
-    u.lang = 'pt-BR'; u.rate = 1.06;
+    u.lang = 'pt-BR'; u.rate = 1.06; u.pitch = 1.1;
+    // Selecionar voz feminina pt-BR de qualidade
+    const voices = window.speechSynthesis.getVoices();
+    const femalePtBr = voices.find(v => v.lang === 'pt-BR' && /female|mulher|feminina|google|microsoft/i.test(v.name));
+    const anyPtBr = voices.find(v => v.lang === 'pt-BR');
+    u.voice = femalePtBr || anyPtBr || null;
     window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
   }, [tts]);
 
@@ -77,18 +81,15 @@ export default function ChatScreen({ onListeningChange }: { onListeningChange: (
   }, [input, sending, msgs, speak]);
 
   const startListen = useCallback(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) { alert('Use Chrome para voz.'); return; }
-    const rec = new SR(); rec.lang = 'pt-BR'; rec.interimResults = true; rec.continuous = false;
+    const SpeechRecognition = (window as Window & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition || (window as Window & { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
+    if (!SpeechRecognition) { alert('Use Chrome para voz.'); return; }
+    const rec = new SpeechRecognition(); rec.lang = 'pt-BR'; rec.interimResults = true; rec.continuous = false;
     recRef.current = rec; pendRef.current = '';
     rec.onstart  = () => { setListen(true); onListeningChange(true); };
     rec.onend    = () => { setListen(false); onListeningChange(false); if (pendRef.current) { send(pendRef.current); pendRef.current = ''; } };
     rec.onerror  = () => { setListen(false); onListeningChange(false); };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rec.onresult = (e: any) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const t = Array.from(e.results as any[]).map((r: any) => r[0].transcript).join('');
+    rec.onresult = (e: SpeechRecognitionEvent) => {
+      const t = Array.from(e.results).map((r) => r[0].transcript).join('');
       setInput(t);
       if (e.results[e.results.length - 1].isFinal) { pendRef.current = t; setInput(''); rec.stop(); }
     };

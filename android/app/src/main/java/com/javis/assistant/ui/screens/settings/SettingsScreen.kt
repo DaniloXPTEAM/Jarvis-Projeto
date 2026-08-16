@@ -1,4 +1,4 @@
-package com.javis.assistant.ui.screens.settings
+﻿package com.javis.assistant.ui.screens.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -30,9 +30,11 @@ fun SettingsScreen(
     var showGroqKey by remember { mutableStateOf(false) }
     var showDeepSeekKey by remember { mutableStateOf(false) }
     var showElevenKey by remember { mutableStateOf(false) }
+    var showOpenRouterKey by remember { mutableStateOf(false) }
     var groqKeyInput by remember(settings.groqApiKey) { mutableStateOf(settings.groqApiKey) }
     var deepSeekKeyInput by remember(settings.deepSeekApiKey) { mutableStateOf(settings.deepSeekApiKey) }
     var elevenLabsKeyInput by remember(settings.elevenLabsApiKey) { mutableStateOf(settings.elevenLabsApiKey) }
+    var openRouterKeyInput by remember(settings.openRouterApiKey) { mutableStateOf(settings.openRouterApiKey) }63378f4 (chore: finish Gabi setup)
     var userNameInput by remember(settings.userName) { mutableStateOf(settings.userName) }
     var showClearHistoryDialog by remember { mutableStateOf(false) }
 
@@ -97,61 +99,10 @@ fun SettingsScreen(
                 SettingsSection(title = "API Keys") {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         OutlinedTextField(
-                            value = groqKeyInput,
-                            onValueChange = { groqKeyInput = it },
-                            label = { Text("Groq API Key") },
-                            modifier = Modifier.fillMaxWidth(),
-                            visualTransformation = if (showGroqKey) VisualTransformation.None else PasswordVisualTransformation(),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                            colors = javisTextFieldColors(),
-                            trailingIcon = {
-                                Row {
-                                    IconButton(onClick = { showGroqKey = !showGroqKey }) {
-                                        Icon(
-                                            if (showGroqKey) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                            contentDescription = null, tint = JavisOnSurfaceVariant
-                                        )
-                                    }
-                                    IconButton(onClick = { viewModel.setGroqApiKey(groqKeyInput) }) {
-                                        Icon(Icons.Default.Check, contentDescription = "Save", tint = JavisBlue)
-                                    }
-                                }
-                            },
-                            supportingText = { Text("Required for Groq provider", style = MaterialTheme.typography.labelSmall) }
-                        )
-                        OutlinedTextField(
-                            value = deepSeekKeyInput,
-                            onValueChange = { deepSeekKeyInput = it },
-                            label = { Text("DeepSeek API Key") },
-                            modifier = Modifier.fillMaxWidth(),
-                            visualTransformation = if (showDeepSeekKey) VisualTransformation.None else PasswordVisualTransformation(),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                            colors = javisTextFieldColors(),
-                            trailingIcon = {
-                                Row {
-                                    IconButton(onClick = { showDeepSeekKey = !showDeepSeekKey }) {
-                                        Icon(
-                                            if (showDeepSeekKey) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                            contentDescription = null, tint = JavisOnSurfaceVariant
-                                        )
-                                    }
-                                    IconButton(onClick = { viewModel.setDeepSeekApiKey(deepSeekKeyInput) }) {
-                                        Icon(Icons.Default.Check, contentDescription = "Save", tint = JavisBlue)
-                                    }
-                                }
-                            },
-                            supportingText = { Text("Required for DeepSeek provider", style = MaterialTheme.typography.labelSmall) }
-                        )
-                    }
-                }
-            }
-
-            // ElevenLabs AI Voice section
-            item {
-                SettingsSection(title = "🎙 JAVIS Voice (ElevenLabs AI)") {
+                SettingsSection(title = "🎙 Gabi Voice (ElevenLabs AI)") {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(
-                            "Use a real AI voice instead of Android TTS. Free at elevenlabs.io — sign up, copy your API Key, paste below.",
+                            "Use uma voz de IA real em vez do TTS do Android. Gratuito em elevenlabs.io — cadastre-se, copie sua API Key, cole abaixo.",63378f4 (chore: finish Gabi setup)
                             color = JavisOnSurfaceVariant,
                             style = MaterialTheme.typography.bodySmall
                         )
@@ -178,8 +129,8 @@ fun SettingsScreen(
                             },
                             supportingText = {
                                 Text(
-                                    if (settings.elevenLabsApiKey.isNotBlank()) "✓ AI voice active — JAVIS uses ElevenLabs"
-                                    else "Leave blank to use Android TTS (default)",
+                                    if (settings.elevenLabsApiKey.isNotBlank()) "✓ Voz de IA ativa — Gabi usa ElevenLabs"
+                                    else "Deixe em branco para usar TTS do Android (padrão)",63378f4 (chore: finish Gabi setup)
                                     style = MaterialTheme.typography.labelSmall,
                                     color = if (settings.elevenLabsApiKey.isNotBlank()) JavisBlue else JavisOnSurfaceVariant
                                 )
@@ -191,9 +142,9 @@ fun SettingsScreen(
 
             // Voice settings
             item {
-                SettingsSection(title = "Voice") {
+                SettingsSection(title = "Voz") {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text("Speech Rate: ${"%.1f".format(settings.speechRate)}x",
+                        Text("Velocidade: ${"%.1f".format(settings.speechRate)}x",63378f4 (chore: finish Gabi setup)
                             color = JavisOnSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                         Slider(
                             value = settings.speechRate,
@@ -207,14 +158,14 @@ fun SettingsScreen(
                             )
                         )
                         SettingsToggle(
-                            label = "Continuous Mode",
-                            description = "Automatically restart listening after each response",
+                            label = "Modo Contínuo",
+                            description = "Reiniciar escuta automaticamente após cada resposta",63378f4 (chore: finish Gabi setup)
                             checked = settings.continuousMode,
                             onCheckedChange = { viewModel.setContinuousMode(it) }
                         )
                         SettingsToggle(
-                            label = "Notifications",
-                            description = "Allow JAVIS to read notifications aloud",
+                            label = "Notificações",
+                            description = "Permitir que Gabi leia notificações em voz alta",63378f4 (chore: finish Gabi setup)
                             checked = settings.notificationsEnabled,
                             onCheckedChange = { viewModel.setNotificationsEnabled(it) }
                         )
@@ -224,7 +175,7 @@ fun SettingsScreen(
 
             // Data management
             item {
-                SettingsSection(title = "Data") {
+                SettingsSection(title = "Dados") {63378f4 (chore: finish Gabi setup)
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(
                             onClick = { viewModel.clearMemory() },
@@ -234,7 +185,7 @@ fun SettingsScreen(
                             Icon(Icons.Default.Psychology, contentDescription = null,
                                 tint = JavisError, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Clear Memory", color = JavisError)
+                            Text("Limpar Memória", color = JavisError)63378f4 (chore: finish Gabi setup)
                         }
                         OutlinedButton(
                             onClick = { showClearHistoryDialog = true },
@@ -244,7 +195,7 @@ fun SettingsScreen(
                             Icon(Icons.Default.DeleteSweep, contentDescription = null,
                                 tint = JavisError, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Clear Chat History", color = JavisError)
+                            Text("Limpar Histórico do Chat", color = JavisError)63378f4 (chore: finish Gabi setup)
                         }
                     }
                 }
@@ -258,16 +209,16 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showClearHistoryDialog = false },
             containerColor = JavisSurface,
-            title = { Text("Clear Chat History", color = JavisOnSurface) },
-            text = { Text("All conversation history will be permanently deleted.", color = JavisOnSurfaceVariant) },
+            title = { Text("Limpar Histórico do Chat", color = JavisOnSurface) },
+            text = { Text("Todo o histórico de conversas será apagado permanentemente.", color = JavisOnSurfaceVariant) },
             confirmButton = {
                 TextButton(onClick = { viewModel.clearChatHistory(); showClearHistoryDialog = false }) {
-                    Text("Clear", color = JavisError)
+                    Text("Limpar", color = JavisError)63378f4 (chore: finish Gabi setup)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showClearHistoryDialog = false }) {
-                    Text("Cancel", color = JavisOnSurfaceVariant)
+                    Text("Cancelar", color = JavisOnSurfaceVariant)63378f4 (chore: finish Gabi setup)
                 }
             }
         )

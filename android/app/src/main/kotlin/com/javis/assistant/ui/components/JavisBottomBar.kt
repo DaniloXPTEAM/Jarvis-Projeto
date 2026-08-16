@@ -1,41 +1,10 @@
-package com.javis.assistant.ui.components
+﻿package com.javis.assistant.ui.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.javis.assistant.ui.navigation.Screen
-import com.javis.assistant.ui.theme.*
-
-data class BottomNavItem(val screen: Screen, val icon: ImageVector, val label: String)
-
-val bottomNavItems = listOf(
-    BottomNavItem(Screen.Home, Icons.Default.Home, "Início"),
-    BottomNavItem(Screen.Chat, Icons.Default.SmartToy, "Chat"),
-    BottomNavItem(Screen.Notifications, Icons.Default.Notifications, "Avisos"),
-    BottomNavItem(Screen.Memory, Icons.Default.Psychology, "Memória"),
-    BottomNavItem(Screen.Settings, Icons.Default.Settings, "Ajustes")
-)
-
-@Composable
-fun JavisBottomBar(navController: NavController) {
-    val backStack by navController.currentBackStackEntryAsState()
-    val current = backStack?.destination?.route
-    Box(modifier = Modifier.fillMaxWidth().background(SurfaceDark.copy(alpha = 0.95f))) {
+    Box(modifier = Modifier.fillMaxWidth().background(SurfaceDark.copy(alpha = 0.95f)).navigationBarsPadding()) {63378f4 (chore: finish Gabi setup)
         HorizontalDivider(color = OrangeAccent.copy(alpha = 0.12f), thickness = 0.5.dp)
         Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceAround) {
             bottomNavItems.forEach { item ->

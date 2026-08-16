@@ -27,7 +27,7 @@ const NAV = [
   { id: 'vault',     icon: '📦', label: 'Memória' },
 ];
 
-export default function NexusApp() {
+export default function GabiApp() {
   const [tab,       setTab]       = useState<Tab>('home');
   const [listening, setListening] = useState(false);
   const [devices,   setDevices]   = useState<SmartDevice[]>(INITIAL_DEVICES);

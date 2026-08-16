@@ -1,4 +1,4 @@
-package com.javis.assistant.whatsapp
+﻿package com.javis.assistant.whatsapp
 
 import android.app.PendingIntent
 import android.app.RemoteInput
@@ -10,7 +10,7 @@ import javax.inject.Singleton
 
 /**
  * Singleton that captures incoming WhatsApp notification data and provides
- * the ability to fire a reply via notification RemoteInput — no root needed.
+ * the ability to fire a reply via notification RemoteInput â€” no root needed.
  */
 @Singleton
 class WhatsAppReplyManager @Inject constructor() {

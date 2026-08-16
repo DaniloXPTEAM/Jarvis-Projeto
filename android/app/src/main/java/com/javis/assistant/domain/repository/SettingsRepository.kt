@@ -1,4 +1,4 @@
-package com.javis.assistant.domain.repository
+﻿package com.javis.assistant.domain.repository
 
 import com.javis.assistant.domain.model.AiProvider
 import com.javis.assistant.domain.model.AiSettings
@@ -9,6 +9,8 @@ interface SettingsRepository {
     suspend fun updateProvider(provider: AiProvider)
     suspend fun updateGroqApiKey(key: String)
     suspend fun updateDeepSeekApiKey(key: String)
+    suspend fun updateClaudeApiKey(key: String)
+    suspend fun updateOpenRouterApiKey(key: String)
     suspend fun updateElevenLabsApiKey(key: String)
     suspend fun updateElevenLabsVoiceId(id: String)
     suspend fun updateSpeechRate(rate: Float)

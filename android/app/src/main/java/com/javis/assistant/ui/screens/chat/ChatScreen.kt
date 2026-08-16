@@ -1,4 +1,4 @@
-package com.javis.assistant.ui.screens.chat
+﻿package com.javis.assistant.ui.screens.chat
 
 import android.Manifest
 import androidx.compose.animation.*
@@ -145,12 +145,12 @@ private fun JavisTopBar(navController: NavHostController) {
                     .border(1.dp, JavisBlue.copy(alpha = 0.4f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Text("J", color = JavisBlue, style = MaterialTheme.typography.titleMedium)
+                Text("G", color = JavisBlue, style = MaterialTheme.typography.titleMedium)
             }
             Spacer(Modifier.width(10.dp))
             Column {
-                Text("JAVIS", color = JavisBlue, style = MaterialTheme.typography.titleMedium)
-                Text("AI Assistant", color = JavisOnSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+                Text("Gabi", color = JavisBlue, style = MaterialTheme.typography.titleMedium)
+                Text("Sua assistente", color = JavisOnSurfaceVariant, style = MaterialTheme.typography.labelSmall)63378f4 (chore: finish Gabi setup)
             }
         }
         IconButton(onClick = { navController.navigate(Routes.SETTINGS) }) {
@@ -181,18 +181,18 @@ private fun WelcomeContent() {
                 .border(1.5.dp, JavisBlue.copy(alpha = 0.5f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Text("J", color = JavisBlue, style = MaterialTheme.typography.displayLarge)
+            Text("G", color = JavisBlue, style = MaterialTheme.typography.displayLarge)
         }
         Spacer(Modifier.height(24.dp))
         Text(
-            "Hello, I'm JAVIS",
+            "Oi, sou a Gabi",63378f4 (chore: finish Gabi setup)
             color = JavisOnSurface,
             style = MaterialTheme.typography.headlineSmall,
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            "Your intelligent voice assistant.\nTap the microphone to start talking.",
+            "Sua assistente de voz inteligente.\nToque no microfone e comece a falar.",63378f4 (chore: finish Gabi setup)
             color = JavisOnSurfaceVariant,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center
@@ -239,7 +239,7 @@ private fun ChatBubble(message: ChatMessage) {
                     .align(Alignment.Bottom),
                 contentAlignment = Alignment.Center
             ) {
-                Text("J", color = JavisBlue, style = MaterialTheme.typography.labelSmall)
+                Text("G", color = JavisBlue, style = MaterialTheme.typography.labelSmall)63378f4 (chore: finish Gabi setup)
             }
             Spacer(Modifier.width(8.dp))
         }

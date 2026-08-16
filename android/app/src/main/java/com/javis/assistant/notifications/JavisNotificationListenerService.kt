@@ -1,4 +1,4 @@
-package com.javis.assistant.notifications
+﻿package com.javis.assistant.notifications
 
 import android.app.RemoteInput
 import android.service.notification.NotificationListenerService
@@ -86,7 +86,7 @@ class JavisNotificationListenerService : NotificationListenerService() {
         } ?: actions.firstOrNull { it.remoteInputs?.isNotEmpty() == true }
 
         if (replyAction != null) {
-            // remoteInputs are android.app.RemoteInput[] — directly from framework
+            // remoteInputs are android.app.RemoteInput[] â€” directly from framework
             val inputs: Array<RemoteInput>? = replyAction.remoteInputs
             val key = inputs?.firstOrNull()?.resultKey ?: "text_reply"
 

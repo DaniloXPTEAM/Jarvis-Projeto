@@ -1,4 +1,4 @@
-package com.javis.assistant.ui.screens
+﻿package com.javis.assistant.ui.screens
 
 import android.content.Intent
 import android.provider.Settings
@@ -65,7 +65,7 @@ fun SettingsScreen(
                 modifier = Modifier.padding(16.dp)
             )
 
-            // ── IA ────────────────────────────────────────────────────────
+            // â”€â”€ IA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             SettingsSection("Provedor de IA") {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     AiProvider.values().forEach { provider ->
@@ -84,26 +84,26 @@ fun SettingsScreen(
                 ApiKeyField(
                     label = "Chave da API Groq",
                     value = localState.groqApiKey,
-                    hint = "gsk_…  (grátis em console.groq.com)",
+                    hint = "gsk_â€¦  (grÃ¡tis em console.groq.com)",
                     onChange = { localState = localState.copy(groqApiKey = it) }
                 )
                 Spacer(Modifier.height(8.dp))
                 ApiKeyField(
                     label = "Chave da API DeepSeek",
                     value = localState.deepSeekApiKey,
-                    hint = "sk-…",
+                    hint = "sk-â€¦",
                     onChange = { localState = localState.copy(deepSeekApiKey = it) }
                 )
                 Spacer(Modifier.height(8.dp))
                 ApiKeyField(
                     label = "Chave da API Anthropic (Claude)",
                     value = localState.anthropicApiKey,
-                    hint = "sk-ant-…  (opcional — para 'falar com o Claude')",
+                    hint = "sk-ant-â€¦  (opcional â€” para 'falar com o Claude')",
                     onChange = { localState = localState.copy(anthropicApiKey = it) }
                 )
             }
 
-            // ── Voz ───────────────────────────────────────────────────────
+            // â”€â”€ Voz â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             SettingsSection("Voz") {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Usar voz IA da ElevenLabs", Modifier.weight(1f), color = TextPrimary)
@@ -118,12 +118,12 @@ fun SettingsScreen(
                     ApiKeyField(
                         label = "Chave da API ElevenLabs",
                         value = localState.elevenLabsApiKey,
-                        hint = "Plano grátis em elevenlabs.io",
+                        hint = "Plano grÃ¡tis em elevenlabs.io",
                         onChange = { localState = localState.copy(elevenLabsApiKey = it) }
                     )
                     Spacer(Modifier.height(8.dp))
                     Text("ID da voz", color = TextSecondary, style = MaterialTheme.typography.labelSmall)
-                    Text("Padrão: Roberta — voz feminina pt-BR (conversacional)",
+                    Text("PadrÃ£o: Roberta â€” voz feminina pt-BR (conversacional)",
                         color = TextSecondary.copy(0.6f), style = MaterialTheme.typography.bodySmall)
                     OutlinedTextField(
                         value = localState.elevenLabsVoiceId,
@@ -153,27 +153,27 @@ fun SettingsScreen(
                 }
             }
 
-            // ── Permissões ────────────────────────────────────────────────
-            SettingsSection("Permissões do sistema") {
+            // â”€â”€ PermissÃµes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            SettingsSection("PermissÃµes do sistema") {
                 PermissionButton(
-                    label = "Acesso a notificações",
-                    description = "Permitir que a Gabi leia notificações de todos os apps",
+                    label = "Acesso a notificaÃ§Ãµes",
+                    description = "Permitir que a Gabi leia notificaÃ§Ãµes de todos os apps",
                     onClick = { context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
                 )
                 Spacer(Modifier.height(8.dp))
                 PermissionButton(
-                    label = "Serviço de acessibilidade",
-                    description = "Ativar atalho global + automação de apps",
+                    label = "ServiÃ§o de acessibilidade",
+                    description = "Ativar atalho global + automaÃ§Ã£o de apps",
                     onClick = { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
                 )
             }
 
-            // ── Recursos ──────────────────────────────────────────────────
+            // â”€â”€ Recursos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             SettingsSection("Recursos") {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text("Notificações", color = TextPrimary)
-                        Text("Salvar notificações na Gabi", color = TextSecondary,
+                        Text("NotificaÃ§Ãµes", color = TextPrimary)
+                        Text("Salvar notificaÃ§Ãµes na Gabi", color = TextSecondary,
                             style = MaterialTheme.typography.bodySmall)
                     }
                     Switch(
@@ -184,7 +184,7 @@ fun SettingsScreen(
                 }
             }
 
-            // ── Dados ─────────────────────────────────────────────────────
+            // â”€â”€ Dados â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             SettingsSection("Dados") {
                 OutlinedButton(
                     onClick = viewModel::clearMemory,
@@ -193,7 +193,7 @@ fun SettingsScreen(
                 ) {
                     Icon(Icons.Default.DeleteSweep, null, tint = ErrorRed)
                     Spacer(Modifier.width(8.dp))
-                    Text("Limpar memória", color = ErrorRed)
+                    Text("Limpar memÃ³ria", color = ErrorRed)
                 }
                 Spacer(Modifier.height(8.dp))
                 OutlinedButton(
@@ -203,11 +203,11 @@ fun SettingsScreen(
                 ) {
                     Icon(Icons.Default.History, null, tint = ErrorRed)
                     Spacer(Modifier.width(8.dp))
-                    Text("Limpar histórico de conversas", color = ErrorRed)
+                    Text("Limpar histÃ³rico de conversas", color = ErrorRed)
                 }
             }
 
-            // ── Salvar ────────────────────────────────────────────────────
+            // â”€â”€ Salvar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             Button(
                 onClick = { viewModel.save(localState) },
                 modifier = Modifier.fillMaxWidth().padding(16.dp),

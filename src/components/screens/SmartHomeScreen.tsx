@@ -44,7 +44,7 @@ export default function SmartHomeScreen({ devices, onToggle, onNav }: Props) {
           <span style={{ fontSize: 24 }}>🎙️</span>
           <div>
             <div style={{ fontSize: 13, fontWeight: 600 }}>Controle por voz</div>
-            <div style={{ fontSize: 12, color: 'var(--dim)', marginTop: 2 }}>"Liga a luz da sala" · "Desliga o ventilador"</div>
+            <div style={{ fontSize: 12, color: 'var(--dim)', marginTop: 2 }}>&ldquo;Liga a luz da sala&rdquo; · &ldquo;Desliga o ventilador&rdquo;</div>
           </div>
           <button className="btn btn-primary" style={{ padding: '8px 14px', fontSize: 12, flexShrink: 0 }} onClick={() => onNav('chat')}>
             Falar
@@ -60,7 +60,7 @@ export default function SmartHomeScreen({ devices, onToggle, onNav }: Props) {
                 <div key={d.id} className="card" style={{
                   display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px',
                   border: d.on ? '1px solid rgba(0,255,136,.25)' : '1px solid rgba(255,255,255,.07)',
-                  background: d.on ? 'rgba(0,255,136,.04)' : undefined,
+                  background: d.on ? 'rgba(0,255,136,.04)' : 'transparent',
                 }}>
                   <div style={{
                     width: 48, height: 48, borderRadius: 14, fontSize: 24,

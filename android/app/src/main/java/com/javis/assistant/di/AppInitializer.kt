@@ -1,4 +1,4 @@
-package com.javis.assistant.di
+﻿package com.javis.assistant.di
 
 import com.javis.assistant.BuildConfig
 import com.javis.assistant.domain.repository.SettingsRepository

@@ -1,4 +1,4 @@
-package com.javis.assistant.ui.components
+﻿package com.javis.assistant.ui.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background

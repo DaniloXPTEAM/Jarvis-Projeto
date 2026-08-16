@@ -1,4 +1,4 @@
-package com.javis.assistant.data.repository
+﻿package com.javis.assistant.data.repository
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
@@ -20,24 +20,12 @@ class SettingsRepositoryImpl @Inject constructor(
         val KEY_PROVIDER = stringPreferencesKey("ai_provider")
         val KEY_GROQ_KEY = stringPreferencesKey("groq_api_key")
         val KEY_DEEPSEEK_KEY = stringPreferencesKey("deepseek_api_key")
-        val KEY_ELEVENLABS_KEY = stringPreferencesKey("elevenlabs_api_key")
-        val KEY_ELEVENLABS_VOICE = stringPreferencesKey("elevenlabs_voice_id")
-        val KEY_SPEECH_RATE = floatPreferencesKey("speech_rate")
-        val KEY_TTS_VOICE = stringPreferencesKey("tts_voice")
-        val KEY_NOTIFICATIONS = booleanPreferencesKey("notifications_enabled")
-        val KEY_CONTINUOUS = booleanPreferencesKey("continuous_mode")
-        val KEY_USER_NAME = stringPreferencesKey("user_name")
-    }
-
-    override fun getSettings(): Flow<AiSettings> = dataStore.data
-        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
-        .map { prefs ->
-            AiSettings(
-                provider = prefs[KEY_PROVIDER]?.let {
-                    runCatching { AiProvider.valueOf(it) }.getOrDefault(AiProvider.GROQ)
-                } ?: AiProvider.GROQ,
+                    runCatching { AiProvider.valueOf(it) }.getOrDefault(AiProvider.OPENROUTER)
+                } ?: AiProvider.OPENROUTER,
                 groqApiKey = prefs[KEY_GROQ_KEY] ?: "",
                 deepSeekApiKey = prefs[KEY_DEEPSEEK_KEY] ?: "",
+                claudeApiKey = prefs[KEY_CLAUDE_KEY] ?: "",
+                openRouterApiKey = prefs[KEY_OPENROUTER_KEY] ?: "",63378f4 (chore: finish Gabi setup)
                 elevenLabsApiKey = prefs[KEY_ELEVENLABS_KEY] ?: "",
                 elevenLabsVoiceId = prefs[KEY_ELEVENLABS_VOICE] ?: ElevenLabsTtsService.DEFAULT_VOICE,
                 speechRate = prefs[KEY_SPEECH_RATE] ?: 0.93f,
@@ -58,6 +46,14 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun updateDeepSeekApiKey(key: String) {
         dataStore.edit { it[KEY_DEEPSEEK_KEY] = key }
+    }
+
+    override suspend fun updateClaudeApiKey(key: String) {
+        dataStore.edit { it[KEY_CLAUDE_KEY] = key }
+    }
+
+    override suspend fun updateOpenRouterApiKey(key: String) {
+        dataStore.edit { it[KEY_OPENROUTER_KEY] = key }
     }
 
     override suspend fun updateElevenLabsApiKey(key: String) {

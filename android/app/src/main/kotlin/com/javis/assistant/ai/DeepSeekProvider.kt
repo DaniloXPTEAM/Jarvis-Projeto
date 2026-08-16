@@ -1,4 +1,4 @@
-package com.javis.assistant.ai
+﻿package com.javis.assistant.ai
 
 import com.google.gson.annotations.SerializedName
 import com.javis.assistant.data.model.AiMessage

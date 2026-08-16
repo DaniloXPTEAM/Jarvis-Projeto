@@ -1,4 +1,4 @@
-package com.javis.assistant.voice
+﻿package com.javis.assistant.voice
 
 import android.app.Notification
 import android.app.NotificationManager
@@ -6,24 +6,13 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import androidx.core.app.NotificationCompat
-import com.javis.assistant.JavisApplication
-import com.javis.assistant.MainActivity
-import com.javis.assistant.R
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
-
-@AndroidEntryPoint
-class JavisVoiceService : Service() {
-
-    @Inject lateinit var speechRecognizer: JavisSpeechRecognizer
-
-    override fun onBind(intent: Intent?): IBinder? = null
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when (intent?.action) {
-            ACTION_START_LISTENING -> {
-                startForeground(NOTIFICATION_ID, buildNotification())
+                try {
+                    startForeground(NOTIFICATION_ID, buildNotification())
+                } catch (e: Exception) {
+                    // Sem a permissão de microfone o startForeground pode lançar
+                    // SecurityException — o reconhecimento segue, só sem o serviço em primeiro plano.
+                    Log.w(TAG, "startForeground falhou: ${e.message}")
+                }63378f4 (chore: finish Gabi setup)
                 speechRecognizer.startListening()
             }
             ACTION_STOP -> {
@@ -65,5 +54,6 @@ class JavisVoiceService : Service() {
         const val ACTION_START_LISTENING = "com.javis.assistant.START_LISTENING"
         const val ACTION_STOP = "com.javis.assistant.STOP_VOICE"
         private const val NOTIFICATION_ID = 1001
+        private const val TAG = "JavisVoiceService"
     }
 }

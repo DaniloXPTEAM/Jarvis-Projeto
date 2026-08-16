@@ -1,4 +1,4 @@
-package com.javis.assistant.ai
+﻿package com.javis.assistant.ai
 
 import android.content.Context
 import android.content.Intent
@@ -31,7 +31,7 @@ class CommandParser @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
 
-    // Aliases de apps — inglês + português (tudo em minúsculas, sem acento)
+    // Aliases de apps â€” inglÃªs + portuguÃªs (tudo em minÃºsculas, sem acento)
     private val appAliases = mapOf(
         "whatsapp" to "com.whatsapp",
         "zap" to "com.whatsapp",
@@ -85,14 +85,14 @@ class CommandParser @Inject constructor(
 
     fun parse(input: String): ParsedCommand {
         val lower = input.lowercase().trim()
-        val norm = stripAccents(lower) // casa comandos mesmo com acentos ("ligar pra joão")
+        val norm = stripAccents(lower) // casa comandos mesmo com acentos ("ligar pra joÃ£o")
 
-        // ── Orquestração Claude ("fale com o Claude e...", "pergunte ao Claude...") ──
+        // â”€â”€ OrquestraÃ§Ã£o Claude ("fale com o Claude e...", "pergunte ao Claude...") â”€â”€
         if (isClaudeRequest(norm)) {
             return ParsedCommand(CommandType.ASK_CLAUDE, target = extractClaudeQuery(lower))
         }
 
-        // ── Lembrete ("me lembre de X às Yh" / "em 30 minutos") ──
+        // â”€â”€ Lembrete ("me lembre de X Ã s Yh" / "em 30 minutos") â”€â”€
         parseReminder(lower, norm)?.let { (subject, triggerAt) ->
             return ParsedCommand(
                 CommandType.SET_REMINDER,
@@ -101,23 +101,23 @@ class CommandParser @Inject constructor(
             )
         }
 
-        // ── Clima ──
+        // â”€â”€ Clima â”€â”€
         if (isWeatherRequest(norm)) {
             return ParsedCommand(CommandType.WEATHER, target = extractCity(lower))
         }
 
-        // ── Compartilhar (ACTION_SEND) ──
+        // â”€â”€ Compartilhar (ACTION_SEND) â”€â”€
         if (norm.contains("compartilh") || norm.contains("share")) {
             return ParsedCommand(CommandType.SHARE, target = extractShareText(lower))
         }
 
-        // ── Bluetooth (conectar / rotear áudio) ──
+        // â”€â”€ Bluetooth (conectar / rotear Ã¡udio) â”€â”€
         if (isBluetoothConnect(norm)) {
             return ParsedCommand(CommandType.BLUETOOTH_CONNECT)
         }
 
         return when {
-            // ── ABRIR APP ──────────────────────────────────────────────
+            // â”€â”€ ABRIR APP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             norm.matches(Regex(".*(abrir|abra|abre|abri|iniciar|inicie|inicia|rodar|rode|open|launch|start|go to|take me to)\\s+(\\w+).*")) -> {
                 val app = extractAppName(lower, listOf(
                     "abrir", "abra", "abre", "abri", "iniciar", "inicie", "inicia", "rodar", "rode",
@@ -126,7 +126,7 @@ class CommandParser @Inject constructor(
                 ParsedCommand(CommandType.OPEN_APP, target = app)
             }
 
-            // ── LIGAR PARA CONTATO ─────────────────────────────────────
+            // â”€â”€ LIGAR PARA CONTATO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             norm.matches(Regex(".*(ligar|ligue|liga|telefonar|telefone|chamar|chama|call|dial|ring|phone)\\s+(.+)")) -> {
                 val contact = extractAfter(lower, listOf(
                     "ligar para", "ligue para", "liga para", "ligar pro", "ligue pro", "liga pro",
@@ -142,7 +142,7 @@ class CommandParser @Inject constructor(
                 )
             }
 
-            // ── ALARME ─────────────────────────────────────────────────
+            // â”€â”€ ALARME â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             norm.matches(Regex(".*(definir.*alarme|configurar.*alarme|arme.*alarme|me acorde|acordar|despertador|alarme|set.*alarm|wake me.*at|remind me.*at).*")) -> {
                 ParsedCommand(
                     CommandType.SET_ALARM,
@@ -152,19 +152,19 @@ class CommandParser @Inject constructor(
                 )
             }
 
-            // ── BUSCAR NO YOUTUBE ──────────────────────────────────────
+            // â”€â”€ BUSCAR NO YOUTUBE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             norm.matches(Regex(".*(procurar|pesquisar|buscar|pesquisa|procura|busca|encontrar|assistir|ver|search|look up|google|find)\\s+(.+)(no youtube|no yt|youtube).*")) -> {
                 val query = extractSearchQuery(lower)
                 ParsedCommand(CommandType.SEARCH_YOUTUBE, target = query)
             }
 
-            // ── BUSCAR NA WEB ──────────────────────────────────────────
+            // â”€â”€ BUSCAR NA WEB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             norm.matches(Regex(".*(procurar|pesquisar|buscar|pesquisa|procura|busca|encontrar|google|search|look up|find|browse)\\s+(.+)")) -> {
                 val query = extractSearchQuery(lower)
                 ParsedCommand(CommandType.SEARCH_WEB, target = query)
             }
 
-            // ── ENVIAR MENSAGEM (WhatsApp) ─────────────────────────────
+            // â”€â”€ ENVIAR MENSAGEM (WhatsApp) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             norm.matches(Regex(".*(enviar|envie|envia|mandar|mande|manda|mensagem|zap|whatsapp|responder|responde|reply|send|message|text).*(para|pro|pra|p/|ao|to|for)\\s+(\\w+).*")) -> {
                 val to = extractRecipient(lower)
                 val msg = extractMessage(lower)
@@ -177,7 +177,7 @@ class CommandParser @Inject constructor(
                 )
             }
 
-            // ── LER NOTIFICAÇÕES / MENSAGENS ───────────────────────────
+            // â”€â”€ LER NOTIFICAÃ‡Ã•ES / MENSAGENS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             norm.contains("notificac") || norm.contains("mensagem") || norm.contains("tem msg") ||
                     norm.contains("o que eu perdi") || norm.contains("ler minhas") ||
                     norm.contains("notifications") || norm.contains("any messages") ||
@@ -185,7 +185,7 @@ class CommandParser @Inject constructor(
                 ParsedCommand(CommandType.READ_NOTIFICATIONS)
             }
 
-            // ── ABRIR CONFIGURAÇÕES ────────────────────────────────────
+            // â”€â”€ ABRIR CONFIGURAÃ‡Ã•ES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             norm.contains("configurac") || norm.contains("ajustes") || norm.contains("wi-fi") ||
                     norm.contains("wifi") || norm.contains("bluetooth") || norm.contains("settings") -> {
                 ParsedCommand(CommandType.OPEN_SETTINGS)
@@ -195,9 +195,9 @@ class CommandParser @Inject constructor(
         }
     }
 
-    // ──────────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     //  CLAUDE
-    // ──────────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private fun isClaudeRequest(norm: String): Boolean = norm.contains("claude")
 
     private fun extractClaudeQuery(lower: String): String {
@@ -216,13 +216,13 @@ class CommandParser @Inject constructor(
         return q.ifBlank { lower.trim() }
     }
 
-    // ──────────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     //  CLIMA
-    // ──────────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private fun isWeatherRequest(norm: String): Boolean {
         if (norm.contains("clima") || norm.contains("previsao") || norm.contains("temperatura") ||
             norm.contains("vai chover") || norm.contains("chuva hoje")) return true
-        // "tempo" só conta se houver contexto de clima
+        // "tempo" sÃ³ conta se houver contexto de clima
         if (norm.contains("tempo") && (norm.contains("agora") || norm.contains("hoje") ||
                     norm.contains("em ") || norm.contains("voa"))) return true
         return false
@@ -250,16 +250,16 @@ class CommandParser @Inject constructor(
         return s
     }
 
-    // ──────────────────────────────────────────────────────────────────
-    //  LEMBRETE  → (assunto, millis) ou null
-    // ──────────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    //  LEMBRETE  â†’ (assunto, millis) ou null
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private fun parseReminder(lower: String, norm: String): Pair<String, Long>? {
         val triggers = listOf(
             "me lembre", "me lembra", "lembre me", "lembre-me", "me avise", "me avisar",
             "avise me", "me lembrar", "novo lembrete", "crie um lembrete", "criar lembrete", "lembrete"
         )
         if (triggers.none { norm.contains(it) }) return null
-        if (norm.contains("alarme")) return null // é alarme, não lembrete
+        if (norm.contains("alarme")) return null // Ã© alarme, nÃ£o lembrete
 
         val now = Calendar.getInstance()
         val cal = (now.clone() as Calendar)
@@ -277,8 +277,8 @@ class CommandParser @Inject constructor(
         }
 
         if (!matched) {
-            // horário: "às HH(:MM)?h?"
-            val clk = Regex("[aàá]s\\s*(\\d{1,2})(?:h|hs|:)?(?:(\\d{2}))?").find(norm)
+            // horÃ¡rio: "Ã s HH(:MM)?h?"
+            val clk = Regex("[aÃ Ã¡]s\\s*(\\d{1,2})(?:h|hs|:)?(?:(\\d{2}))?").find(norm)
             if (clk != null) {
                 val h = clk.groupValues[1].toIntOrNull()?.coerceIn(0, 23) ?: return null
                 val mm = clk.groupValues[2].takeIf { it.isNotBlank() }?.toIntOrNull()?.coerceIn(0, 59) ?: 0
@@ -300,10 +300,10 @@ class CommandParser @Inject constructor(
             subject = subject.replace(it, " ", ignoreCase = true)
         }
         subject = subject
-            .replace(Regex("[aàá]s\\s*\\d{1,2}(?:h|hs|:)?(?:(\\d{2}))?", RegexOption.IGNORE_CASE), " ")
+            .replace(Regex("[aÃ Ã¡]s\\s*\\d{1,2}(?:h|hs|:)?(?:(\\d{2}))?", RegexOption.IGNORE_CASE), " ")
             .replace(Regex("\\bhoje\\b", RegexOption.IGNORE_CASE), " ")
-            .replace(Regex("\\bamanh[ãa]\\b", RegexOption.IGNORE_CASE), " ")
-            .replace(Regex("depois de amanh[ãa]", RegexOption.IGNORE_CASE), " ")
+            .replace(Regex("\\bamanh[Ã£a]\\b", RegexOption.IGNORE_CASE), " ")
+            .replace(Regex("depois de amanh[Ã£a]", RegexOption.IGNORE_CASE), " ")
             .replace(
                 Regex("(?:em|daqui a|em cerca de)\\s+\\d+\\s*(?:minuto|minutos|min|hora|horas|h|hr|hrs)",
                     RegexOption.IGNORE_CASE), " "
@@ -346,7 +346,7 @@ class CommandParser @Inject constructor(
     }
 
     private fun extractRecipient(input: String): String {
-        val regex = Regex("(?i)(?:para o|para a|para|pro|pra|p/|ao|à|to|for)\\s+(\\w+)")
+        val regex = Regex("(?i)(?:para o|para a|para|pro|pra|p/|ao|Ã |to|for)\\s+(\\w+)")
         return regex.find(input)?.groupValues?.get(1) ?: ""
     }
 

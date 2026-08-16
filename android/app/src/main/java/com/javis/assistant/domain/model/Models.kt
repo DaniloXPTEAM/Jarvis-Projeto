@@ -1,4 +1,4 @@
-package com.javis.assistant.domain.model
+﻿package com.javis.assistant.domain.model
 
 import java.util.UUID
 
@@ -33,9 +33,11 @@ data class NotificationItem(
 )
 
 data class AiSettings(
-    val provider: AiProvider = AiProvider.GROQ,
+    val provider: AiProvider = AiProvider.OPENROUTER,
     val groqApiKey: String = "",
     val deepSeekApiKey: String = "",
+    val claudeApiKey: String = "",
+    val openRouterApiKey: String = "",63378f4 (chore: finish Gabi setup)
     val elevenLabsApiKey: String = "",         // AI voice — free at elevenlabs.io
     val elevenLabsVoiceId: String = "",        // blank = use default Jarvis voice (Daniel)
     val speechRate: Float = 0.93f,
@@ -46,8 +48,10 @@ data class AiSettings(
 )
 
 enum class AiProvider(val displayName: String) {
-    GROQ("Groq"),
-    DEEPSEEK("DeepSeek")
+    OPENROUTER("OpenRouter (free models)"),
+    GROQ("Groq (free)"),
+    DEEPSEEK("DeepSeek (free)"),
+    CLAUDE("Claude (paid)")63378f4 (chore: finish Gabi setup)
 }
 
 data class AppAction(

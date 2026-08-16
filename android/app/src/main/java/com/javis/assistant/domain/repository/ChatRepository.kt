@@ -1,4 +1,4 @@
-package com.javis.assistant.domain.repository
+﻿package com.javis.assistant.domain.repository
 
 import com.javis.assistant.domain.model.ChatMessage
 import kotlinx.coroutines.flow.Flow

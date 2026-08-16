@@ -1,4 +1,4 @@
-package com.javis.assistant.data.local.dao
+﻿package com.javis.assistant.data.local.dao
 
 import androidx.room.*
 import com.javis.assistant.data.local.entities.ChatMessageEntity

@@ -1,4 +1,4 @@
-package com.javis.assistant.ui.screens
+﻿package com.javis.assistant.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -46,7 +46,7 @@ fun NotificationsScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Notificações", style = MaterialTheme.typography.headlineMedium, color = CyanAccent)
+                Text("NotificaÃ§Ãµes", style = MaterialTheme.typography.headlineMedium, color = CyanAccent)
                 Row {
                     TextButton(onClick = viewModel::markAllRead) {
                         Text("Marcar todas", color = TextSecondary)
@@ -68,13 +68,13 @@ fun NotificationsScreen(
                 ) {
                     Column {
                         Text(
-                            "Acesso a notificações necessário",
+                            "Acesso a notificaÃ§Ãµes necessÃ¡rio",
                             fontWeight = FontWeight.SemiBold,
                             color = CyanAccent
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            "Para ler notificações de todos os apps, ative o Acesso a Notificações para a Gabi nas Configurações.",
+                            "Para ler notificaÃ§Ãµes de todos os apps, ative o Acesso a NotificaÃ§Ãµes para a Gabi nas ConfiguraÃ§Ãµes.",
                             color = TextSecondary,
                             style = MaterialTheme.typography.bodySmall
                         )
@@ -89,7 +89,7 @@ fun NotificationsScreen(
                         Icon(Icons.Default.NotificationsNone, null,
                             tint = TextSecondary, modifier = Modifier.size(64.dp))
                         Spacer(Modifier.height(12.dp))
-                        Text("Sem notificações", color = TextSecondary)
+                        Text("Sem notificaÃ§Ãµes", color = TextSecondary)
                     }
                 }
             } else {

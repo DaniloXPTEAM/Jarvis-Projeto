@@ -1,0 +1,51 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(gradle:*)",
+      "Bash(./gradlew:*)",
+      "Bash(git:*)",
+      "Bash(cd:*)",
+      "Bash(ls:*)",
+      "Bash(dir:*)",
+      "Bash(pwd:*)",
+      "Bash(echo:*)",
+      "Bash(cat:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(touch:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(sed:*)",
+      "Bash(awk:*)",
+      "Bash(curl:*)",
+      "Bash(curl.exe:*)",
+      "Bash(powershell:*)",
+      "Bash(pwsh:*)",
+      "Bash(code:*)",
+      "Bash(tree:*)",
+      "Bash(zip:*)",
+      "Bash(unzip:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(rm -rf /*)",
+      "Bash(del /s /q C\\:*)",
+      "Bash(format:*)",
+      "Bash(rd /s /q:*)"
+    ],
+    "additionalDirectories": [
+      "C:\\CRiando coisa nova\\Jarvis Projeto\\Jarvis-Projeto",
+      "C:\\CRiando coisa nova\\Jarvis Projeto\\Jarvis-Projeto\\android"
+    ]
+  }
+}

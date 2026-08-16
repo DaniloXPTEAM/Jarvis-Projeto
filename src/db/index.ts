@@ -1,24 +1,25 @@
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
+import { drizzle } from 'drizzle-orm/better-sqlite3';
+import Database from 'better-sqlite3';
 
-const databaseUrl = process.env.DATABASE_URL;
-
-if (!databaseUrl) {
-  throw new Error("DATABASE_URL is required");
-}
+const databaseUrl = process.env.DATABASE_URL || 'file:./data/app.db';
+const filePath = databaseUrl.replace('file:', '');
 
 const globalForDb = globalThis as typeof globalThis & {
-  __arenaNextJsPostgresqlPool?: Pool;
+  __sqliteDb?: Database.Database;
 };
 
-export const pool =
-  globalForDb.__arenaNextJsPostgresqlPool ??
-  new Pool({
-    connectionString: databaseUrl,
+export const sqlite =
+  globalForDb.__sqliteDb ??
+  new Database(filePath, {
+    // WAL mode para melhor concorrência
+    // fileMustExist: false
   });
 
-if (process.env.NODE_ENV !== "production") {
-  globalForDb.__arenaNextJsPostgresqlPool = pool;
+sqlite.pragma('journal_mode = WAL');
+sqlite.pragma('busy_timeout = 5000');
+
+if (process.env.NODE_ENV !== 'production') {
+  globalForDb.__sqliteDb = sqlite;
 }
 
-export const db = drizzle(pool);
+export const db = drizzle(sqlite);

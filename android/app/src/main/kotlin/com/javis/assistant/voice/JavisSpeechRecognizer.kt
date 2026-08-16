@@ -1,16 +1,20 @@
-package com.javis.assistant.voice
+﻿package com.javis.assistant.voice
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper63378f4 (chore: finish Gabi setup)
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
+import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import java.util.*
+import kotlinx.coroutines.flow.StateFlow63378f4 (chore: finish Gabi setup)
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,11 +26,11 @@ sealed class SpeechEvent {
     object Ended : SpeechEvent()
 }
 
-@Singleton
-class JavisSpeechRecognizer @Inject constructor(
-    @ApplicationContext private val context: Context
-) {
+    private val mainHandler = Handler(Looper.getMainLooper())
+
     private var recognizer: SpeechRecognizer? = null
+    private var restartRunnable: Runnable? = null
+    private var transientAttempts = 063378f4 (chore: finish Gabi setup)
 
     private val _events = MutableStateFlow<SpeechEvent?>(null)
     val events: StateFlow<SpeechEvent?> = _events
@@ -34,90 +38,170 @@ class JavisSpeechRecognizer @Inject constructor(
     private val _isListening = MutableStateFlow(false)
     val isListening: StateFlow<Boolean> = _isListening
 
+    private val listener = object : RecognitionListener {
+        override fun onReadyForSpeech(params: Bundle?) {
+            transientAttempts = 0
+            _isListening.value = true
+            _events.value = SpeechEvent.Started
+        }
+
+        override fun onBeginningOfSpeech() {}
+
+        override fun onRmsChanged(rmsdB: Float) {}
+
+        override fun onBufferReceived(buffer: ByteArray?) {}
+
+        override fun onEndOfSpeech() {
+            _isListening.value = false
+            _events.value = SpeechEvent.Ended
+        }
+
+        override fun onError(error: Int) {
+            _isListening.value = false
+
+            // Erros transientes do serviço de reconhecimento: recria e tenta de novo.
+            if (error == SpeechRecognizer.ERROR_CLIENT || error == SpeechRecognizer.ERROR_RECOGNIZER_BUSY) {
+                if (transientAttempts < MAX_TRANSIENT_RETRIES) {
+                    transientAttempts++
+                    Log.w(TAG, "Erro transiente do reconhecimento ($error) — recriando e tentando de novo")
+                    scheduleRestart()
+                    return
+                }
+                transientAttempts = 0
+            }
+            emitError(error, errorMessage(error))
+        }
+
+        override fun onResults(results: Bundle?) {
+            transientAttempts = 0
+            val text = results
+                ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                ?.firstOrNull().orEmpty()
+            if (text.isNotBlank()) _events.value = SpeechEvent.Result(text)
+        }
+
+        override fun onPartialResults(partialResults: Bundle?) {
+            val partial = partialResults
+                ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                ?.firstOrNull().orEmpty()
+            if (partial.isNotBlank()) _events.value = SpeechEvent.Partial(partial)
+        }
+
+        override fun onEvent(eventType: Int, params: Bundle?) {}
+    }
+
     fun startListening() {
         if (_isListening.value) return
+
         if (!SpeechRecognizer.isRecognitionAvailable(context)) {
-            _events.value = SpeechEvent.Error(-1, "Speech recognition not available")
+            emitError(-1, "Reconhecimento de voz indisponível neste aparelho.")
             return
         }
 
-        recognizer?.destroy()
-        recognizer = SpeechRecognizer.createSpeechRecognizer(context).apply {
-            setRecognitionListener(object : RecognitionListener {
-                override fun onReadyForSpeech(params: Bundle?) {
-                    _isListening.value = true
-                    _events.value = SpeechEvent.Started
-                }
-                override fun onBeginningOfSpeech() {}
-                override fun onRmsChanged(rmsdB: Float) {}
-                override fun onBufferReceived(buffer: ByteArray?) {}
-                override fun onEndOfSpeech() {
-                    _isListening.value = false
-                    _events.value = SpeechEvent.Ended
-                }
-                override fun onError(error: Int) {
-                    _isListening.value = false
-                    val msg = when (error) {
-                        SpeechRecognizer.ERROR_AUDIO -> "Audio error"
-                        SpeechRecognizer.ERROR_CLIENT -> "Client error"
-                        SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "No mic permission"
-                        SpeechRecognizer.ERROR_NETWORK -> "Network error"
-                        SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Network timeout"
-                        SpeechRecognizer.ERROR_NO_MATCH -> "No speech detected"
-                        SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Recognizer busy"
-                        SpeechRecognizer.ERROR_SERVER -> "Server error"
-                        SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "Silence timeout"
-                        else -> "Unknown error ($error)"
-                    }
-                    _events.value = SpeechEvent.Error(error, msg)
-                }
-                override fun onResults(results: Bundle?) {
-                    val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                    val text = matches?.firstOrNull() ?: ""
-                    if (text.isNotBlank()) {
-                        _events.value = SpeechEvent.Result(text)
-                    }
-                }
-                override fun onPartialResults(partialResults: Bundle?) {
-                    val partial = partialResults
-                        ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                        ?.firstOrNull() ?: ""
-                    if (partial.isNotBlank()) _events.value = SpeechEvent.Partial(partial)
-                }
-                override fun onEvent(eventType: Int, params: Bundle?) {}
-            })
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            emitError(
+                SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS,
+                "Sem permissão de microfone. Permita o acesso e tente de novo."
+            )
+            return
         }
 
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "pt-BR")  // A Gabi entende português do Brasil
-            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 500L)
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 1500L)
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 1000L)
-        }
+        // O SpeechRecognizer exige ser operado na main thread.
+        restartRunnable?.let { mainHandler.removeCallbacks(it) }
+        restartRunnable = null
+        mainHandler.post { safeStart() }
+    }
 
+    private fun safeStart() {
+        if (_isListening.value) return
         try {
-            recognizer?.startListening(intent)
+            if (recognizer == null) {
+                recognizer = SpeechRecognizer.createSpeechRecognizer(context).apply {
+                    setRecognitionListener(listener)
+                }
+            }
+            recognizer?.startListening(buildIntent())
         } catch (e: Exception) {
-            Log.e(TAG, "Start listening failed: ${e.message}")
-            _events.value = SpeechEvent.Error(-1, e.message ?: "Failed to start")
+            Log.e(TAG, "Falha ao iniciar o reconhecimento", e)
+            emitError(SpeechRecognizer.ERROR_CLIENT, "Não consegui iniciar o reconhecimento de voz. Tente de novo.")
         }
+    }
+
+    private fun scheduleRestart() {
+        restartRunnable?.let { mainHandler.removeCallbacks(it) }
+        val restart = Runnable {
+            restartRunnable = null
+            teardownRecognizer()
+            if (_isListening.value) return@Runnable
+            safeStart()
+        }
+        restartRunnable = restart
+        mainHandler.postDelayed(restart, RESTART_DELAY_MS)
+    }
+
+    private fun buildIntent(): Intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE, "pt-BR") // A Gabi entende português do Brasil
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "pt-BR")
+        putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+        putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+        putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 500L)
+        putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 1500L)
+        putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 1000L)
     }
 
     fun stopListening() {
-        recognizer?.stopListening()
         _isListening.value = false
+        restartRunnable?.let { mainHandler.removeCallbacks(it) }
+        restartRunnable = null
+        try {
+            recognizer?.stopListening()
+        } catch (e: Exception) {
+            Log.w(TAG, "Falha ao parar o reconhecimento: ${e.message}")
+        }
+    }
+
+    private fun teardownRecognizer() {
+        try {
+            recognizer?.destroy()
+        } catch (e: Exception) {
+            Log.w(TAG, "Falha ao destruir o recognizer: ${e.message}")
+        }
+        recognizer = null
     }
 
     fun destroy() {
-        recognizer?.destroy()
-        recognizer = null
         _isListening.value = false
+        restartRunnable?.let { mainHandler.removeCallbacks(it) }
+        restartRunnable = null
+        teardownRecognizer()
+    }
+
+    private fun emitError(code: Int, message: String) {
+        _events.value = SpeechEvent.Error(code, message)
+    }
+
+    private fun errorMessage(error: Int): String = when (error) {
+        SpeechRecognizer.ERROR_AUDIO -> "Problema com o áudio do microfone."
+        SpeechRecognizer.ERROR_CLIENT -> "Erro do cliente de reconhecimento de voz. Tente de novo."
+        SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Sem permissão de microfone. Permita o acesso e tente de novo."
+        SpeechRecognizer.ERROR_NETWORK -> "Sem conexão com a internet. Tente de novo."
+        SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "A conexão com o reconhecimento de voz deu timeout."
+        SpeechRecognizer.ERROR_NO_MATCH -> "Não entendi o que você falou. Pode repetir?"
+        SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "O reconhecimento de voz está ocupado. Espere um instante e tente de novo."
+        SpeechRecognizer.ERROR_SERVER -> "Erro no servidor de reconhecimento de voz. Tente de novo."
+        SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "Não ouvi nada. Pode falar de novo?"
+        SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED -> "O idioma português não é suportado neste aparelho."
+        SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE -> "O pacote de idioma pt-BR não está instalado no aparelho."
+        SpeechRecognizer.ERROR_TOO_MANY_REQUESTS -> "Muitas solicitações. Espere um pouco e tente de novo."
+        else -> "Erro ao reconhecer a fala (código $error)."63378f4 (chore: finish Gabi setup)
     }
 
     companion object {
         private const val TAG = "JavisSpeechRecognizer"
+        private const val MAX_TRANSIENT_RETRIES = 2
+        private const val RESTART_DELAY_MS = 300L
     }
 }

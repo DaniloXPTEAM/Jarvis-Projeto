@@ -1,4 +1,4 @@
-package com.javis.assistant.ui.screens.settings
+﻿package com.javis.assistant.ui.screens.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -39,6 +39,10 @@ class SettingsViewModel @Inject constructor(
 
     fun setElevenLabsApiKey(key: String) = viewModelScope.launch {
         settingsRepository.updateElevenLabsApiKey(key)
+    }
+
+    fun setOpenRouterApiKey(key: String) = viewModelScope.launch {
+        settingsRepository.updateOpenRouterApiKey(key)
     }
 
     fun setElevenLabsVoiceId(id: String) = viewModelScope.launch {

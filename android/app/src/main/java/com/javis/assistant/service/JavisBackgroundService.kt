@@ -1,4 +1,4 @@
-package com.javis.assistant.service
+﻿package com.javis.assistant.service
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -16,7 +16,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Foreground service that keeps JAVIS alive in the background.
- * Shows a persistent notification with a one-tap "Speak to JAVIS" button —
+ * Shows a persistent notification with a one-tap "Speak to JAVIS" button â€”
  * this is how the user activates JAVIS from outside the app without overlay permission.
  */
 @AndroidEntryPoint
@@ -110,7 +110,7 @@ class JavisBackgroundService : Service() {
             .setSilent(true)
             .addAction(
                 android.R.drawable.ic_btn_speak_now,
-                "🎤 Speak to JAVIS",
+                "ðŸŽ¤ Speak to JAVIS",
                 activatePi
             )
             .addAction(

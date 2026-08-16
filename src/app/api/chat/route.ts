@@ -126,6 +126,39 @@ function routeSkill(text: string): Routed | null {
    CLAUDE
 ═══════════════════════════════════════════════════════════════════ */
 async function askClaude(history: Hist[], userMsg: string): Promise<string> {
+  const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent';
+
+  const geminiKey = process.env.GEMINI_API_KEY;
+  if (geminiKey) {
+    try {
+      const contents = [
+        ...history.slice(-8).map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })),
+        { role: 'user', parts: [{ text: userMsg }] },
+      ];
+
+      const systemInstructions = `Você é Gabi, uma assistente pessoal inteligente. Você ajuda com lembretes, organização, ideias, sugestões de comida, e pode analisar ideias de projetos. Seja útil, amigável e concisa.`;
+
+      const response = await fetch(`${GEMINI_API_URL}?key=${geminiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system: { instructions: systemInstructions },
+          contents,
+          generationConfig: { maxOutputTokens: 800, temperature: 0.7 },
+        }),
+      });
+
+      if (!response.ok) throw new Error(`Gemini API error: ${response.status}`);
+      const data = await response.json();
+      const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Desculpe, não consegui gerar uma resposta.';
+      return responseText;
+    } catch (err) {
+      console.error('Gemini API error:', err);
+      // fallthrough to other providers/fallback
+    }
+  }
+
+
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) {
     // Smart fallback sem API
@@ -136,7 +169,7 @@ async function askClaude(history: Hist[], userMsg: string): Promise<string> {
     return `Entendi sua pergunta! Para respostas completas de IA, configure **ANTHROPIC_API_KEY** nas variáveis de ambiente.\n\nEnquanto isso, posso ajudar com:\n• Lembretes e organização\n• Sugestões de comida\n• Controle da casa inteligente\n• Capturar suas ideias\n• Conectar com a Alexa`;
   }
 
-  const system = `Você é NEXUS, uma IA pessoal avançada integrada a um app mobile Android.
+  const system = `Você é Gabi, uma IA pessoal avançada integrada a um app mobile Android.
 Você está conectado a: casa inteligente, Alexa, geração de imagens, WhatsApp, lembretes, vault de memória.
 Responda em português brasileiro, seja direto e útil.
 Para perguntas técnicas (hardware, GPU, IA), dê informações precisas com preços aproximados em R$.

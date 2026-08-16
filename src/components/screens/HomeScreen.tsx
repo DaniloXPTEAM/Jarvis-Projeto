@@ -17,22 +17,27 @@ export default function HomeScreen({ onNav, alexaConnected, smartDevices, onTogg
   const [transcript, setTranscript] = useState('');
   const [response,   setResponse]   = useState('');
   const [mems,       setMems]       = useState<Mem[]>([]);
-  const [greeting,   setGreeting]   = useState('');
+  const [greeting,   setGreeting]   = useState(() => {
+    const h = new Date().getHours();
+    return h < 12 ? '☀️ Bom dia' : h < 18 ? '🌤️ Boa tarde' : '🌙 Boa noite';
+  });
   const [tts,        setTts]        = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recRef = useRef<any>(null);
+  const recRef = useRef<SpeechRecognition | null>(null);
   const pendRef = useRef('');
 
   useEffect(() => {
-    const h = new Date().getHours();
-    setGreeting(h < 12 ? '☀️ Bom dia' : h < 18 ? '🌤️ Boa tarde' : '🌙 Boa noite');
     fetch('/api/memories').then(r => r.json()).then((d: Mem[]) => setMems(Array.isArray(d) ? d : [])).catch(() => {});
   }, []);
 
   const speak = useCallback((text: string) => {
     if (!tts || typeof window === 'undefined') return;
     const u = new SpeechSynthesisUtterance(text.replace(/[*#`\[\]>_]/g, '').slice(0, 500));
-    u.lang = 'pt-BR'; u.rate = 1.05; u.pitch = 1;
+    u.lang = 'pt-BR'; u.rate = 1.05; u.pitch = 1.1;
+    // Selecionar voz feminina pt-BR de qualidade
+    const voices = window.speechSynthesis.getVoices();
+    const femalePtBr = voices.find(v => v.lang === 'pt-BR' && /female|mulher|feminina|google|microsoft/i.test(v.name));
+    const anyPtBr = voices.find(v => v.lang === 'pt-BR');
+    u.voice = femalePtBr || anyPtBr || null;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(u);
   }, [tts]);
@@ -58,18 +63,15 @@ export default function HomeScreen({ onNav, alexaConnected, smartDevices, onTogg
   }, [speak]);
 
   const startListen = useCallback(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) { alert('Use Chrome para reconhecimento de voz.'); return; }
-    const rec = new SR(); rec.lang = 'pt-BR'; rec.interimResults = true; rec.continuous = false;
+    const SpeechRecognition = (window as Window & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition || (window as Window & { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
+    if (!SpeechRecognition) { alert('Use Chrome para reconhecimento de voz.'); return; }
+    const rec = new SpeechRecognition(); rec.lang = 'pt-BR'; rec.interimResults = true; rec.continuous = false;
     recRef.current = rec; pendRef.current = '';
     rec.onstart  = () => setListening(true);
     rec.onend    = () => { setListening(false); if (pendRef.current) sendVoice(pendRef.current); };
     rec.onerror  = () => setListening(false);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rec.onresult = (e: any) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const t = Array.from(e.results as any[]).map((r: any) => r[0].transcript).join('');
+    rec.onresult = (e: SpeechRecognitionEvent) => {
+      const t = Array.from(e.results).map((r) => r[0].transcript).join('');
       setTranscript(t);
       if (e.results[e.results.length - 1].isFinal) { pendRef.current = t; rec.stop(); }
     };
@@ -87,7 +89,7 @@ export default function HomeScreen({ onNav, alexaConnected, smartDevices, onTogg
       <div className="safe-top fade-in" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: 8 }}>
         <div>
           <div style={{ fontSize: 13, color: 'var(--dim)', fontWeight: 500 }}>{greeting}</div>
-          <div className="shimmer-text" style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.2 }}>NEXUS AI</div>
+          <div className="shimmer-text" style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.2 }}>Gabi AI</div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
           <button onClick={() => setTts(v => !v)} className="btn btn-icon" style={{ fontSize: 18 }}>
@@ -144,7 +146,7 @@ export default function HomeScreen({ onNav, alexaConnected, smartDevices, onTogg
           )}
           {response && (
             <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--green)', flexShrink: 0, paddingTop: 2 }}>NEXUS</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--green)', flexShrink: 0, paddingTop: 2 }}>Gabi</span>
               <span style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{response}</span>
             </div>
           )}

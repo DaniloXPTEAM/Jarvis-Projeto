@@ -1,4 +1,4 @@
-package com.javis.assistant.ui.screens.notifications
+﻿package com.javis.assistant.ui.screens.notifications
 
 import android.content.Intent
 import android.provider.Settings

@@ -1,4 +1,4 @@
-package com.javis.assistant.utils
+﻿package com.javis.assistant.utils
 
 import android.app.AlarmManager
 import android.content.ContentResolver
@@ -33,7 +33,7 @@ class SystemCommandHandler @Inject constructor(
 
     data class ResolvedContact(val name: String, val phone: String)
 
-    // ─── Contact Lookup ────────────────────────────────────────────────────────
+    // â”€â”€â”€ Contact Lookup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     fun findContacts(query: String): List<ResolvedContact> {
         val results = mutableListOf<ResolvedContact>()
@@ -57,7 +57,7 @@ class SystemCommandHandler @Inject constructor(
         return results.distinctBy { it.name.lowercase() }
     }
 
-    // ─── Call ─────────────────────────────────────────────────────────────────
+    // â”€â”€â”€ Call â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     fun callContact(name: String): CommandResult {
         val contacts = findContacts(name)
@@ -68,7 +68,7 @@ class SystemCommandHandler @Inject constructor(
                 CommandResult(true, "Calling ${contacts[0].name}.")
             }
             else -> {
-                // Multiple matches — return disambiguation message
+                // Multiple matches â€” return disambiguation message
                 val names = contacts.take(4).joinToString(", ") { it.name }
                 CommandResult(false, "I found a few: $names. Which one?", requiresFollowUp = true)
             }
@@ -86,7 +86,7 @@ class SystemCommandHandler @Inject constructor(
         }
     }
 
-    // ─── WhatsApp ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€ WhatsApp â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /**
      * Opens WhatsApp directly to the contact's chat (with optional pre-filled message).
@@ -96,12 +96,12 @@ class SystemCommandHandler @Inject constructor(
         val contacts = findContacts(contactName)
 
         if (contacts.isEmpty()) {
-            // Try opening WhatsApp directly — the user may type the chat name manually
+            // Try opening WhatsApp directly â€” the user may type the chat name manually
             val launchIntent = context.packageManager.getLaunchIntentForPackage("com.whatsapp")
                 ?: return CommandResult(false, "WhatsApp doesn't appear to be installed.")
             launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(launchIntent)
-            return CommandResult(false, "Couldn't find $contactName in your contacts. I've opened WhatsApp — search for them manually.")
+            return CommandResult(false, "Couldn't find $contactName in your contacts. I've opened WhatsApp â€” search for them manually.")
         }
 
         val contact = contacts.first()
@@ -132,7 +132,7 @@ class SystemCommandHandler @Inject constructor(
         }
     }
 
-    // ─── SMS ──────────────────────────────────────────────────────────────────
+    // â”€â”€â”€ SMS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     fun sendSms(contactName: String, message: String): CommandResult {
         val contacts = findContacts(contactName)
@@ -149,7 +149,7 @@ class SystemCommandHandler @Inject constructor(
         }
     }
 
-    // ─── Alarms & Timers ──────────────────────────────────────────────────────
+    // â”€â”€â”€ Alarms & Timers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     fun setAlarm(hour: Int, minute: Int, label: String = "JAVIS Alarm"): CommandResult {
         return try {
@@ -185,7 +185,7 @@ class SystemCommandHandler @Inject constructor(
         }
     }
 
-    // ─── App Search ───────────────────────────────────────────────────────────
+    // â”€â”€â”€ App Search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     fun searchInApp(packageName: String, appLabel: String, query: String): CommandResult {
         return try {
@@ -249,7 +249,7 @@ class SystemCommandHandler @Inject constructor(
         return launchWithUrl("https://www.google.com/search?q=${Uri.encode(query)}")
     }
 
-    // ─── Web Search ───────────────────────────────────────────────────────────
+    // â”€â”€â”€ Web Search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     fun webSearch(query: String): CommandResult {
         return if (launchWithUrl("https://www.google.com/search?q=${Uri.encode(query)}")) {
@@ -259,7 +259,7 @@ class SystemCommandHandler @Inject constructor(
         }
     }
 
-    // ─── Parse JSON action from AI response ──────────────────────────────────
+    // â”€â”€â”€ Parse JSON action from AI response â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     fun parseAndExecute(json: String): CommandResult {
         return try {
@@ -301,7 +301,7 @@ class SystemCommandHandler @Inject constructor(
         }
     }
 
-    // ─── Helpers ──────────────────────────────────────────────────────────────
+    // â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private fun launchWithUrl(url: String): Boolean {
         return try {

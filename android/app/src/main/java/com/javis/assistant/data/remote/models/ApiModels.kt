@@ -1,4 +1,4 @@
-package com.javis.assistant.data.remote.models
+﻿package com.javis.assistant.data.remote.models
 
 import com.google.gson.annotations.SerializedName
 

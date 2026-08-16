@@ -1,4 +1,4 @@
-package com.javis.assistant
+﻿package com.javis.assistant
 
 import android.Manifest
 import android.content.Intent
@@ -127,7 +127,7 @@ private fun NotifAccessDialog(onGrant: () -> Unit, onDismiss: () -> Unit) {
         text = {
             Text(
                 "To read and reply to WhatsApp messages, JAVIS needs Notification Access.\n\n" +
-                "Tap Grant → find JAVIS in the list → toggle it on.",
+                "Tap Grant â†’ find JAVIS in the list â†’ toggle it on.",
                 color = JavisOnSurfaceVariant,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyMedium

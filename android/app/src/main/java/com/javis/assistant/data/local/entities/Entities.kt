@@ -1,4 +1,4 @@
-package com.javis.assistant.data.local.entities
+﻿package com.javis.assistant.data.local.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

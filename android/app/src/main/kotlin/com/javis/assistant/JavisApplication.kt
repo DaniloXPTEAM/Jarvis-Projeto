@@ -1,4 +1,4 @@
-package com.javis.assistant
+﻿package com.javis.assistant
 
 import android.app.Application
 import android.app.NotificationChannel

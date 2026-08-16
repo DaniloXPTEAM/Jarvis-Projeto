@@ -1,4 +1,4 @@
-package com.javis.assistant.voice
+﻿package com.javis.assistant.voice
 
 import android.content.Context
 import android.media.AudioAttributes
@@ -14,9 +14,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * ElevenLabs TTS — high quality AI voice that sounds like ChatGPT's voice.
+ * ElevenLabs TTS â€” high quality AI voice that sounds like ChatGPT's voice.
  * Free tier: 10,000 characters/month at elevenlabs.io
- * Sign up free → Profile → API Key → paste into JAVIS Settings
+ * Sign up free â†’ Profile â†’ API Key â†’ paste into JAVIS Settings
  */
 @Singleton
 class ElevenLabsTtsService @Inject constructor(
@@ -24,13 +24,13 @@ class ElevenLabsTtsService @Inject constructor(
 ) {
     companion object {
         private const val BASE_URL = "https://api.elevenlabs.io/v1/text-to-speech"
-        // Callum — deep British male voice, very Jarvis-like
+        // Callum â€” deep British male voice, very Jarvis-like
         const val VOICE_CALLUM = "N2lVS1w4EtoT3dr4eOWO"
-        // Adam — authoritative American male
+        // Adam â€” authoritative American male
         const val VOICE_ADAM = "pNInz6obpgDQGcFmaJgB"
-        // Antoni — well-rounded male
+        // Antoni â€” well-rounded male
         const val VOICE_ANTONI = "ErXwobaYiN019PkySvjV"
-        // Daniel — deep British
+        // Daniel â€” deep British
         const val VOICE_DANIEL = "onwK4e9ZLuTAKqWW03F9"
 
         val DEFAULT_VOICE = VOICE_DANIEL

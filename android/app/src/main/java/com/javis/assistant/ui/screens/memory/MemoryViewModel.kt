@@ -1,4 +1,4 @@
-package com.javis.assistant.ui.screens.memory
+﻿package com.javis.assistant.ui.screens.memory
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

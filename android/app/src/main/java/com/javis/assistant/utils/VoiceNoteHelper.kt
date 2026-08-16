@@ -1,4 +1,4 @@
-package com.javis.assistant.utils
+﻿package com.javis.assistant.utils
 
 import android.content.Context
 import android.content.Intent
@@ -17,10 +17,10 @@ import javax.inject.Singleton
  * Records a voice note from the microphone and sends it via WhatsApp.
  *
  * Flow:
- * 1. JAVIS says "Recording — speak now"
+ * 1. JAVIS says "Recording â€” speak now"
  * 2. Records the user's voice for up to [maxSeconds]
  * 3. User says "stop" (ChatViewModel stops recording)
- * 4. Audio saved as .m4a → shared to WhatsApp to the target contact
+ * 4. Audio saved as .m4a â†’ shared to WhatsApp to the target contact
  */
 @Singleton
 class VoiceNoteHelper @Inject constructor(

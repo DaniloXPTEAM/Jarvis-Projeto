@@ -90,7 +90,7 @@ export default function VaultScreen() {
           : items.length === 0
           ? <div style={{ textAlign: 'center', padding: 48 }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>📭</div>
-              <div style={{ color: 'var(--dim)', fontSize: 14 }}>Vault vazio — fale com o NEXUS para criar memórias.</div>
+              <div style={{ color: 'var(--dim)', fontSize: 14 }}>Vault vazio — fale com a Gabi para criar memórias.</div>
             </div>
           : <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 20 }}>
               {items.map(m => {

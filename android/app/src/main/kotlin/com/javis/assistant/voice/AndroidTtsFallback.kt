@@ -1,4 +1,4 @@
-package com.javis.assistant.voice
+﻿package com.javis.assistant.voice
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
@@ -24,7 +24,7 @@ class AndroidTtsFallback @Inject constructor(
     private fun initTts() {
         tts = TextToSpeech(context) { status ->
             if (status == TextToSpeech.SUCCESS) {
-                // A Gabi fala em português do Brasil.
+                // A Gabi fala em portuguÃªs do Brasil.
                 val result = tts?.setLanguage(Locale("pt", "BR"))
                 // Tenta selecionar uma voz feminina pt-BR, se o motor de TTS do aparelho oferecer.
                 tts?.voices?.let { voices ->

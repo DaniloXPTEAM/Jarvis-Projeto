@@ -1,4 +1,4 @@
-package com.javis.assistant.ui.screens.notifications
+﻿package com.javis.assistant.ui.screens.notifications
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

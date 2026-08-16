@@ -1,4 +1,4 @@
-package com.javis.assistant.ui.viewmodel
+﻿package com.javis.assistant.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -94,14 +94,14 @@ class SettingsViewModel @Inject constructor(
     fun clearMemory() {
         viewModelScope.launch {
             memoryManager.clearAll()
-            _savedMessage.value = "Memória limpa"
+            _savedMessage.value = "MemÃ³ria limpa"
         }
     }
 
     fun clearHistory() {
         viewModelScope.launch {
             repository.clearHistory()
-            _savedMessage.value = "Histórico de conversas limpo"
+            _savedMessage.value = "HistÃ³rico de conversas limpo"
         }
     }
 

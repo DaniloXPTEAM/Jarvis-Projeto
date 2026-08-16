@@ -1,4 +1,4 @@
-package com.javis.assistant.data.db
+﻿package com.javis.assistant.data.db
 
 import androidx.room.*
 import com.javis.assistant.data.model.Message
