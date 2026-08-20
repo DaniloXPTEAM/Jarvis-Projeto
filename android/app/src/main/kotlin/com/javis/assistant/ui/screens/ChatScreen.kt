@@ -1,4 +1,4 @@
-﻿package com.javis.assistant.ui.screens
+package com.javis.assistant.ui.screens
 
 import android.Manifest
 import androidx.compose.animation.*
@@ -55,7 +55,7 @@ fun ChatScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Header ──────────────────────────────────────────────────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -82,8 +82,8 @@ fun ChatScreen(
                     Column {
                         Text("Gabi", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = CyanAccent)
                         Text(
-                            if (uiState.voiceState.isListening) "Ouvindoâ€¦"
-                            else if (uiState.isLoading) "Pensandoâ€¦"
+                            if (uiState.voiceState.isListening) "Ouvindo…"
+                            else if (uiState.isLoading) "Pensando…"
                             else "Online",
                             style = MaterialTheme.typography.labelSmall,
                             color = if (uiState.voiceState.isListening) CyanAccent else TextSecondary
@@ -97,7 +97,7 @@ fun ChatScreen(
 
             HorizontalDivider(color = CyanAccent.copy(alpha = 0.08f))
 
-            // â”€â”€ Conversation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Conversation ────────────────────────────────────────────
             LazyColumn(
                 state = listState,
                 modifier = Modifier.weight(1f),
@@ -115,7 +115,7 @@ fun ChatScreen(
                 }
             }
 
-            // â”€â”€ Confirmation prompt â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Confirmation prompt ─────────────────────────────────────
             AnimatedVisibility(uiState.pendingCommand != null) {
                 uiState.pendingCommand?.let { cmd ->
                     Row(
@@ -143,7 +143,7 @@ fun ChatScreen(
                 }
             }
 
-            // â”€â”€ Partial text â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Partial text ────────────────────────────────────────────
             AnimatedVisibility(uiState.voiceState.partialText.isNotBlank()) {
                 Box(
                     modifier = Modifier
@@ -161,7 +161,7 @@ fun ChatScreen(
                 }
             }
 
-            // â”€â”€ Error snackbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Error snackbar ───────────────────────────────────────────
             uiState.error?.let { err ->
                 Snackbar(
                     modifier = Modifier.padding(8.dp),
@@ -176,7 +176,7 @@ fun ChatScreen(
                 }
             }
 
-            // â”€â”€ Input bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Input bar ───────────────────────────────────────────────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -189,7 +189,7 @@ fun ChatScreen(
                     value = uiState.inputText,
                     onValueChange = viewModel::updateInput,
                     modifier = Modifier.weight(1f),
-                    placeholder = { Text("Pergunte algo Ã  Gabiâ€¦", color = TextSecondary) },
+                    placeholder = { Text("Pergunte algo à Gabi…", color = TextSecondary) },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                     keyboardActions = KeyboardActions(onSend = { viewModel.sendMessage(uiState.inputText) }),
                     colors = OutlinedTextFieldDefaults.colors(

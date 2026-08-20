@@ -1,4 +1,4 @@
-﻿package com.javis.assistant.voice
+package com.javis.assistant.voice
 
 import android.content.Context
 import android.media.MediaPlayer
@@ -123,20 +123,20 @@ class ElevenLabsTts @Inject constructor(
     companion object {
         private const val TAG = "ElevenLabsTts"
 
-        // ðŸŽ™ï¸ Voz da GABI â€” feminina, brasileira (pt-BR), calorosa e conversacional.
-        // Default: "Roberta â€” For Conversational" (jovem, amigÃ¡vel, natural em pt-BR).
-        // Voice IDs obtidos da Voice Library da ElevenLabs (vozes nativas em portuguÃªs do Brasil).
-        const val DEFAULT_VOICE_ID = "RGymW84CSmfVugnA5tvA" // Roberta â€” conversacional, amigÃ¡vel
+        // 🎙️ Voz da GABI — feminina, brasileira (pt-BR), calorosa e conversacional.
+        // Default: "Roberta — For Conversational" (jovem, amigável, natural em pt-BR).
+        // Voice IDs obtidos da Voice Library da ElevenLabs (vozes nativas em português do Brasil).
+        const val DEFAULT_VOICE_ID = "RGymW84CSmfVugnA5tvA" // Roberta — conversacional, amigável
 
         // Outras vozes femininas nativas pt-BR (troque o DEFAULT se preferir outra):
-        const val VOICE_ROBERTA  = "RGymW84CSmfVugnA5tvA" // Roberta â€” jovem, amigÃ¡vel, conversacional
-        const val VOICE_RAQUEL   = "GDzHdQOi6jjf8zaXhCYD" // Raquel â€” forte, jovem, amigÃ¡vel, conversacional
-        const val VOICE_KEREN    = "33B4UnXyTNbgLmdEDh5P" // Keren â€” doce, vibrante, jovem
-        const val VOICE_CARLA    = "eVXYtPVYB9wDoz9NVTIy" // Carla â€” jovem, animada
-        const val VOICE_ANA_DIAS = "MZxV5lN3cv7hi1376O0m" // Ana Dias â€” levemente grave, envolvente
+        const val VOICE_ROBERTA  = "RGymW84CSmfVugnA5tvA" // Roberta — jovem, amigável, conversacional
+        const val VOICE_RAQUEL   = "GDzHdQOi6jjf8zaXhCYD" // Raquel — forte, jovem, amigável, conversacional
+        const val VOICE_KEREN    = "33B4UnXyTNbgLmdEDh5P" // Keren — doce, vibrante, jovem
+        const val VOICE_CARLA    = "eVXYtPVYB9wDoz9NVTIy" // Carla — jovem, animada
+        const val VOICE_ANA_DIAS = "MZxV5lN3cv7hi1376O0m" // Ana Dias — levemente grave, envolvente
 
-        // âš ï¸ Para usar uma voz da Voice Library via API: acesse
+        // ⚠️ Para usar uma voz da Voice Library via API: acesse
         // elevenlabs.io/app/voice-library, encontre a voz, clique em "Add to VoiceLab"
-        // (grÃ¡tis) e entÃ£o o Voice ID passa a funcionar com a sua chave de API.
+        // (grátis) e então o Voice ID passa a funcionar com a sua chave de API.
     }
 }

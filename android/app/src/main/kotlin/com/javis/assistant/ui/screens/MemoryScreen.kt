@@ -1,4 +1,4 @@
-﻿package com.javis.assistant.ui.screens
+package com.javis.assistant.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -41,7 +41,7 @@ fun MemoryScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("MemÃ³ria", style = MaterialTheme.typography.headlineMedium, color = CyanAccent)
+                Text("Memória", style = MaterialTheme.typography.headlineMedium, color = CyanAccent)
                 TextButton(onClick = viewModel::clearAll) {
                     Text("Limpar tudo", color = ErrorRed)
                 }
@@ -52,8 +52,8 @@ fun MemoryScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.Default.Psychology, null, tint = TextSecondary, modifier = Modifier.size(64.dp))
                         Spacer(Modifier.height(12.dp))
-                        Text("Ainda nÃ£o hÃ¡ memÃ³rias", color = TextSecondary)
-                        Text("A Gabi aprende enquanto vocÃª conversa", color = TextSecondary.copy(0.6f),
+                        Text("Ainda não há memórias", color = TextSecondary)
+                        Text("A Gabi aprende enquanto você conversa", color = TextSecondary.copy(0.6f),
                             style = MaterialTheme.typography.bodySmall)
                     }
                 }

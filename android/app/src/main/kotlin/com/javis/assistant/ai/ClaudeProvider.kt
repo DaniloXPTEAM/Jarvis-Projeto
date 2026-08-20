@@ -1,4 +1,4 @@
-﻿package com.javis.assistant.ai
+package com.javis.assistant.ai
 
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +16,7 @@ import javax.inject.Singleton
 /**
  * Orquestrador Claude (Anthropic).
  *
- * Uso: quando o usuÃ¡rio diz "fale com o Claude e...", "pergunte ao Claude...",
+ * Uso: quando o usuário diz "fale com o Claude e...", "pergunte ao Claude...",
  * a Gabi repassa a pergunta pro Claude e fala a resposta dele.
  *
  * Requer ANTHROPIC_API_KEY (informada na tela de Ajustes). Sem chave, a Gabi
@@ -68,13 +68,13 @@ class ClaudeProvider @Inject constructor() {
 
     companion object {
         private const val TAG = "ClaudeProvider"
-        // Sonnet: bom para raciocÃ­nio/verificaÃ§Ãµes que o usuÃ¡rio pede ao Claude
+        // Sonnet: bom para raciocínio/verificações que o usuário pede ao Claude
         const val MODEL = "claude-3-5-sonnet-20241022"
         const val CLAUDE_SYSTEM =
-            "VocÃª Ã© o Claude, atuando como orquestrador inteligente da Gabi (uma assistente " +
-                "pessoal em portuguÃªs brasileiro). Responda SEMPRE em portuguÃªs brasileiro, de forma " +
-                "clara, direta e acionÃ¡vel. Quando o usuÃ¡rio pedir para verificar viabilidade, criar " +
-                "algo, planejar ou analisar, dÃª um resposta Ãºtil e objetiva, em poucos parÃ¡grafos. " +
-                "Suas palavras serÃ£o lidas em voz alta pela Gabi."
+            "Você é o Claude, atuando como orquestrador inteligente da Gabi (uma assistente " +
+                "pessoal em português brasileiro). Responda SEMPRE em português brasileiro, de forma " +
+                "clara, direta e acionável. Quando o usuário pedir para verificar viabilidade, criar " +
+                "algo, planejar ou analisar, dê um resposta útil e objetiva, em poucos parágrafos. " +
+                "Suas palavras serão lidas em voz alta pela Gabi."
     }
 }

@@ -1,4 +1,4 @@
-﻿package com.javis.assistant.memory
+package com.javis.assistant.memory
 
 import com.javis.assistant.data.db.MemoryDao
 import com.javis.assistant.data.model.Memory
@@ -60,7 +60,7 @@ class MemoryManager @Inject constructor(
 
     /**
      * Extracts learnable facts from a conversation turn.
-     * Simple heuristic â€” production can be enhanced with NLP.
+     * Simple heuristic — production can be enhanced with NLP.
      */
     suspend fun learnFromConversation(userText: String) {
         val lower = userText.lowercase()

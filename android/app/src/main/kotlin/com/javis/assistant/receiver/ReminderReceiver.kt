@@ -1,4 +1,4 @@
-﻿package com.javis.assistant.receiver
+package com.javis.assistant.receiver
 
 import android.app.NotificationManager
 import android.content.BroadcastReceiver
@@ -9,7 +9,7 @@ import com.javis.assistant.JavisApplication
 import com.javis.assistant.R
 import com.javis.assistant.reminder.ReminderScheduler
 
-/** Dispara a notificaÃ§Ã£o (pt-BR) do lembrete quando o alarme toca. */
+/** Dispara a notificação (pt-BR) do lembrete quando o alarme toca. */
 class ReminderReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {

@@ -1,4 +1,4 @@
-﻿package com.javis.assistant.receiver
+package com.javis.assistant.receiver
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -17,7 +17,7 @@ class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED ||
             intent.action == "android.intent.action.QUICKBOOT_POWERON") {
-            Log.d("BootReceiver", "Dispositivo ligado â€” reagendando lembretes da Gabi")
+            Log.d("BootReceiver", "Dispositivo ligado — reagendando lembretes da Gabi")
             // Reagenda os lembretes pendentes (AlarmManager se perde no reboot)
             val pendingResult = goAsync()
             scope.launch {

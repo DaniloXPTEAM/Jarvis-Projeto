@@ -1,4 +1,4 @@
-﻿package com.javis.assistant.ui.screens
+package com.javis.assistant.ui.screens
 
 import android.Manifest
 import android.content.Intent
@@ -45,21 +45,21 @@ fun PermissionsScreen(navController: NavController) {
                 Manifest.permission.RECORD_AUDIO),
             PermDef("Contatos", "Ligar para pessoas pelo nome", Icons.Default.Contacts,
                 Manifest.permission.READ_CONTACTS),
-            PermDef("Telefone", "Fazer ligaÃ§Ãµes para vocÃª", Icons.Default.Phone,
+            PermDef("Telefone", "Fazer ligações para você", Icons.Default.Phone,
                 Manifest.permission.CALL_PHONE),
             PermDef("Armazenamento", "Acessar seus arquivos", Icons.Default.FolderOpen,
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
                     Manifest.permission.READ_MEDIA_IMAGES
                 else Manifest.permission.READ_EXTERNAL_STORAGE
             ),
-            PermDef("NotificaÃ§Ãµes (Android 13+)", "Enviar notificaÃ§Ãµes", Icons.Default.Notifications,
+            PermDef("Notificações (Android 13+)", "Enviar notificações", Icons.Default.Notifications,
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
                     Manifest.permission.POST_NOTIFICATIONS else null
             ),
-            PermDef("Leitor de notificaÃ§Ãµes", "Ler notificaÃ§Ãµes de todos os apps",
+            PermDef("Leitor de notificações", "Ler notificações de todos os apps",
                 Icons.Default.NotificationsActive,
                 null, isSystem = true, systemAction = Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS),
-            PermDef("ServiÃ§o de acessibilidade", "BotÃ£o de atalho global + automaÃ§Ã£o de apps",
+            PermDef("Serviço de acessibilidade", "Botão de atalho global + automação de apps",
                 Icons.Default.Accessibility,
                 null, isSystem = true, systemAction = Settings.ACTION_ACCESSIBILITY_SETTINGS)
         )
@@ -80,7 +80,7 @@ fun PermissionsScreen(navController: NavController) {
             modifier = Modifier.padding(horizontal = 24.dp)
         )
         Text(
-            "Conceda cada permissÃ£o para liberar todos os recursos. VocÃª pode negar qualquer permissÃ£o â€” a Gabi funcionarÃ¡ com recursos limitados.",
+            "Conceda cada permissão para liberar todos os recursos. Você pode negar qualquer permissão — a Gabi funcionará com recursos limitados.",
             style = MaterialTheme.typography.bodySmall,
             color = TextSecondary,
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)

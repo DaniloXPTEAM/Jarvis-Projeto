@@ -1,4 +1,4 @@
-﻿package com.javis.assistant.domain
+package com.javis.assistant.domain
 
 import android.content.Context
 import android.content.Intent
@@ -71,7 +71,7 @@ class JavisRepository @Inject constructor(
             executeCommand(parsed)
         }
 
-        // Skills que produzem a prÃ³pria resposta (clima, Claude, lembrete) â€” pulam o Groq
+        // Skills que produzem a própria resposta (clima, Claude, lembrete) — pulam o Groq
         val skillReply: String? = resolveSkillReply(parsed)
 
         val result: Result<String> = if (skillReply != null) {
@@ -82,7 +82,7 @@ class JavisRepository @Inject constructor(
             val systemPrompt = buildString {
                 append(JavisPersonality.SYSTEM_PROMPT)
                 if (contextSummary.isNotBlank()) {
-                    append("\n\nO que vocÃª sabe sobre este usuÃ¡rio: $contextSummary")
+                    append("\n\nO que você sabe sobre este usuário: $contextSummary")
                 }
             }
 
@@ -120,19 +120,19 @@ class JavisRepository @Inject constructor(
         CommandType.SET_REMINDER -> {
             val triggerAt = parsed.extra.toLongOrNull() ?: return null
             reminderScheduler.schedule(parsed.target, triggerAt)
-            "Pronto! Vou te lembrar de ${parsed.target} Ã s ${formatReminderTime(triggerAt)}."
+            "Pronto! Vou te lembrar de ${parsed.target} às ${formatReminderTime(triggerAt)}."
         }
 
         CommandType.ASK_CLAUDE -> {
             val key = prefs.anthropicApiKey.first()
             if (key.isBlank()) {
-                "Para falar com o Claude, adiciona a Chave da API Anthropic lÃ¡ em Ajustes."
+                "Para falar com o Claude, adiciona a Chave da API Anthropic lá em Ajustes."
             } else {
                 try {
                     claudeProvider.apiKey = key
                     "O Claude respondeu: ${claudeProvider.ask(parsed.target)}"
                 } catch (e: Exception) {
-                    "NÃ£o consegui falar com o Claude agora. Tenta de novo."
+                    "Não consegui falar com o Claude agora. Tenta de novo."
                 }
             }
         }
@@ -145,7 +145,7 @@ class JavisRepository @Inject constructor(
                 shareHelper.shareText(toShare)
                 "Abrindo pra compartilhar."
             } else {
-                "Ainda nÃ£o tenho nada pra compartilhar."
+                "Ainda não tenho nada pra compartilhar."
             }
         }
 
@@ -156,7 +156,7 @@ class JavisRepository @Inject constructor(
                 bluetoothController.routeAudioToBluetooth(am)
                 "Pronto! Bluetooth conectado. O som da Gabi vai sair no seu fone ou caixa agora."
             } else {
-                "NÃ£o consegui ligar o Bluetooth. Abri as configuraÃ§Ãµes pra vocÃª ativar."
+                "Não consegui ligar o Bluetooth. Abri as configurações pra você ativar."
             }
         }
 
@@ -309,10 +309,10 @@ class JavisRepository @Inject constructor(
 
     fun readNotifications(): String {
         val service = JavisNotificationListenerService.getInstance()
-            ?: return "O acesso Ã s notificaÃ§Ãµes nÃ£o estÃ¡ ativado. VÃ¡ nas ConfiguraÃ§Ãµes para permitir."
+            ?: return "O acesso às notificações não está ativado. Vá nas Configurações para permitir."
         val items = service.getFilteredNotifications()
-        if (items.isEmpty()) return "VocÃª nÃ£o tem notificaÃ§Ãµes ativas agora."
-        return items.take(10).joinToString("\n") { "De ${it.appName}: ${it.title} â€” ${it.text}" }
+        if (items.isEmpty()) return "Você não tem notificações ativas agora."
+        return items.take(10).joinToString("\n") { "De ${it.appName}: ${it.title} — ${it.text}" }
     }
 
     suspend fun getGreeting(): String {
@@ -320,14 +320,14 @@ class JavisRepository @Inject constructor(
         val userName = memoryManager.getUserName()
         val name = if (userName != null) ", $userName" else ""
         return when (hour) {
-            in 5..11 -> "Bom dia$name. Aqui Ã© a Gabi. Como posso ajudar?"
-            in 12..16 -> "Boa tarde$name. A Gabi estÃ¡ pronta. O que vocÃª precisa?"
-            in 17..20 -> "Boa noite$name. A Gabi Ã  disposiÃ§Ã£o."
-            else -> "Oi$name, jÃ¡ Ã© tarde. Mas a Gabi tÃ¡ aqui â€” o que houve?"
+            in 5..11 -> "Bom dia$name. Aqui é a Gabi. Como posso ajudar?"
+            in 12..16 -> "Boa tarde$name. A Gabi está pronta. O que você precisa?"
+            in 17..20 -> "Boa noite$name. A Gabi à disposição."
+            else -> "Oi$name, já é tarde. Mas a Gabi tá aqui — o que houve?"
         }
     }
 
-    /** Mostra a saudaÃ§Ã£o da Gabi como mensagem da assistente, sem chamar a IA. */
+    /** Mostra a saudação da Gabi como mensagem da assistente, sem chamar a IA. */
     suspend fun greet(sessionId: String) {
         val greeting = getGreeting()
         messageDao.insert(
@@ -347,10 +347,10 @@ class JavisRepository @Inject constructor(
             cal.get(Calendar.DAY_OF_YEAR) == tomorrowCal.get(Calendar.DAY_OF_YEAR)
         val day = when {
             today -> "hoje"
-            isTomorrow -> "amanhÃ£"
+            isTomorrow -> "amanhã"
             else -> SimpleDateFormat("dd/MM", Locale("pt", "BR")).format(Date(millis))
         }
-        return "$day Ã s $hm"
+        return "$day às $hm"
     }
 
     suspend fun clearHistory() = messageDao.deleteAll()

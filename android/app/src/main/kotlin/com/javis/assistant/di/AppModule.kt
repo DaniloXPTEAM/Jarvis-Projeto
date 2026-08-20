@@ -1,4 +1,4 @@
-﻿package com.javis.assistant.di
+package com.javis.assistant.di
 
 import android.content.Context
 import androidx.room.Room
@@ -16,7 +16,7 @@ import javax.inject.Singleton
 
 /**
  * Provides only what Hilt cannot construct automatically.
- * Classes annotated with @Inject constructor are handled by Hilt directly â€”
+ * Classes annotated with @Inject constructor are handled by Hilt directly —
  * do NOT add @Provides for those or Hilt will throw a duplicate binding error.
  */
 @Module

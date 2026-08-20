@@ -1,4 +1,4 @@
-﻿package com.javis.assistant.bluetooth
+package com.javis.assistant.bluetooth
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
@@ -20,8 +20,8 @@ import javax.inject.Singleton
  *  - usar o microfone de um fone Bluetooth pra falar com ela (hands-free);
  *  - listar dispositivos pareados.
  *
- * Obs.: o microfone do Echo (Alexa) NÃƒO Ã© acessÃ­vel por Bluetooth â€” o Echo sÃ³ Ã©
- * alto-falante BT; o Ã¡udio do mic dele vai pra nuvem da Amazon. Para voz via
+ * Obs.: o microfone do Echo (Alexa) NÃO é acessível por Bluetooth — o Echo só é
+ * alto-falante BT; o áudio do mic dele vai pra nuvem da Amazon. Para voz via
  * Alexa, usa-se a Skill/cookie (lado do servidor).
  */
 @Singleton
@@ -37,7 +37,7 @@ class BluetoothController @Inject constructor(
 
     /**
      * Liga o Bluetooth. Em Android <12 liga programaticamente; em 12+ a Google
-     * proÃ­be ligar pelo app, entÃ£o abre as ConfiguraÃ§Ãµes p/ o usuÃ¡rio ativar.
+     * proíbe ligar pelo app, então abre as Configurações p/ o usuário ativar.
      */
     fun requestEnable(): Boolean {
         val a = adapter ?: return false
@@ -56,7 +56,7 @@ class BluetoothController @Inject constructor(
         }
     }
 
-    /** Nomes dos dispositivos jÃ¡ pareados (precisa de BLUETOOTH_CONNECT em 12+). */
+    /** Nomes dos dispositivos já pareados (precisa de BLUETOOTH_CONNECT em 12+). */
     fun bondedDeviceNames(): List<String> {
         val a = adapter ?: return emptyList()
         return runCatching { a.bondedDevices?.map { it.name ?: it.address } ?: emptyList() }
@@ -65,7 +65,7 @@ class BluetoothController @Inject constructor(
     }
 
     /**
-     * Roteia o Ã¡udio (TTS da Gabi e microfone do STT) pro fone/caixa Bluetooth
+     * Roteia o áudio (TTS da Gabi e microfone do STT) pro fone/caixa Bluetooth
      * conectado via perfil SCO (hands-free).
      */
     fun routeAudioToBluetooth(audioManager: AudioManager): Boolean {

@@ -1,4 +1,4 @@
-﻿package com.javis.assistant.voice
+package com.javis.assistant.voice
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
@@ -18,15 +18,15 @@ class AndroidTtsFallback @Inject constructor(
     private var tts: TextToSpeech? = null
     private var isReady = false
     var speechRate: Float = 1.0f
-    var pitch: Float = 1.05f   // leve realce; a seleÃ§Ã£o de voz jÃ¡ resolve o timbre feminino
+    var pitch: Float = 1.05f   // leve realce; a seleção de voz já resolve o timbre feminino
 
     init { initTts() }
 
     /**
      * O motor "Google Text-to-Speech" (com.google.android.tts) traz vozes neurais de
-     * qualidade bem superior Ã s de outros fabricantes (Samsung, etc.), que costumam soar
-     * robÃ³ticas. Se o Google TTS estiver instalado, usamos ele explicitamente em vez do
-     * motor padrÃ£o do sistema (que pode ser outro).
+     * qualidade bem superior às de outros fabricantes (Samsung, etc.), que costumam soar
+     * robóticas. Se o Google TTS estiver instalado, usamos ele explicitamente em vez do
+     * motor padrão do sistema (que pode ser outro).
      */
     private fun preferredEngine(): String? = try {
         context.packageManager.getPackageInfo(GOOGLE_TTS_PACKAGE, 0)
@@ -39,7 +39,7 @@ class AndroidTtsFallback @Inject constructor(
         val engine = preferredEngine()
         val onInit = TextToSpeech.OnInitListener { status ->
             if (status == TextToSpeech.SUCCESS) {
-                // A Gabi fala em portuguÃªs do Brasil.
+                // A Gabi fala em português do Brasil.
                 val result = tts?.setLanguage(Locale("pt", "BR"))
                 selectBestVoice()
                 tts?.setSpeechRate(speechRate)
@@ -52,9 +52,9 @@ class AndroidTtsFallback @Inject constructor(
     }
 
     /**
-     * Escolhe a melhor voz pt-BR disponÃ­vel no motor, priorizando qualidade
-     * (Voice.quality: VERY_HIGH > HIGH > NORMAL > LOW > VERY_LOW) â€” Ã© essa qualidade,
-     * nÃ£o o pitch, que faz a diferenÃ§a entre uma voz natural e uma robÃ³tica. Entre vozes
+     * Escolhe a melhor voz pt-BR disponível no motor, priorizando qualidade
+     * (Voice.quality: VERY_HIGH > HIGH > NORMAL > LOW > VERY_LOW) — é essa qualidade,
+     * não o pitch, que faz a diferença entre uma voz natural e uma robótica. Entre vozes
      * empatadas em qualidade, prioriza nomes que sugerem timbre feminino.
      */
     private fun selectBestVoice() {

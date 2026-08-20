@@ -114,15 +114,59 @@ Resolvido:
 5. `data/` (e `*.db`/`*.db-journal`/`*.db-wal`/`*.db-shm`) adicionados ao
    `.gitignore` — banco local não deve ir pro git.
 
-Pendente (não é mais bloqueio, mas ainda não commitado em `git`):
-- `.claude/settings.json`, `src/components/screens/ChatScreen.tsx` e
-  `src/components/screens/HomeScreen.tsx` estão modificados no working tree
-  (as correções acima) mas ainda não commitados — decidir quando commitar.
-
 Bloqueios que continuam (fora do escopo da Etapa 1):
 6. **Segurança (Android)**: chaves de API salvas em DataStore sem criptografia
    (`AUDITORIA.md` item 30) — deveria usar `EncryptedSharedPreferences`/
    `security-crypto`. Fica para a Etapa 3.
+
+## Android nunca compilava — descoberto e corrigido em 20/08/2026 (noite)
+
+Ao validar a correção de voz (abaixo), percebi que havia SDK Android já instalado
+nesta máquina (`ANDROID_HOME=C:\Users\Dannilo\AppData\Local\Android\Sdk`,
+platform 34, build-tools 34.0.0, `android/local.properties` já aponta pra lá) e
+rodei `./gradlew :app:compileDebugKotlin` pela primeira vez. **O app Android
+nunca tinha compilado desde o merge malfeito de 16/08** — ninguém tinha
+validado isso porque não havia SDK disponível até agora. Achado grave, corrigido:
+
+1. **BOM UTF-8 no `android/gradle/libs.versions.toml`** quebrava o parser TOML
+   do Gradle logo de cara. Removido (rescrito sem BOM).
+2. **6 arquivos com pedaços inteiros de código faltando** (não só linhas soltas):
+   `JavisBottomBar.kt`, `HomeScreen.kt`, `ChatViewModel.kt` (em
+   `ui/viewmodel/`), `JavisSpeechRecognizer.kt`, `JavisVoiceService.kt`,
+   `WeatherAgent.kt`. Causa: o merge de 16/08 deletou blocos inteiros (assinatura
+   de função/classe) e deixou um resto de marcador de conflito colado no meio do
+   código (ex.: `... {63378f4 (chore: finish Gabi setup)` literalmente dentro de
+   uma linha Kotlin) — sem `<<<<<<<` visível, por isso passou despercebido antes.
+   **Corrigido restaurando os 6 arquivos da versão íntegra pré-rebase**
+   (`git checkout 63378f4 -- <arquivo>`); os 2 commits remotos que tinham tocado
+   `HomeScreen.kt` (259cf14, 128b07c) só mexiam num import não utilizado, nada
+   se perdeu.
+3. **18 arquivos com texto em português corrompido por dupla-codificação UTF-8**
+   (ex.: "amigável" virou "amigÃ¡vel", emojis viraram lixo) — bug antigo,
+   independente do merge (já estava assim desde o commit que introduziu cada
+   arquivo). Corrigido com um script que detecta trechos re-codificáveis em
+   Windows-1252 e os decodifica de volta como UTF-8 (233 trechos corrigidos ao
+   todo). Lista completa: `AiProvider.kt`, `ClaudeProvider.kt`,
+   `CommandParser.kt`, `BluetoothController.kt`, `AppModule.kt`,
+   `JavisRepository.kt`, `MemoryManager.kt`, `BootReceiver.kt`,
+   `ReminderReceiver.kt`, `ReminderScheduler.kt`, `ChatScreen.kt`,
+   `MemoryScreen.kt`, `NotificationsScreen.kt`, `PermissionsScreen.kt`,
+   `SettingsScreen.kt`, `SettingsViewModel.kt`, `AndroidTtsFallback.kt`,
+   `ElevenLabsTts.kt`.
+   ⚠️ **A pasta legada `android/app/src/main/java/` (não compilada) tem os
+   mesmos problemas de encoding em ~10 arquivos e não foi corrigida** — baixa
+   prioridade por não afetar o app real, mas repare se algum dia reaproveitar
+   código de lá.
+4. Resultado: `./gradlew :app:compileDebugKotlin` agora dá
+   **`BUILD SUCCESSFUL`** — primeira vez que isso acontece desde 16/08.
+
+Comando pra rodar localmente (JDK 17 precisa ser setado explicitamente, o `java`
+do PATH aqui é a versão 8):
+```
+cd android
+$env:JAVA_HOME = "C:\Users\Dannilo\AppData\Local\jdk17\jdk-17.0.20+8"
+.\gradlew.bat :app:compileDebugKotlin
+```
 
 ## Voz do Android (TTS) — feita fora da sequência das 3 etapas
 
