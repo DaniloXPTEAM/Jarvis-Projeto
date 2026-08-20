@@ -81,9 +81,9 @@ export default function ChatScreen({ onListeningChange }: { onListeningChange: (
   }, [input, sending, msgs, speak]);
 
   const startListen = useCallback(() => {
-    const SpeechRecognition = (window as Window & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition || (window as Window & { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
-    if (!SpeechRecognition) { alert('Use Chrome para voz.'); return; }
-    const rec = new SpeechRecognition(); rec.lang = 'pt-BR'; rec.interimResults = true; rec.continuous = false;
+    const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognitionCtor) { alert('Use Chrome para voz.'); return; }
+    const rec = new SpeechRecognitionCtor(); rec.lang = 'pt-BR'; rec.interimResults = true; rec.continuous = false;
     recRef.current = rec; pendRef.current = '';
     rec.onstart  = () => { setListen(true); onListeningChange(true); };
     rec.onend    = () => { setListen(false); onListeningChange(false); if (pendRef.current) { send(pendRef.current); pendRef.current = ''; } };

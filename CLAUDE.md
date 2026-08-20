@@ -89,26 +89,40 @@ nunca foi validado por mim — sem SDK disponível nesta máquina).
   — decisão pendente, não acidental: afeta ~120 arquivos Kotlin, baixo risco mas
   trabalho grande, adiado para depois do app web estar estável.
 
-## Estado atual / bloqueios conhecidos (20/08/2026, fim do dia)
+## Estado atual / bloqueios conhecidos (atualizado 20/08/2026, noite — Etapa 1 concluída)
 
-1. **App não roda**: falta a pasta `data/` para o arquivo SQLite. `src/db/index.ts`
-   aponta para `./data/app.db`, e `better-sqlite3` não cria diretórios pai
-   sozinho — qualquer rota que importe `db` quebra com `ENOENT`.
-2. **`npm run typecheck` falha com 8 erros**, todos por `SpeechRecognition` /
-   `SpeechRecognitionEvent` não declarados (API Web Speech não está nos tipos do
-   projeto). Arquivos: `src/components/screens/ChatScreen.tsx`,
-   `src/components/screens/HomeScreen.tsx`. `npm run build` também falha por
-   causa disso.
-3. **Git com rebase travado**: esta pasta herdou (via cópia) um
-   `git pull --rebase origin main` iniciado em 16/08 e nunca concluído — o índice
-   do git mostra ~30 arquivos como "unmerged", mas o conteúdo em disco já parece
-   resolvido (sem marcadores `<<<<<<<` reais; `NexusApp.tsx` já foi removido a
-   favor de `GabiApp.tsx`). Provavelmente resolve com
-   `git add -A && git rebase --continue` após revisão — ou `git rebase --abort`
-   se preferir recomeçar do commit local.
-4. **Segurança (Android)**: chaves de API salvas em DataStore sem criptografia
+**Etapa 1 concluída e validada**: `npm run build` passa de ponta a ponta
+(`✓ Compiled successfully`, typecheck limpo, 9 páginas/rotas geradas,
+`data/app.db` criado de fato durante o build). Git limpo, sem rebase pendente.
+
+Resolvido:
+1. ~~App não rodava por falta da pasta `data/`~~ — pasta criada, `better-sqlite3`
+   já grava normalmente em `./data/app.db` (confirmado: arquivo gerado no build).
+2. ~~8 erros de TypeScript (`SpeechRecognition`)~~ — criado
+   `src/types/speech-recognition.d.ts` com os tipos ambientes da Web Speech API
+   (`SpeechRecognition`, `SpeechRecognitionEvent`, etc. + augmentação de
+   `Window`). Também renomeada a variável local que sombreava o tipo global
+   (`SpeechRecognitionCtor` em vez de `SpeechRecognition`) em
+   `ChatScreen.tsx`/`HomeScreen.tsx`.
+3. ~~Git com rebase travado~~ — resolvido com `git add -A` +
+   `git -c core.editor=true rebase --continue` (evita abrir editor interativo).
+   Rebase concluído em um passo só (era o último da fila). Commit final:
+   `chore: finish Gabi setup` (hash `93a9c8b`), branch `main` limpa.
+4. ~~Strings "JARVIS" residuais~~ — trocadas por "Gabi" em
+   `src/app/api/alexa/route.ts` (User-Agent) e `src/app/api/health/route.ts`
+   (campo `service`).
+5. `data/` (e `*.db`/`*.db-journal`/`*.db-wal`/`*.db-shm`) adicionados ao
+   `.gitignore` — banco local não deve ir pro git.
+
+Pendente (não é mais bloqueio, mas ainda não commitado em `git`):
+- `.claude/settings.json`, `src/components/screens/ChatScreen.tsx` e
+  `src/components/screens/HomeScreen.tsx` estão modificados no working tree
+  (as correções acima) mas ainda não commitados — decidir quando commitar.
+
+Bloqueios que continuam (fora do escopo da Etapa 1):
+6. **Segurança (Android)**: chaves de API salvas em DataStore sem criptografia
    (`AUDITORIA.md` item 30) — deveria usar `EncryptedSharedPreferences`/
-   `security-crypto`.
+   `security-crypto`. Fica para a Etapa 3.
 
 ## Plano em 3 etapas (fazendo uma por vez)
 
@@ -133,5 +147,10 @@ nunca foi validado por mim — sem SDK disponível nesta máquina).
   fim dessa sessão pelos motivos 1 e 2 listados acima.
 - **20/08/2026 noite**: pasta `Projeto Gabi` criada como cópia integral da pasta
   original, para servir de local de trabalho daqui pra frente. Este CLAUDE.md
-  criado. Nenhum dos bloqueios acima foi corrigido ainda — próxima sessão deve
-  começar pela Etapa 1.
+  criado. Em seguida, **Etapa 1 executada e validada**: pasta `data/` criada,
+  tipos de `SpeechRecognition` declarados, rebase do git resolvido, strings
+  "JARVIS" removidas. `npm run build` passa limpo. Também corrigido: o
+  `.claude/settings.json` da raiz `Jarvis Projeto` não tinha `Projeto Gabi` em
+  `additionalDirectories`, causando prompts de permissão repetidos — adicionado
+  lá e no `.claude/settings.json` desta pasta. Próxima sessão: decidir sobre
+  commitar as mudanças pendentes e começar a Etapa 2.
