@@ -1,4 +1,4 @@
-﻿package com.javis.assistant.skills
+package com.javis.assistant.skills
 
 import android.util.Log
 import com.google.gson.annotations.SerializedName
@@ -13,8 +13,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Agente de Clima â€” Open-Meteo (grÃ¡tis, sem chave de API).
- * Tudo em pt-BR. Local padrÃ£o: Fortaleza/CE.
+ * Agente de Clima — Open-Meteo (grátis, sem chave de API).
+ * Tudo em pt-BR. Local padrão: Fortaleza/CE.
  */
 interface OpenMeteoApi {
     @GET("forecast")
@@ -41,7 +41,7 @@ data class CurrentWeather(
 @Singleton
 class WeatherAgent @Inject constructor() {
 
-    // PadrÃ£o: Fortaleza/CE (local do usuÃ¡rio)
+    // Padrão: Fortaleza/CE (local do usuário)
     private val defaultLat = -3.7319
     private val defaultLon = -38.5267
     private val defaultName = "Fortaleza"
@@ -60,30 +60,30 @@ class WeatherAgent @Inject constructor() {
             .create(OpenMeteoApi::class.java)
     }
 
-    /** cidades brasileiras comuns â€” chave sem acento/minÃºscula */
+    /** cidades brasileiras comuns — chave sem acento/minúscula */
     private val cities = mapOf(
         "fortaleza" to Triple(-3.7319, -38.5267, "Fortaleza"),
-        "sao paulo" to Triple(-23.5505, -46.6333, "SÃ£o Paulo"),
+        "sao paulo" to Triple(-23.5505, -46.6333, "São Paulo"),
         "rio de janeiro" to Triple(-22.9068, -43.1729, "Rio de Janeiro"),
         "rio" to Triple(-22.9068, -43.1729, "Rio de Janeiro"),
-        "brasilia" to Triple(-15.7939, -47.8828, "BrasÃ­lia"),
+        "brasilia" to Triple(-15.7939, -47.8828, "Brasília"),
         "salvador" to Triple(-12.9714, -38.5014, "Salvador"),
         "recife" to Triple(-8.0476, -34.8770, "Recife"),
         "belo horizonte" to Triple(-19.9167, -43.9345, "Belo Horizonte"),
         "curitiba" to Triple(-25.4284, -49.2733, "Curitiba"),
         "porto alegre" to Triple(-30.0346, -51.2177, "Porto Alegre"),
         "manaus" to Triple(-3.1190, -60.0217, "Manaus"),
-        "belem" to Triple(-1.4558, -48.4902, "BelÃ©m"),
-        "goiania" to Triple(-16.6869, -49.2648, "GoiÃ¢nia"),
+        "belem" to Triple(-1.4558, -48.4902, "Belém"),
+        "goiania" to Triple(-16.6869, -49.2648, "Goiânia"),
         "natal" to Triple(-5.7945, -35.2110, "Natal"),
-        "maceio" to Triple(-9.6498, -35.7089, "MaceiÃ³"),
-        "joao pessoa" to Triple(-7.1195, -34.8450, "JoÃ£o Pessoa"),
+        "maceio" to Triple(-9.6498, -35.7089, "Maceió"),
+        "joao pessoa" to Triple(-7.1195, -34.8450, "João Pessoa"),
         "teresina" to Triple(-5.0892, -42.8019, "Teresina"),
         "aracaju" to Triple(-10.9472, -37.0731, "Aracaju"),
         "campinas" to Triple(-22.9099, -47.0626, "Campinas"),
-        "vitoria" to Triple(-20.3155, -40.3128, "VitÃ³ria"),
-        "ceara" to Triple(-5.4984, -39.3206, "CearÃ¡"),
-        "sao goncalo" to Triple(-7.2332, -34.9662, "SÃ£o GonÃ§alo do Amarante")
+        "vitoria" to Triple(-20.3155, -40.3128, "Vitória"),
+        "ceara" to Triple(-5.4984, -39.3206, "Ceará"),
+        "sao goncalo" to Triple(-7.2332, -34.9662, "São Gonçalo do Amarante")
     )
 
     private fun normalize(s: String): String =
@@ -93,7 +93,7 @@ class WeatherAgent @Inject constructor() {
     private fun resolveCity(query: String?): Triple<Double, Double, String> {
         if (query.isNullOrBlank()) return Triple(defaultLat, defaultLon, defaultName)
         val q = normalize(query)
-        // "clima em sao paulo" â†’ pega o que vem depois de em/de/para
+        // "clima em sao paulo" → pega o que vem depois de em/de/para
         val cleaned = q.replace(Regex(".*(em|de|para|do|da)\\s+"), "").trim()
         cities.entries.firstOrNull { cleaned.contains(it.key) }?.let { return it.value }
         cities.entries.firstOrNull { q.contains(it.key) }?.let { return it.value }
@@ -104,28 +104,28 @@ class WeatherAgent @Inject constructor() {
         val (lat, lon, name) = resolveCity(cityQuery)
         return try {
             val resp = api.getForecast(lat, lon)
-            if (!resp.isSuccessful) return "NÃ£o consegui pegar o clima agora. Tenta daqui a pouco."
+            if (!resp.isSuccessful) return "Não consegui pegar o clima agora. Tenta daqui a pouco."
             val c = resp.body()?.current ?: return "Sem dados de clima no momento."
             val temp = c.temperature.toInt()
             val sens = c.feelsLike.toInt()
             val desc = codeToText(c.code)
             val feel = when {
-                temp >= 35 -> "TÃ¡ bem quente, hein! Bebe bastante Ã¡gua."
-                temp >= 28 -> "EstÃ¡ quente."
-                temp >= 20 -> "Clima agradÃ¡vel."
-                temp >= 12 -> "TÃ¡ fresquinho."
-                else -> "TÃ¡ frio, pega um casaco!"
+                temp >= 35 -> "Tá bem quente, hein! Bebe bastante água."
+                temp >= 28 -> "Está quente."
+                temp >= 20 -> "Clima agradável."
+                temp >= 12 -> "Tá fresquinho."
+                else -> "Tá frio, pega um casaco!"
             }
-            "Agora em $name: $tempÂ°C, $desc. SensaÃ§Ã£o tÃ©rmica de $sensÂ°C. Umidade de ${c.humidity}%" +
+            "Agora em $name: $temp°C, $desc. Sensação térmica de $sens°C. Umidade de ${c.humidity}%" +
                 " e vento a ${c.windSpeed.toInt()} km/h. $feel"
         } catch (e: Exception) {
             Log.e("WeatherAgent", "erro clima: ${e.message}")
-            "NÃ£o consegui acessar o clima. Verifica sua conexÃ£o com a internet."
+            "Não consegui acessar o clima. Verifica sua conexão com a internet."
         }
     }
 
     private fun codeToText(code: Int): String = when (code) {
-        0 -> "cÃ©u limpo"
+        0 -> "céu limpo"
         1 -> "quase sem nuvens"
         2 -> "parcialmente nublado"
         3 -> "nublado"
@@ -138,13 +138,13 @@ class WeatherAgent @Inject constructor() {
         66, 67 -> "chuva congelante"
         71, 73 -> "neve fraca"
         75 -> "neve"
-        77 -> "grÃ£os de neve"
+        77 -> "grãos de neve"
         80 -> "pancadas de chuva"
         81 -> "pancadas de chuva"
         82 -> "pancadas fortes de chuva"
         85, 86 -> "pancadas de neve"
         95 -> "tempestade"
         96, 99 -> "tempestade com granizo"
-        else -> "tempo variÃ¡vel"
+        else -> "tempo variável"
     }
 }

@@ -6,6 +6,8 @@
       "Write",
       "Glob",
       "Grep",
+      "Bash",
+      "PowerShell",
       "Bash(npm:*)",
       "Bash(npx:*)",
       "Bash(node:*)",

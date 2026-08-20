@@ -1,4 +1,4 @@
-﻿package com.javis.assistant.ui.viewmodel
+package com.javis.assistant.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -88,7 +88,7 @@ class ChatViewModel @Inject constructor(
 
     private fun sendGreeting() {
         viewModelScope.launch {
-            repository.greet(sessionId)63378f4 (chore: finish Gabi setup)
+            repository.greet(sessionId)
         }
     }
 

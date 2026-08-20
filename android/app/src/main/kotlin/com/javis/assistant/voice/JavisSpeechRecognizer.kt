@@ -1,4 +1,4 @@
-﻿package com.javis.assistant.voice
+package com.javis.assistant.voice
 
 import android.Manifest
 import android.content.Context
@@ -6,7 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
-import android.os.Looper63378f4 (chore: finish Gabi setup)
+import android.os.Looper
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
@@ -14,7 +14,7 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow63378f4 (chore: finish Gabi setup)
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,11 +26,28 @@ sealed class SpeechEvent {
     object Ended : SpeechEvent()
 }
 
+/**
+ * Reconhecimento de voz da Gabi.
+ *
+ * As causas mais comuns do "client error" (ERROR_CLIENT) do Android são tratadas aqui:
+ *  - chamar startListening sem a permissão RECORD_AUDIO concedida;
+ *  - chamar startListening de uma thread que não seja a main;
+ *  - destruir e recriar o SpeechRecognizer a cada chamada sem dar tempo do serviço
+ *    antigo ser liberado (resulta em "recognizer busy" / client error);
+ *  - chamar startListening enquanto o serviço ainda está ativo.
+ *
+ * Estratégia: reutilizar UMA instância, operar sempre na main thread e, em erro
+ * transiente (client/busy), destruir e recriar após um atraso antes de tentar de novo.
+ */
+@Singleton
+class JavisSpeechRecognizer @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private var recognizer: SpeechRecognizer? = null
     private var restartRunnable: Runnable? = null
-    private var transientAttempts = 063378f4 (chore: finish Gabi setup)
+    private var transientAttempts = 0
 
     private val _events = MutableStateFlow<SpeechEvent?>(null)
     val events: StateFlow<SpeechEvent?> = _events
@@ -196,7 +213,7 @@ sealed class SpeechEvent {
         SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED -> "O idioma português não é suportado neste aparelho."
         SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE -> "O pacote de idioma pt-BR não está instalado no aparelho."
         SpeechRecognizer.ERROR_TOO_MANY_REQUESTS -> "Muitas solicitações. Espere um pouco e tente de novo."
-        else -> "Erro ao reconhecer a fala (código $error)."63378f4 (chore: finish Gabi setup)
+        else -> "Erro ao reconhecer a fala (código $error)."
     }
 
     companion object {

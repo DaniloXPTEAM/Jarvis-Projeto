@@ -1,5 +1,4 @@
-﻿package com.javis.assistant.ui.screens
-
+package com.javis.assistant.ui.screens
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -18,7 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawScope63378f4 (chore: finish Gabi setup)
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,6 +25,52 @@ import androidx.navigation.NavController
 import com.javis.assistant.ui.components.JavisBottomBar
 import com.javis.assistant.ui.navigation.Screen
 import com.javis.assistant.ui.theme.*
+import kotlinx.coroutines.isActive
+import kotlin.math.PI
+import kotlin.math.acos
+import kotlin.math.cos
+import kotlin.math.max
+import kotlin.math.sin
+import kotlin.math.sqrt
+import java.util.Calendar
+
+@Composable
+fun HomeScreen(navController: NavController) {
+    val hour = remember { Calendar.getInstance().get(Calendar.HOUR_OF_DAY) }
+    val greeting = when (hour) {
+        in 5..11 -> "Bom dia"
+        in 12..17 -> "Boa tarde"
+        else -> "Boa noite"
+    }
+    Scaffold(bottomBar = { JavisBottomBar(navController) }, containerColor = DarkBg) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween) {
+            Column(modifier = Modifier.fillMaxWidth().padding(top = 24.dp), horizontalAlignment = Alignment.Start) {
+                Text(greeting, color = TextSecondary, fontSize = 14.sp)
+                Text("Gabi", color = OrangeAccent, fontSize = 32.sp, fontWeight = FontWeight.Bold)
+            }
+            GabiOrb(sizeDp = 220, modifier = Modifier.clickable { navController.navigate(Screen.Chat.route) })
+            Text("Toque na Gabi para conversar", color = TextSecondary, fontSize = 13.sp)
+            Row(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                QuickCard("Clima", "Como está?", Icons.Default.WbSunny) { navController.navigate(Screen.Chat.route) }
+                QuickCard("Memória", "Lembretes", Icons.Default.Psychology) { navController.navigate(Screen.Memory.route) }
+                QuickCard("Avisos", "Notificações", Icons.Default.Notifications) { navController.navigate(Screen.Notifications.route) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RowScope.QuickCard(title: String, subtitle: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
+    Card(modifier = Modifier.weight(1f).height(92.dp).clickable(onClick = onClick), colors = CardDefaults.cardColors(containerColor = SurfaceDark), shape = RoundedCornerShape(16.dp)) {
+        Column(modifier = Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.SpaceBetween) {
+            Icon(icon, null, tint = OrangeAccent, modifier = Modifier.size(22.dp))
+            Column { Text(title, color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold); Text(subtitle, color = TextSecondary, fontSize = 10.sp) }
+        }
+    }
+}
+
+@Composable
+fun GabiOrb(modifier: Modifier = Modifier, sizeDp: Int = 220) {
     val points = remember { buildOrbPoints(ORB_POINTS) }
     val edges  = remember(points) { buildOrbEdges(points, ORB_EDGE_THRESHOLD) }
 
@@ -162,4 +207,4 @@ private fun DrawScope.drawParticleOrb(
         center = Offset(cx, cy),
         radius = R * 0.55f
     )
-}63378f4 (chore: finish Gabi setup)
+}
