@@ -124,6 +124,39 @@ Bloqueios que continuam (fora do escopo da Etapa 1):
    (`AUDITORIA.md` item 30) — deveria usar `EncryptedSharedPreferences`/
    `security-crypto`. Fica para a Etapa 3.
 
+## Voz do Android (TTS) — feita fora da sequência das 3 etapas
+
+Motivado por reprovação de teste real do usuário ("voz robótica e arrastada").
+Arquivos tocados: `android/app/src/main/kotlin/com/javis/assistant/voice/AndroidTtsFallback.kt`,
+`android/app/src/main/kotlin/com/javis/assistant/storage/JavisPreferences.kt`,
+`android/app/src/main/AndroidManifest.xml`.
+
+- **Diagnóstico**: por padrão (`useElevenLabs = false`), 100% dos usuários que não
+  configuram a própria chave do ElevenLabs usam `AndroidTtsFallback`, que só
+  escolhia a primeira voz pt-BR cujo nome batesse com "female"/"pt-br-x" —
+  ignorando a qualidade da voz (`Voice.quality`) e o motor de TTS do aparelho.
+  Motores de fabricante (Samsung etc.) tendem a soar robóticos/arrastados; o
+  motor "Google Text-to-Speech" (`com.google.android.tts`) tem vozes neurais bem
+  melhores quando instalado.
+- **Fix**: `AndroidTtsFallback` agora (1) prefere explicitamente o motor Google
+  TTS se instalado (checagem via `PackageManager.getPackageInfo`, exige
+  `<queries><package android:name="com.google.android.tts"/></queries>` no
+  manifest por causa da visibilidade de pacotes do Android 11+/API 30+, já
+  adicionado); (2) ordena as vozes pt-BR disponíveis por `Voice.quality`
+  (VERY_HIGH > HIGH > NORMAL > LOW > VERY_LOW) em vez de pegar a primeira que
+  bate no nome — isso é o que realmente evita robotização; nome "female"/
+  "pt-br-x" vira só critério de desempate. Pitch artificial reduzido de 1.15
+  para 1.05 (não precisa mais forçar tom agudo pra parecer feminina, a seleção
+  de voz já resolve isso — mudado tanto na classe quanto no default de
+  `JavisPreferences.ttsPitch`, que é o valor que de fato vale em runtime).
+- **ElevenLabs mantido intocado** por pedido explícito do usuário: só entra em
+  jogo se o próprio usuário configurar a própria chave em Ajustes
+  (`useElevenLabs = true` e `elevenLabsApiKey` não vazio) — continua 100%
+  opcional, nunca é o padrão.
+- **Não validado por build** (sem Android SDK nesta máquina, mesma limitação já
+  registrada na `AUDITORIA.md`) — validar no Android Studio/dispositivo real
+  antes de considerar resolvido de verdade.
+
 ## Plano em 3 etapas (fazendo uma por vez)
 
 - **Etapa 1 — Destravar o app web**: criar `data/`, declarar tipos de

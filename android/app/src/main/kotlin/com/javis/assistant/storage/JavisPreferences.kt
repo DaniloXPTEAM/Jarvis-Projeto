@@ -46,7 +46,7 @@ class JavisPreferences @Inject constructor(
         catch (e: Exception) { AiProvider.GROQ }
     }
     val speechRate: Flow<Float> = ds.data.map { it[KEY_SPEECH_RATE] ?: 1.0f }
-    val ttsPitch: Flow<Float> = ds.data.map { it[KEY_TTS_PITCH] ?: 1.15f }
+    val ttsPitch: Flow<Float> = ds.data.map { it[KEY_TTS_PITCH] ?: 1.05f }
     val useElevenLabs: Flow<Boolean> = ds.data.map { it[KEY_USE_ELEVENLABS] ?: false }
     val notificationsEnabled: Flow<Boolean> = ds.data.map { it[KEY_NOTIFICATIONS_ENABLED] ?: true }
     val continuousMode: Flow<Boolean> = ds.data.map { it[KEY_CONTINUOUS_MODE] ?: false }

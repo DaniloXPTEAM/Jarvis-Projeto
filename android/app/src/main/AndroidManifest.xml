@@ -54,6 +54,13 @@
     <!-- Vibrate -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <!-- Visibilidade de pacotes (Android 11+/API 30+): necessÃ¡ria para detectar se o
+         motor "Google Text-to-Speech" estÃ¡ instalado e usÃ¡-lo explicitamente (vozes
+         neurais, mais naturais que o motor padrÃ£o de alguns fabricantes). -->
+    <queries>
+        <package android:name="com.google.android.tts" />
+    </queries>
+
     <application
         android:name=".JavisApplication"
         android:allowBackup="true"
