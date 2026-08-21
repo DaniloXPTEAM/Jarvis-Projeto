@@ -49,6 +49,16 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Resultado de [JavisRepository.sendMessage]: a resposta em si, e opcionalmente um
+ * comando pendente de confirmação (ligar/mandar WhatsApp/alarme) — nesse caso [reply]
+ * já É a pergunta de confirmação, não uma resposta de conversa normal.
+ */
+data class SendMessageOutcome(
+    val reply: String,
+    val pendingCommand: ParsedCommand? = null
+)
+
 @Singleton
 class JavisRepository @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -108,7 +118,7 @@ class JavisRepository @Inject constructor(
     }
 
     /** Se houver um aviso proativo pendente, interpreta a fala atual como resposta a ele. */
-    private suspend fun resolvePendingProactivePrompt(userText: String, sessionId: String): Result<String>? {
+    private suspend fun resolvePendingProactivePrompt(userText: String, sessionId: String): Result<SendMessageOutcome>? {
         if (pendingProactivePackage == null) return null
         val expired = System.currentTimeMillis() - pendingProactiveAt > PENDING_PROMPT_TIMEOUT_MS
         pendingProactivePackage = null
@@ -127,10 +137,20 @@ class JavisRepository @Inject constructor(
         }
         messageDao.insert(Message(sessionId = sessionId, role = MessageRole.ASSISTANT, content = reply))
         speak(reply)
-        return Result.success(reply)
+        return Result.success(SendMessageOutcome(reply))
     }
 
-    suspend fun sendMessage(userText: String, sessionId: String): Result<String> {
+    /**
+     * Insere e fala uma mensagem DA GABI diretamente (status de ação, confirmação
+     * recusada, etc.) — ao contrário de [sendMessage], não trata o texto como fala do
+     * usuário nem passa pelo roteamento de novo.
+     */
+    suspend fun sayAsAssistant(text: String, sessionId: String) {
+        messageDao.insert(Message(sessionId = sessionId, role = MessageRole.ASSISTANT, content = text))
+        speak(text)
+    }
+
+    suspend fun sendMessage(userText: String, sessionId: String): Result<SendMessageOutcome> {
         messageDao.insert(Message(sessionId = sessionId, role = MessageRole.USER, content = userText))
         resolvePendingProactivePrompt(userText, sessionId)?.let { return it }
         memoryManager.learnFromConversation(userText)
@@ -160,33 +180,39 @@ class JavisRepository @Inject constructor(
         // internet), cai pro parser offline — mesma robustez de antes.
         val route = routeWithAi(aiMessages, systemPrompt, providerPref)
 
-        val result: Result<String> = if (route is RouteResult.DirectReply) {
-            Result.success(route.text)
+        val result: Result<SendMessageOutcome> = if (route is RouteResult.DirectReply) {
+            Result.success(SendMessageOutcome(route.text))
         } else {
             val parsed: ParsedCommand = (route as? RouteResult.Command)?.parsed
                 ?: commandParser.parse(userText)
 
-            if (parsed.type != CommandType.UNKNOWN && !parsed.requiresConfirmation) {
-                executeCommand(parsed)
-            }
-
-            // Skills que produzem a própria resposta (clima, Claude, lembrete) — pulam a IA
-            val skillReply: String? = resolveSkillReply(parsed)
-
-            if (skillReply != null) {
-                Result.success(skillReply)
+            if (parsed.requiresConfirmation) {
+                // Não executa nem chama a IA de novo — a resposta JÁ é a pergunta de
+                // confirmação, e quem chamou (a UI) recebe o comando pendente pra
+                // mostrar os botões Sim/Não e decidir depois via executeConfirmedCommand.
+                val question = parsed.confirmationMessage.ifBlank { "Quer que eu faça isso?" }
+                Result.success(SendMessageOutcome(question, pendingCommand = parsed))
             } else {
-                var r = primary.chat(aiMessages, systemPrompt)
-                if (r.isFailure) r = fallback.chat(aiMessages, systemPrompt)
-                r
+                if (parsed.type != CommandType.UNKNOWN) executeCommand(parsed)
+
+                // Skills que produzem a própria resposta (clima, Claude, lembrete) — pulam a IA
+                val skillReply: String? = resolveSkillReply(parsed)
+
+                if (skillReply != null) {
+                    Result.success(SendMessageOutcome(skillReply))
+                } else {
+                    var r = primary.chat(aiMessages, systemPrompt)
+                    if (r.isFailure) r = fallback.chat(aiMessages, systemPrompt)
+                    r.map { SendMessageOutcome(it) }
+                }
             }
         }
 
-        result.onSuccess { reply ->
+        result.onSuccess { outcome ->
             messageDao.insert(
-                Message(sessionId = sessionId, role = MessageRole.ASSISTANT, content = reply)
+                Message(sessionId = sessionId, role = MessageRole.ASSISTANT, content = outcome.reply)
             )
-            speak(reply)
+            speak(outcome.reply)
         }
 
         return result

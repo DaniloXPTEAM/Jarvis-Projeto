@@ -20,10 +20,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.*
 import com.gabi.assistant.ui.navigation.Screen
 import com.gabi.assistant.ui.theme.*
+import com.gabi.assistant.ui.viewmodel.OnboardingViewModel
 
 data class PermDef(
     val title: String,
@@ -36,7 +38,7 @@ data class PermDef(
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun PermissionsScreen(navController: NavController) {
+fun PermissionsScreen(navController: NavController, viewModel: OnboardingViewModel = hiltViewModel()) {
     val context = LocalContext.current
 
     val permDefs = remember {
@@ -69,13 +71,18 @@ fun PermissionsScreen(navController: NavController) {
         )
     }
 
+    // Única tela do app sem Scaffold/JavisBottomBar (que já reservam espaço pra barra
+    // de navegação do sistema sozinhos) — precisa do próprio safeDrawingPadding(), senão
+    // o botão "Continuar" e as últimas permissões da lista ficam atrás dos botões do
+    // sistema (voltar/início/recentes) e não dá pra tocar neles.
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBg)
+            .safeDrawingPadding()
             .verticalScroll(rememberScrollState())
     ) {
-        Spacer(Modifier.height(48.dp))
+        Spacer(Modifier.height(16.dp))
         Text(
             "A Gabi precisa de acesso",
             style = MaterialTheme.typography.headlineMedium,
@@ -118,7 +125,12 @@ fun PermissionsScreen(navController: NavController) {
         Spacer(Modifier.height(24.dp))
 
         Button(
-            onClick = { navController.navigate(Screen.Chat.route) },
+            onClick = {
+                viewModel.markOnboarded()
+                navController.navigate(Screen.Chat.route) {
+                    popUpTo(Screen.Permissions.route) { inclusive = true }
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),

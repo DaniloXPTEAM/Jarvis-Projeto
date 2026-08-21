@@ -20,51 +20,55 @@ Documentos de referência já existentes (não duplicar aqui, só consultar):
 
 ## Backlog / começar a próxima sessão por aqui
 
-Sessão de 21/08/2026 encerrada com a Etapa 3 praticamente fechada. Ordem de
-prioridade pro que falta (discutida e confirmada com o usuário):
+Sessão de 21/08/2026 (2º dia) com o app já rodando de verdade no aparelho do
+usuário — primeira vez com feedback real, não só compilação.
 
-1. 🔴 **Bug: confirmação de ações não usa o roteamento por IA.**
-   `ChatViewModel.sendMessage()` (linha ~106) decide se uma ação precisa de
-   confirmação (`requiresConfirmation`) chamando só `commandParser.parse(text)`
-   — o parser por **regex** antigo, não o roteamento por function-calling da
-   Etapa 3. Se a IA (não o regex) for quem identifica uma ação sensível
-   (`call_contact`/`send_whatsapp_message`/`set_alarm`), a tela não sabe disso,
-   não mostra o diálogo de confirmação, e o `JavisRepository` também não
-   executa (porque `requiresConfirmation=true` pula `executeCommand`) — a ação
-   simplesmente não acontece, sem avisar por quê, e cai numa resposta de
-   conversa genérica. É o item mais importante da lista — falha silenciosa em
-   ações que envolvem ligar/mandar mensagem de verdade.
-2. 🟡 **Dashboard com dado real na Home.** Os 3 `QuickCard` em `HomeScreen.kt`
-   (linhas ~69-71: "Clima"/"Como está?", "Memória"/"Lembretes",
-   "Avisos"/"Notificações") ainda são texto fixo, não dado de verdade.
-   Combinado com o usuário fazer isso puxando: clima real (`WeatherAgent`,
-   já existe), contagem de lembretes pendentes, contagem de notificações
-   reais (`JavisNotificationListenerService`, já existe). Foi combinado e
-   acabou não saindo porque a conversa desviou pro tema visual/personagem.
-3. 🟡 **WhatsApp: fallback de busca.** `openWhatsAppChatByName` (Accessibility
-   Service) só acha contato que já está visível na lista de conversas
-   recentes — não abre a lupa de busca do WhatsApp se não achar. Usuário
-   perguntou sobre a confiabilidade do envio, expliquei a limitação, ele não
-   pediu formalmente pra corrigir ainda mas ficou marcado como a melhoria
-   mais valiosa ali.
-4. 🟢 **Reforma visual mais ampla** (fundo/paleta/tipografia do app inteiro,
-   saindo do visual "painel hacker" herdado do fork original). Mostrei 3
-   direções num artefato (Estrela-Guia/Bolha de Sabão/Lanterna Mágica) antes
-   da personagem entrar em cena — precisam ser refeitas ao redor da paleta
-   dela (vermelho do vestido, ruivo do cabelo) em vez de abstratas. Ver seção
-   "Personagem da Gabi" mais abaixo pros detalhes técnicos já prontos
-   (`GabiCharacter.kt`, assets reais já no projeto).
-5. 🟢 **Gerenciamento de arquivos** (`AUDITORIA.md` item #33) — infraestrutura
-   existe (`FileHelper` + permissão de armazenamento), sem tela/fluxo de
-   verdade. Não discutido ainda com o usuário, só mapeado.
+**Resolvido nesse 2º dia:**
+- ✅ **Bug de confirmação de ações não usando o roteamento por IA** — corrigido.
+  `JavisRepository.sendMessage()` agora retorna `SendMessageOutcome(reply,
+  pendingCommand)`; a decisão de exigir confirmação sai do roteamento por IA
+  (ou do fallback regex), não de uma checagem paralela no `ChatViewModel`.
+  De quebra, corrigido um segundo bug no mesmo trecho: as mensagens de status
+  ("Ligando para X…", "Beleza, não vou fazer isso.") eram mandadas via
+  `repository.sendMessage(...)`, que as tratava como se fossem **fala do
+  usuário** e reprocessava tudo de novo pela IA — criado
+  `repository.sayAsAssistant(texto, sessionId)` só pra isso.
+- ✅ **Bug real do usuário testando no aparelho**: botões do app inacessíveis
+  porque os botões padrão do Android (navegação) ficavam por cima. Causa:
+  `PermissionsScreen.kt` era a única tela sem `Scaffold`/`navigationBarsPadding`
+  (as outras 5 usam `Scaffold` + `JavisBottomBar`, que já trata isso sozinho) —
+  corrigido com `.safeDrawingPadding()`.
+- ✅ **Tela de Permissões órfã**: existia no código mas nada nunca navegava
+  pra ela — usuário nunca via o pedido de contatos/agenda/acessibilidade.
+  Criado `OnboardingViewModel.kt`; `JavisNavGraph` agora lê `userOnboarded`
+  (`JavisPreferences`) e decide a `startDestination` dinamicamente
+  (Permissões na primeira vez, Home depois); o botão "Continuar" marca
+  `userOnboarded=true` e sai da pilha de navegação (`popUpTo inclusive`).
+- Revisão geral pedida pelo usuário ("falta algo comum a esse tipo de
+  projeto?") também conferiu: **backup rules já excluem sharedpref/database**
+  (protege a criptografia das chaves de restaurar num aparelho diferente —
+  não precisou mexer), canais de notificação já existem. **Zero testes
+  automatizados** segue como gap conhecido, não urgente pro uso pessoal atual.
 
-**Ponto cego geral, vale lembrar sempre:** nada disso foi testado num
-aparelho/emulador real ainda — só validado por `./gradlew compileDebugKotlin`
-e `assembleDebug` (compila e o APK monta certo). Comportamento real (voz
-reconhecendo direito, chroma key/crossfade renderizando bem, fluxos de
-confirmação, etc.) só se confirma rodando de verdade. Considerar abrir no
-Android Studio / testar num aparelho como um próximo passo válido a qualquer
-momento, não só quando o backlog acima estiver zerado.
+**Ainda no backlog:**
+1. 🟡 **Dashboard com dado real na Home.** Os 3 `QuickCard` em `HomeScreen.kt`
+   ainda são texto fixo ("Como está?", "Lembretes", "Notificações"), não dado
+   de verdade (clima real via `WeatherAgent`, contagem de lembretes/avisos
+   reais). Combinado, ainda não feito.
+2. 🟡 **WhatsApp: fallback de busca.** `openWhatsAppChatByName` só acha
+   contato já visível na lista de conversas recentes, não abre a busca.
+3. 🟢 **Gerenciamento de arquivos** (`AUDITORIA.md` #33) — infraestrutura
+   existe, sem tela/fluxo de verdade. Não discutido ainda.
+4. 🔵 **Reforma visual — em andamento nesta sessão.** Ver seção "Personagem
+   da Gabi" mais abaixo — assets reais da personagem (ruiva, vestido
+   vermelho) já no projeto; próximo passo é montar 3 direções de
+   fundo/paleta/tipografia ao redor dela (como já foi feito uma vez de forma
+   abstrata, antes da personagem existir) e o usuário escolher.
+
+**Testando no aparelho real, não só compilando** — mudou nesta sessão: o
+usuário já rodou o app de verdade e reportou o primeiro bug real (insets).
+Esperar mais rodadas de teste real conforme features forem usadas de fato
+(voz reconhecendo direito, chroma key/crossfade renderizando bem, etc.).
 
 ## Origem desta pasta
 

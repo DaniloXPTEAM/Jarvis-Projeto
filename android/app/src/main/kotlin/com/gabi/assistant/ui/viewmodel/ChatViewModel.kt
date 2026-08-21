@@ -2,7 +2,6 @@ package com.gabi.assistant.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gabi.assistant.ai.CommandParser
 import com.gabi.assistant.ai.CommandType
 import com.gabi.assistant.ai.ParsedCommand
 import com.gabi.assistant.data.model.Message
@@ -27,8 +26,7 @@ data class ChatUiState(
 @HiltViewModel
 class ChatViewModel @Inject constructor(
     private val repository: JavisRepository,
-    private val speechRecognizer: JavisSpeechRecognizer,
-    private val commandParser: CommandParser
+    private val speechRecognizer: JavisSpeechRecognizer
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -100,24 +98,21 @@ class ChatViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Manda a fala/texto pro repositório, que roteia via IA (ou regex offline se não
+     * houver IA disponível) e decide sozinho se alguma ação precisa de confirmação —
+     * a tela só reage ao resultado, não faz sua própria classificação por regex antes
+     * (isso já causou um bug: uma ação identificada só pela IA nunca pedia confirmação
+     * nem executava, porque essa checagem local não sabia dela).
+     */
     fun sendMessage(text: String) {
         if (text.isBlank()) return
 
-        val parsed = commandParser.parse(text)
-        if (parsed.requiresConfirmation) {
-            _uiState.update { it.copy(pendingCommand = parsed, inputText = "") }
-            viewModelScope.launch {
-                repository.sendMessage(
-                    parsed.confirmationMessage.ifBlank { "Quer que eu faça isso?" },
-                    sessionId
-                )
-            }
-            return
-        }
-
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, inputText = "", error = null) }
-            repository.sendMessage(text, sessionId)
+            repository.sendMessage(text, sessionId).onSuccess { outcome ->
+                _uiState.update { it.copy(pendingCommand = outcome.pendingCommand) }
+            }
             _uiState.update { it.copy(isLoading = false) }
         }
     }
@@ -128,7 +123,7 @@ class ChatViewModel @Inject constructor(
 
         if (!confirmed) {
             viewModelScope.launch {
-                repository.sendMessage("Beleza, não vou fazer isso.", sessionId)
+                repository.sayAsAssistant("Beleza, não vou fazer isso.", sessionId)
             }
             return
         }
@@ -143,7 +138,7 @@ class ChatViewModel @Inject constructor(
                 CommandType.SET_ALARM -> "Configurando alarme…"
                 else -> "Pronto."
             }
-            repository.sendMessage(reply, sessionId)
+            repository.sayAsAssistant(reply, sessionId)
             _uiState.update { it.copy(isLoading = false) }
         }
     }
