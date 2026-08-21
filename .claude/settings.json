@@ -45,6 +45,7 @@
       "Bash(format:*)",
       "Bash(rd /s /q:*)"
     ],
+    "defaultMode": "dontAsk",
     "additionalDirectories": [
       "C:\\CRiando coisa nova\\Jarvis Projeto\\Jarvis-Projeto",
       "C:\\CRiando coisa nova\\Jarvis Projeto\\Jarvis-Projeto\\android",
