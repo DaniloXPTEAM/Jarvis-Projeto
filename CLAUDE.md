@@ -85,9 +85,20 @@ nunca foi validado por mim — sem SDK disponível nesta máquina).
   do usuário, documentada em `PROMPT-GABI-CONCLUSAO.md` (pasta original).
 - **Android usa Groq/DeepSeek**, não Claude — mesma lógica de custo. Ver
   `AUDITORIA.md` item 4 antes de "corrigir" isso — é intencional.
-- Pacote Android continua `com.javis.assistant` internamente (nunca renomeado)
-  — decisão pendente, não acidental: afeta ~120 arquivos Kotlin, baixo risco mas
-  trabalho grande, adiado para depois do app web estar estável.
+- **Pacote Android renomeado** `com.javis.assistant` → `com.gabi.assistant`
+  (21/08/2026, Etapa 2). Escopo intencionalmente limitado ao nome do pacote —
+  nomes de classe (`JavisApplication`, `JavisRepository`, etc.), o tema
+  `Theme.JAVIS`, o recurso `ic_javis_foreground` e a string `"javis_prefs"` do
+  DataStore continuam como estão. Trocar isso também é opcional, fica pra
+  quando quiser. A pasta legada `android/app/src/main/java/` (não compilada)
+  também não foi tocada.
+- **Git remoto**: por decisão do usuário, esta pasta (`Projeto Gabi`) só
+  commita local por enquanto — nenhum push foi feito pro GitHub
+  (`DaniloXPTEAM/...`). Revisar essa decisão quando o app estiver mais maduro.
+- **Permissões do Claude Code**: `.claude/settings.json` desta pasta e da pasta
+  `Jarvis Projeto` (raiz) usam `permissions.defaultMode: "dontAsk"` — qualquer
+  ação não coberta pela lista `deny` (rm -rf, format etc.) é aprovada sem
+  prompt. Autorização total dada explicitamente pelo usuário para este projeto.
 
 ## Estado atual / bloqueios conhecidos (atualizado 20/08/2026, noite — Etapa 1 concluída)
 
@@ -171,8 +182,9 @@ $env:JAVA_HOME = "C:\Users\Dannilo\AppData\Local\jdk17\jdk-17.0.20+8"
 ## Voz do Android (TTS) — feita fora da sequência das 3 etapas
 
 Motivado por reprovação de teste real do usuário ("voz robótica e arrastada").
-Arquivos tocados: `android/app/src/main/kotlin/com/javis/assistant/voice/AndroidTtsFallback.kt`,
-`android/app/src/main/kotlin/com/javis/assistant/storage/JavisPreferences.kt`,
+Arquivos tocados (caminhos atualizados após o rename do pacote — ver Etapa 2
+abaixo): `android/app/src/main/kotlin/com/gabi/assistant/voice/AndroidTtsFallback.kt`,
+`android/app/src/main/kotlin/com/gabi/assistant/storage/JavisPreferences.kt`,
 `android/app/src/main/AndroidManifest.xml`.
 
 - **Diagnóstico**: por padrão (`useElevenLabs = false`), 100% dos usuários que não
@@ -197,22 +209,28 @@ Arquivos tocados: `android/app/src/main/kotlin/com/javis/assistant/voice/Android
   jogo se o próprio usuário configurar a própria chave em Ajustes
   (`useElevenLabs = true` e `elevenLabsApiKey` não vazio) — continua 100%
   opcional, nunca é o padrão.
-- **Não validado por build** (sem Android SDK nesta máquina, mesma limitação já
-  registrada na `AUDITORIA.md`) — validar no Android Studio/dispositivo real
-  antes de considerar resolvido de verdade.
+- **Validado por build** (não só leitura de código, como as vezes anteriores):
+  `./gradlew :app:compileDebugKotlin` deu `BUILD SUCCESSFUL` depois dessa
+  mudança (ver seção "Android nunca compilava" abaixo). Ainda não testado num
+  dispositivo/emulador real — só validação de compilação.
 
 ## Plano em 3 etapas (fazendo uma por vez)
 
-- **Etapa 1 — Destravar o app web**: criar `data/`, declarar tipos de
-  `SpeechRecognition`, resolver o rebase travado do git, remover strings
-  "JARVIS" residuais. Objetivo: `npm run dev` e `npm run build` rodando limpo.
-- **Etapa 2 — Organização do repositório**: decidir estratégia de git/remoto a
-  partir desta pasta (é a nova cópia de trabalho), renomear pacote Android
-  `com.javis.assistant` → Gabi se for pra frente, revisar `.gitignore`.
-- **Etapa 3 — Fechar lacunas de produto/segurança**: criptografar chaves no
-  Android, revisar os itens "não implementados"/"parciais" do `AUDITORIA.md`
-  (roteamento por function-calling em vez de regex, dashboard, etc.) e decidir
-  o que entra ou não no escopo atual.
+- **Etapa 1 — Destravar o app web**: ✅ concluída (20/08, noite). Criar
+  `data/`, declarar tipos de `SpeechRecognition`, resolver o rebase travado do
+  git, remover strings "JARVIS" residuais. `npm run dev`/`npm run build`
+  rodando limpo.
+- **Etapa 2 — Organização do repositório**: ✅ concluída (21/08). Pacote
+  Android renomeado `com.javis.assistant` → `com.gabi.assistant`. Decisão do
+  usuário: git fica só local por enquanto, sem push pro remoto. `.gitignore`
+  já estava adequado (revisado, sem mudanças necessárias). Além do escopo
+  original da etapa, essa sessão também descobriu e corrigiu que o Android
+  nunca tinha compilado (ver seção própria acima) e fechou a config de
+  permissões do Claude Code (`defaultMode: dontAsk`).
+- **Etapa 3 — Fechar lacunas de produto/segurança**: próxima. Criptografar
+  chaves no Android, revisar os itens "não implementados"/"parciais" do
+  `AUDITORIA.md` (roteamento por function-calling em vez de regex, dashboard,
+  etc.) e decidir o que entra ou não no escopo atual.
 
 ## O que foi feito por sessão
 
@@ -229,5 +247,24 @@ Arquivos tocados: `android/app/src/main/kotlin/com/javis/assistant/voice/Android
   "JARVIS" removidas. `npm run build` passa limpo. Também corrigido: o
   `.claude/settings.json` da raiz `Jarvis Projeto` não tinha `Projeto Gabi` em
   `additionalDirectories`, causando prompts de permissão repetidos — adicionado
-  lá e no `.claude/settings.json` desta pasta. Próxima sessão: decidir sobre
-  commitar as mudanças pendentes e começar a Etapa 2.
+  lá e no `.claude/settings.json` desta pasta.
+- **20/08/2026, mais tarde**: correção da voz do TTS gratuito do Android
+  (motor Google preferido + seleção por qualidade em vez de nome, pitch
+  reduzido de 1.15→1.05). Ao tentar validar isso descobri SDK Android já
+  instalado na máquina e rodei o primeiro build real desde 16/08 — **o app
+  Android nunca tinha compilado**. Corrigido: BOM no `libs.versions.toml`, 6
+  arquivos com blocos de código inteiros perdidos no merge de 16/08
+  (restaurados do commit pré-rebase `63378f4`), e 18 arquivos com texto em
+  português corrompido por dupla-codificação UTF-8 (233 trechos, bug anterior
+  ao merge). `./gradlew :app:compileDebugKotlin` → `BUILD SUCCESSFUL`.
+- **21/08/2026**: **Etapa 2**. Perguntei e o usuário decidiu: git só local por
+  enquanto (sem push), e renomear o pacote Android agora (bom momento, app
+  nunca foi instalado em aparelho real). Renomeado `com.javis.assistant` →
+  `com.gabi.assistant` em 56 arquivos + `build.gradle.kts` + `AndroidManifest.xml`
+  + `proguard-rules.pro`; validado com `./gradlew clean :app:compileDebugKotlin`
+  → `BUILD SUCCESSFUL`. Também resolvido de vez o prompt de permissão repetido:
+  `.claude/settings.json` (raiz `Jarvis Projeto` e `Projeto Gabi`) agora usa
+  `permissions.defaultMode: "dontAsk"`, então qualquer ação não coberta pela
+  lista `deny` é aprovada sem interromper — antes só "Bash"/"PowerShell"
+  estavam liberados como ferramenta inteira, o que ainda deixava buracos
+  (comandos compostos, outras ferramentas). Próxima sessão: começar a Etapa 3.
