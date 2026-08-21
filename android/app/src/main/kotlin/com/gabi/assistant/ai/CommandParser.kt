@@ -15,6 +15,7 @@ enum class CommandType {
     SEND_WHATSAPP, READ_NOTIFICATIONS, OPEN_SETTINGS, TAKE_PHOTO,
     SEARCH_YOUTUBE, OPEN_WHATSAPP_CHAT,
     WEATHER, ASK_CLAUDE, SET_REMINDER, SHARE, BLUETOOTH_CONNECT,
+    READ_CALENDAR, CREATE_CALENDAR_EVENT, READ_GMAIL,
     UNKNOWN
 }
 
@@ -104,6 +105,25 @@ class CommandParser @Inject constructor(
         // ── Clima ──
         if (isWeatherRequest(norm)) {
             return ParsedCommand(CommandType.WEATHER, target = extractCity(lower))
+        }
+
+        // ── Criar compromisso na agenda ("marcar reunião amanhã às 15h") ──
+        parseCalendarEvent(lower, norm)?.let { (title, startAt) ->
+            return ParsedCommand(
+                CommandType.CREATE_CALENDAR_EVENT,
+                target = title,
+                extra = startAt.toString()
+            )
+        }
+
+        // ── Ler agenda ──
+        if (isReadCalendarRequest(norm)) {
+            return ParsedCommand(CommandType.READ_CALENDAR)
+        }
+
+        // ── Ler Gmail ──
+        if (isReadGmailRequest(norm)) {
+            return ParsedCommand(CommandType.READ_GMAIL)
         }
 
         // ── Compartilhar (ACTION_SEND) ──
@@ -260,10 +280,28 @@ class CommandParser @Inject constructor(
         )
         if (triggers.none { norm.contains(it) }) return null
         if (norm.contains("alarme")) return null // é alarme, não lembrete
+        val triggerAt = extractDateTime(norm) ?: return null
+        return cleanSubject(lower, triggers, fallback = "Lembrete") to triggerAt
+    }
 
+    // ──────────────────────────────────────────────────────────────────
+    //  COMPROMISSO NA AGENDA → (título, millis) ou null
+    // ──────────────────────────────────────────────────────────────────
+    private fun parseCalendarEvent(lower: String, norm: String): Pair<String, Long>? {
+        val triggers = listOf(
+            "marcar um compromisso", "marca um compromisso", "criar um compromisso",
+            "criar evento", "crie um evento", "novo evento", "marcar na agenda",
+            "marca na agenda", "agendar reuniao", "agende uma reuniao", "compromisso", "reuniao"
+        )
+        if (triggers.none { norm.contains(it) }) return null
+        val triggerAt = extractDateTime(norm) ?: return null
+        return cleanSubject(lower, triggers, fallback = "Compromisso") to triggerAt
+    }
+
+    /** Extrai um horário-alvo (relativo ou "às HH:MM") do texto normalizado, ou null se não achar. */
+    private fun extractDateTime(norm: String): Long? {
         val now = Calendar.getInstance()
         val cal = (now.clone() as Calendar)
-        var matched = false
 
         // relativo: "em N (minuto|hora...)" ou "daqui a N ..."
         val rel = Regex("(?:em|daqui a|em cerca de)\\s+(\\d+)\\s*(minuto|minutos|min|hora|horas|h|hr|hrs)")
@@ -273,28 +311,29 @@ class CommandParser @Inject constructor(
             val unit = rel.groupValues[2]
             val mins = if (unit.startsWith("hora") || unit == "h" || unit.startsWith("hr")) n * 60 else n
             cal.add(Calendar.MINUTE, mins)
-            matched = true
+            return cal.timeInMillis
         }
 
-        if (!matched) {
-            // horário: "às HH(:MM)?h?"
-            val clk = Regex("[aàá]s\\s*(\\d{1,2})(?:h|hs|:)?(?:(\\d{2}))?").find(norm)
-            if (clk != null) {
-                val h = clk.groupValues[1].toIntOrNull()?.coerceIn(0, 23) ?: return null
-                val mm = clk.groupValues[2].takeIf { it.isNotBlank() }?.toIntOrNull()?.coerceIn(0, 59) ?: 0
-                cal.set(Calendar.HOUR_OF_DAY, h)
-                cal.set(Calendar.MINUTE, mm)
-                cal.set(Calendar.SECOND, 0)
-                cal.set(Calendar.MILLISECOND, 0)
-                if (norm.contains("depois de amanha")) cal.add(Calendar.DAY_OF_YEAR, 2)
-                else if (norm.contains("amanha")) cal.add(Calendar.DAY_OF_YEAR, 1)
-                if (cal.timeInMillis <= now.timeInMillis) cal.add(Calendar.DAY_OF_YEAR, 1)
-                matched = true
-            }
+        // horário: "às HH(:MM)?h?"
+        val clk = Regex("[aàá]s\\s*(\\d{1,2})(?:h|hs|:)?(?:(\\d{2}))?").find(norm)
+        if (clk != null) {
+            val h = clk.groupValues[1].toIntOrNull()?.coerceIn(0, 23) ?: return null
+            val mm = clk.groupValues[2].takeIf { it.isNotBlank() }?.toIntOrNull()?.coerceIn(0, 59) ?: 0
+            cal.set(Calendar.HOUR_OF_DAY, h)
+            cal.set(Calendar.MINUTE, mm)
+            cal.set(Calendar.SECOND, 0)
+            cal.set(Calendar.MILLISECOND, 0)
+            if (norm.contains("depois de amanha")) cal.add(Calendar.DAY_OF_YEAR, 2)
+            else if (norm.contains("amanha")) cal.add(Calendar.DAY_OF_YEAR, 1)
+            if (cal.timeInMillis <= now.timeInMillis) cal.add(Calendar.DAY_OF_YEAR, 1)
+            return cal.timeInMillis
         }
-        if (!matched) return null
 
-        // assunto = lower sem gatilhos e sem marcas de tempo (acentos preservados)
+        return null
+    }
+
+    /** Remove gatilhos e marcas de tempo do texto original, sobra só o "assunto". */
+    private fun cleanSubject(lower: String, triggers: List<String>, fallback: String): String {
         var subject = lower
         triggers.sortedByDescending { it.length }.forEach {
             subject = subject.replace(it, " ", ignoreCase = true)
@@ -312,8 +351,24 @@ class CommandParser @Inject constructor(
             .replace(Regex("\\s+"), " ")
             .trim()
         subject = subject.replaceFirst(Regex("^\\s*(de|que|para|pra|e|se)\\s+", RegexOption.IGNORE_CASE), "").trim()
-        if (subject.isBlank()) subject = "Lembrete"
-        return subject to cal.timeInMillis
+        return subject.ifBlank { fallback }
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    //  LER AGENDA / LER GMAIL
+    // ──────────────────────────────────────────────────────────────────
+    private fun isReadCalendarRequest(norm: String): Boolean {
+        val triggers = listOf(
+            "minha agenda", "meus compromissos", "o que eu tenho hoje", "o que tenho hoje",
+            "o que eu tenho amanha", "tenho algum compromisso", "tem algum compromisso",
+            "ler minha agenda", "ver minha agenda", "meus proximos compromissos"
+        )
+        return triggers.any { norm.contains(it) }
+    }
+
+    private fun isReadGmailRequest(norm: String): Boolean {
+        if (!(norm.contains("gmail") || norm.contains("email") || norm.contains("e-mail"))) return false
+        return norm.matches(Regex(".*(tem|chegou|ler|leia|novo|novos|verificar|confere|checar).*"))
     }
 
     private fun extractAppName(input: String, prefixes: List<String>): String {

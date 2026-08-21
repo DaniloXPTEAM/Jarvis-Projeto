@@ -1,9 +1,12 @@
 package com.gabi.assistant.domain
 
+import android.content.ContentUris
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.AlarmClock
+import android.provider.CalendarContract
 import android.provider.ContactsContract
 import com.gabi.assistant.BuildConfig
 import com.gabi.assistant.accessibility.JavisAccessibilityService
@@ -61,6 +64,10 @@ class JavisRepository @Inject constructor(
     private val bluetoothController: BluetoothController
 ) {
     val currentSessionId: String = UUID.randomUUID().toString()
+
+    companion object {
+        private const val GMAIL_PACKAGE = "com.google.android.gm"
+    }
 
     fun getMessages(sessionId: String): Flow<List<Message>> =
         messageDao.getMessagesBySession(sessionId)
@@ -195,6 +202,17 @@ class JavisRepository @Inject constructor(
                 "Não consegui ligar o Bluetooth. Abri as configurações pra você ativar."
             }
         }
+
+        CommandType.READ_CALENDAR -> readUpcomingEvents()
+
+        CommandType.CREATE_CALENDAR_EVENT -> {
+            val startAt = parsed.extra.toLongOrNull() ?: return null
+            createCalendarEvent(parsed.target, startAt)
+        }
+
+        CommandType.READ_GMAIL -> readGmailPreview()
+
+        CommandType.READ_NOTIFICATIONS -> readNotifications()
 
         else -> null
     }
@@ -349,6 +367,90 @@ class JavisRepository @Inject constructor(
         val items = service.getFilteredNotifications()
         if (items.isEmpty()) return "Você não tem notificações ativas agora."
         return items.take(10).joinToString("\n") { "De ${it.appName}: ${it.title} — ${it.text}" }
+    }
+
+    /** Prévia de emails novos — lê a notificação do Gmail (remetente/assunto/trecho), não o corpo completo. */
+    fun readGmailPreview(): String {
+        val service = JavisNotificationListenerService.getInstance()
+            ?: return "O acesso às notificações não está ativado. Vá nas Configurações para permitir, aí eu consigo avisar quando chegar email."
+        val emails = service.getFilteredNotifications().filter { it.packageName == GMAIL_PACKAGE }
+        if (emails.isEmpty()) return "Não tem nenhum email novo agora."
+        val list = emails.take(5).joinToString("\n") { "${it.title} — ${it.text}" }
+        return "Você tem ${emails.size} email${if (emails.size > 1) "s" else ""} novo${if (emails.size > 1) "s" else ""}:\n$list"
+    }
+
+    /** Lê os próximos compromissos da agenda do sistema (todos os calendários visíveis). */
+    fun readUpcomingEvents(days: Int = 7): String {
+        return try {
+            val projection = arrayOf(
+                CalendarContract.Instances.TITLE,
+                CalendarContract.Instances.BEGIN
+            )
+            val now = System.currentTimeMillis()
+            val end = now + days * 24L * 60 * 60 * 1000
+            val uri = CalendarContract.Instances.CONTENT_URI.buildUpon().apply {
+                ContentUris.appendId(this, now)
+                ContentUris.appendId(this, end)
+            }.build()
+
+            val events = mutableListOf<Pair<String, Long>>()
+            context.contentResolver.query(uri, projection, null, null, "${CalendarContract.Instances.BEGIN} ASC")
+                ?.use { cursor ->
+                    while (cursor.moveToNext()) {
+                        val title = cursor.getString(0) ?: "(sem título)"
+                        val begin = cursor.getLong(1)
+                        events.add(title to begin)
+                    }
+                }
+
+            if (events.isEmpty()) return "Você não tem nenhum compromisso agendado pros próximos $days dias."
+            val fmt = SimpleDateFormat("EEEE, dd/MM 'às' HH:mm", Locale("pt", "BR"))
+            val list = events.take(10).joinToString("\n") { (title, begin) -> "$title — ${fmt.format(Date(begin))}" }
+            "Seus próximos compromissos:\n$list"
+        } catch (e: SecurityException) {
+            "Preciso da permissão de Agenda pra ler seus compromissos. Vá em Ajustes > Permissões pra liberar."
+        } catch (e: Exception) {
+            "Não consegui acessar a agenda agora."
+        }
+    }
+
+    /** Cria um evento de verdade na agenda do usuário (não é um lembrete interno do app). */
+    fun createCalendarEvent(title: String, startAtMillis: Long, durationMinutes: Int = 60): String {
+        return try {
+            val calendarId = defaultWritableCalendarId()
+                ?: return "Não achei nenhuma agenda configurada no aparelho pra criar o compromisso."
+
+            val values = ContentValues().apply {
+                put(CalendarContract.Events.CALENDAR_ID, calendarId)
+                put(CalendarContract.Events.TITLE, title.ifBlank { "Compromisso" })
+                put(CalendarContract.Events.DTSTART, startAtMillis)
+                put(CalendarContract.Events.DTEND, startAtMillis + durationMinutes * 60 * 1000L)
+                put(CalendarContract.Events.EVENT_TIMEZONE, java.util.TimeZone.getDefault().id)
+            }
+            val uri = context.contentResolver.insert(CalendarContract.Events.CONTENT_URI, values)
+            if (uri == null) {
+                "Não consegui criar o compromisso na agenda."
+            } else {
+                "Pronto! Criei \"$title\" na sua agenda pra ${formatReminderTime(startAtMillis)}."
+            }
+        } catch (e: SecurityException) {
+            "Preciso da permissão de Agenda pra criar compromissos. Vá em Ajustes > Permissões pra liberar."
+        } catch (e: Exception) {
+            "Não consegui criar o compromisso agora."
+        }
+    }
+
+    private fun defaultWritableCalendarId(): Long? {
+        val projection = arrayOf(CalendarContract.Calendars._ID, CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL)
+        context.contentResolver.query(
+            CalendarContract.Calendars.CONTENT_URI, projection,
+            "${CalendarContract.Calendars.VISIBLE} = 1 AND ${CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL} >= ?",
+            arrayOf(CalendarContract.Calendars.CAL_ACCESS_CONTRIBUTOR.toString()),
+            null
+        )?.use { cursor ->
+            if (cursor.moveToFirst()) return cursor.getLong(0)
+        }
+        return null
     }
 
     suspend fun getGreeting(): String {

@@ -86,6 +86,15 @@ object AiToolRouter {
             "share_content" -> ParsedCommand(CommandType.SHARE, target = str("text"))
             "bluetooth_connect" -> ParsedCommand(CommandType.BLUETOOTH_CONNECT)
             "ask_claude" -> ParsedCommand(CommandType.ASK_CLAUDE, target = str("query"))
+            "read_calendar" -> ParsedCommand(CommandType.READ_CALENDAR)
+
+            "create_calendar_event" -> {
+                val startAt = parseIsoToMillis(str("start_at"))
+                    ?: throw IllegalArgumentException("start_at inválido")
+                ParsedCommand(CommandType.CREATE_CALENDAR_EVENT, target = str("title"), extra = startAt.toString())
+            }
+
+            "read_gmail" -> ParsedCommand(CommandType.READ_GMAIL)
 
             else -> ParsedCommand(CommandType.UNKNOWN)
         }

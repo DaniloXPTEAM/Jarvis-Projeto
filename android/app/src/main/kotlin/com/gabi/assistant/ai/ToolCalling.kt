@@ -139,6 +139,30 @@ object GabiTools {
         tool(
             "ask_claude", "Encaminha uma pergunta específica pro Claude (Anthropic) responder, quando o usuário pede explicitamente para falar com o Claude.",
             params(listOf("query")) { add("query", stringProp("A pergunta a enviar ao Claude.")) }
+        ),
+        tool(
+            "read_calendar", "Lê os próximos compromissos da agenda/calendário do usuário em voz alta.",
+            params {}
+        ),
+        tool(
+            "create_calendar_event",
+            "Cria um novo compromisso/evento na agenda do usuário (não é um lembrete interno do app, é um evento de calendário de verdade).",
+            params(listOf("title", "start_at")) {
+                add("title", stringProp("Título do compromisso, em poucas palavras."))
+                add(
+                    "start_at",
+                    stringProp(
+                        "Data e hora de início em ISO-8601 (ex.: 2026-08-22T15:00:00), calculada " +
+                            "a partir da data/hora atual informada no prompt."
+                    )
+                )
+            }
+        ),
+        tool(
+            "read_gmail",
+            "Verifica se chegou email novo no Gmail e lê a prévia (remetente, assunto e trecho do corpo) " +
+                "das notificações recentes do Gmail. Não lê o corpo completo do email.",
+            params {}
         )
     )
 }

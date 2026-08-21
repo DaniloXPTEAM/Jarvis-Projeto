@@ -52,6 +52,10 @@ fun PermissionsScreen(navController: NavController) {
                     Manifest.permission.READ_MEDIA_IMAGES
                 else Manifest.permission.READ_EXTERNAL_STORAGE
             ),
+            PermDef("Agenda", "Ler e criar compromissos no calendário", Icons.Default.Event,
+                Manifest.permission.READ_CALENDAR),
+            PermDef("Criar compromissos", "Adicionar eventos na sua agenda", Icons.Default.EventAvailable,
+                Manifest.permission.WRITE_CALENDAR),
             PermDef("Notificações (Android 13+)", "Enviar notificações", Icons.Default.Notifications,
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
                     Manifest.permission.POST_NOTIFICATIONS else null

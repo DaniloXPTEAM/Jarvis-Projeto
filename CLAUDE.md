@@ -280,6 +280,53 @@ internet/sem chave).
 - Validado: `./gradlew clean :app:compileDebugKotlin` → `BUILD SUCCESSFUL`,
   e conferido que `BuildConfig.java` gerado realmente contém a chave.
 
+## Gmail (prévia) + Agenda (ler e criar) — Etapa 3, 21/08/2026
+
+Fecha 2 dos 5 itens "parciais" restantes da `AUDITORIA.md` (#17 Gmail, #18
+Agenda). Decisão do usuário: Gmail só prévia de notificação (não a API
+completa do Gmail/OAuth — mais trabalho, outra conta externa pra manter) e
+aviso sob demanda (não proativo).
+
+- **Permissões novas**: `READ_CALENDAR`/`WRITE_CALENDAR` no
+  `AndroidManifest.xml` + 2 linhas novas em `PermissionsScreen.kt` ("Agenda"
+  e "Criar compromissos").
+- **3 `CommandType` novos**: `READ_CALENDAR`, `CREATE_CALENDAR_EVENT`,
+  `READ_GMAIL` — com tool correspondente em `GabiTools` (roteamento por IA) e
+  detecção por regex em `CommandParser` (fallback offline), mesmo padrão dos
+  outros comandos.
+- **Ler Gmail**: reaproveita a `JavisNotificationListenerService` que já
+  existia (mesma infra de "ler notificações"), filtrando só
+  `com.google.android.gm`. Lê remetente/assunto/trecho — **não** o corpo
+  completo do email (isso exigiria a API do Gmail de verdade).
+- **Ler agenda**: consulta `CalendarContract.Instances` (próximos 7 dias,
+  todos os calendários visíveis) e fala os compromissos.
+- **Criar compromisso**: insere um evento de verdade via
+  `CalendarContract.Events` (não é o lembrete interno do app — é a agenda do
+  sistema mesmo). Acha o primeiro calendário gravável (`CAL_ACCESS_CONTRIBUTOR`
+  ou melhor) automaticamente. `create_calendar_event` pede `start_at` em
+  ISO-8601, mesmo esquema do `set_reminder`.
+- **Bônus**: `CommandType.READ_NOTIFICATIONS` estava detectado pelo
+  `CommandParser` mas nunca era executado de fato — nem em `executeCommand`
+  nem em `resolveSkillReply`, caía num `else -> {}` silencioso. Corrigido
+  junto (mesmo padrão dos novos comandos), já que usa a mesma infra que o
+  `read_gmail` novo.
+- Nenhum desses 3 comandos exige confirmação (mesmo nível de risco do
+  `SET_REMINDER` — leitura ou escrita reversível/de baixo impacto).
+- Validado: `./gradlew :app:compileDebugKotlin` → `BUILD SUCCESSFUL`.
+
+**Sobre a integração com WhatsApp** (não mexida nesta sessão, mas veio à tona
+numa pergunta do usuário): usa Accessibility Service com IDs internos do
+WhatsApp (`com.whatsapp:id/entry`, `com.whatsapp:id/send`), não a API
+oficial. Frágil por natureza — quebra se o WhatsApp mudar esses IDs numa
+atualização, e `openWhatsAppChatByName` só acha contatos já visíveis na tela
+de conversas recentes (não abre a busca se não achar). Nunca testado num
+aparelho real. Se for mexer nisso: adicionar fallback pra busca é a melhoria
+mais valiosa.
+
+**Restam 3 itens "parciais" da AUDITORIA.md** (não pedidos ainda): #24
+Dashboard/HUD na Home, #27 funcionamento offline (IA local), #33
+gerenciamento de arquivos.
+
 ## Plano em 3 etapas (fazendo uma por vez)
 
 - **Etapa 1 — Destravar o app web**: ✅ concluída (20/08, noite). Criar
