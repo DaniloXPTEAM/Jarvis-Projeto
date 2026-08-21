@@ -1,4 +1,4 @@
--keep class com.javis.assistant.** { *; }
+-keep class com.gabi.assistant.** { *; }
 -keep class com.google.gson.** { *; }
 -keepattributes Signature
 -keepattributes *Annotation*

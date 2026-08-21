@@ -1,4 +1,4 @@
-﻿plugins {
+plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
@@ -8,11 +8,11 @@
 }
 
 android {
-    namespace = "com.javis.assistant"
+    namespace = "com.gabi.assistant"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.javis.assistant"
+        applicationId = "com.gabi.assistant"
         minSdk = 26
         targetSdk = 34
         versionCode = 1

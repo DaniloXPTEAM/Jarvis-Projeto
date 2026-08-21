@@ -83,7 +83,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
-                <action android:name="com.javis.assistant.ACTION_VOICE_TRIGGER" />
+                <action android:name="com.gabi.assistant.ACTION_VOICE_TRIGGER" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
