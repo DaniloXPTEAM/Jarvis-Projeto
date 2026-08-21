@@ -125,10 +125,8 @@ Resolvido:
 5. `data/` (e `*.db`/`*.db-journal`/`*.db-wal`/`*.db-shm`) adicionados ao
    `.gitignore` — banco local não deve ir pro git.
 
-Bloqueios que continuam (fora do escopo da Etapa 1):
-6. **Segurança (Android)**: chaves de API salvas em DataStore sem criptografia
-   (`AUDITORIA.md` item 30) — deveria usar `EncryptedSharedPreferences`/
-   `security-crypto`. Fica para a Etapa 3.
+6. ~~**Segurança (Android)**: chaves de API em texto puro~~ — resolvido na
+   Etapa 3 (21/08), ver seção própria abaixo.
 
 ## Android nunca compilava — descoberto e corrigido em 20/08/2026 (noite)
 
@@ -213,6 +211,27 @@ abaixo): `android/app/src/main/kotlin/com/gabi/assistant/voice/AndroidTtsFallbac
   `./gradlew :app:compileDebugKotlin` deu `BUILD SUCCESSFUL` depois dessa
   mudança (ver seção "Android nunca compilava" abaixo). Ainda não testado num
   dispositivo/emulador real — só validação de compilação.
+
+## Criptografia das chaves de API (Android) — Etapa 3, 21/08/2026
+
+Chaves do Groq, ElevenLabs, DeepSeek e Anthropic saíram do DataStore em texto
+puro e foram pra `EncryptedSharedPreferences` (Android Keystore, AES-256).
+
+- Novo arquivo `storage/SecureKeyStore.kt`: wrapper sobre
+  `EncryptedSharedPreferences` (esquema `AES256_SIV` pra chave, `AES256_GCM`
+  pra valor), com uma ponte pra `Flow` via `callbackFlow` +
+  `OnSharedPreferenceChangeListener` — mantém o mesmo contrato reativo que o
+  DataStore já tinha, então `SettingsViewModel` não precisou mudar nada.
+- `JavisPreferences.kt` agora delega `groqApiKey`/`elevenLabsApiKey`/
+  `deepSeekApiKey`/`anthropicApiKey` (leitura e escrita) pro `SecureKeyStore`;
+  o resto (voice id, pitch, rate, provider, etc. — nada sensível) continua no
+  DataStore como antes.
+- Dependência `androidx.security:security-crypto:1.1.0-alpha06` adicionada
+  (`libs.versions.toml` + `build.gradle.kts`).
+- **Sem migração de dados**: como o app nunca tinha compilado antes desta
+  sessão, não existe nenhuma instalação real com chaves salvas em texto puro
+  pra migrar — não precisou de código de migração.
+- Validado: `./gradlew :app:compileDebugKotlin` → `BUILD SUCCESSFUL`.
 
 ## Plano em 3 etapas (fazendo uma por vez)
 

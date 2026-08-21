@@ -100,6 +100,9 @@ dependencies {
     // DataStore
     implementation(libs.datastore.preferences)
 
+    // Chaves de API criptografadas (Android Keystore)
+    implementation(libs.androidx.security.crypto)
+
     // Coroutines
     implementation(libs.coroutines.android)
 

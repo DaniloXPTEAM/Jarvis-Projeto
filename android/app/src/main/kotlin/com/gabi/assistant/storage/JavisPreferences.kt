@@ -16,15 +16,12 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "ja
 
 @Singleton
 class JavisPreferences @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val secureKeys: SecureKeyStore
 ) {
     private val ds = context.dataStore
 
     companion object {
-        val KEY_GROQ_API_KEY = stringPreferencesKey("groq_api_key")
-        val KEY_ELEVENLABS_API_KEY = stringPreferencesKey("elevenlabs_api_key")
-        val KEY_DEEPSEEK_API_KEY = stringPreferencesKey("deepseek_api_key")
-        val KEY_ANTHROPIC_API_KEY = stringPreferencesKey("anthropic_api_key")
         val KEY_ELEVENLABS_VOICE_ID = stringPreferencesKey("elevenlabs_voice_id")
         val KEY_AI_PROVIDER = stringPreferencesKey("ai_provider")
         val KEY_SPEECH_RATE = floatPreferencesKey("speech_rate")
@@ -36,10 +33,10 @@ class JavisPreferences @Inject constructor(
         val KEY_CONTINUOUS_MODE = booleanPreferencesKey("continuous_mode")
     }
 
-    val groqApiKey: Flow<String> = ds.data.map { it[KEY_GROQ_API_KEY] ?: "" }
-    val elevenLabsApiKey: Flow<String> = ds.data.map { it[KEY_ELEVENLABS_API_KEY] ?: "" }
-    val deepSeekApiKey: Flow<String> = ds.data.map { it[KEY_DEEPSEEK_API_KEY] ?: "" }
-    val anthropicApiKey: Flow<String> = ds.data.map { it[KEY_ANTHROPIC_API_KEY] ?: "" }
+    val groqApiKey: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_GROQ)
+    val elevenLabsApiKey: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_ELEVENLABS)
+    val deepSeekApiKey: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_DEEPSEEK)
+    val anthropicApiKey: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_ANTHROPIC)
     val elevenLabsVoiceId: Flow<String> = ds.data.map { it[KEY_ELEVENLABS_VOICE_ID] ?: "" }
     val aiProvider: Flow<AiProvider> = ds.data.map {
         try { AiProvider.valueOf(it[KEY_AI_PROVIDER] ?: AiProvider.GROQ.name) }
@@ -52,10 +49,10 @@ class JavisPreferences @Inject constructor(
     val continuousMode: Flow<Boolean> = ds.data.map { it[KEY_CONTINUOUS_MODE] ?: false }
     val userOnboarded: Flow<Boolean> = ds.data.map { it[KEY_USER_ONBOARDED] ?: false }
 
-    suspend fun setGroqApiKey(key: String) = ds.edit { it[KEY_GROQ_API_KEY] = key }
-    suspend fun setElevenLabsApiKey(key: String) = ds.edit { it[KEY_ELEVENLABS_API_KEY] = key }
-    suspend fun setDeepSeekApiKey(key: String) = ds.edit { it[KEY_DEEPSEEK_API_KEY] = key }
-    suspend fun setAnthropicApiKey(key: String) = ds.edit { it[KEY_ANTHROPIC_API_KEY] = key }
+    suspend fun setGroqApiKey(key: String) = secureKeys.set(SecureKeyStore.KEY_GROQ, key)
+    suspend fun setElevenLabsApiKey(key: String) = secureKeys.set(SecureKeyStore.KEY_ELEVENLABS, key)
+    suspend fun setDeepSeekApiKey(key: String) = secureKeys.set(SecureKeyStore.KEY_DEEPSEEK, key)
+    suspend fun setAnthropicApiKey(key: String) = secureKeys.set(SecureKeyStore.KEY_ANTHROPIC, key)
     suspend fun setElevenLabsVoiceId(id: String) = ds.edit { it[KEY_ELEVENLABS_VOICE_ID] = id }
     suspend fun setAiProvider(p: AiProvider) = ds.edit { it[KEY_AI_PROVIDER] = p.name }
     suspend fun setSpeechRate(r: Float) = ds.edit { it[KEY_SPEECH_RATE] = r }
