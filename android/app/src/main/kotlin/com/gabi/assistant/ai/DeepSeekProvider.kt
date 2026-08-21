@@ -29,6 +29,12 @@ interface DeepSeekApi {
         @Header("Authorization") auth: String,
         @Body request: DsRequest
     ): DsResponse
+
+    @POST("v1/chat/completions")
+    suspend fun chatWithTools(
+        @Header("Authorization") auth: String,
+        @Body request: ToolChatRequest
+    ): ToolChatResponse
 }
 
 @Singleton
@@ -74,6 +80,33 @@ class DeepSeekProvider @Inject constructor() : AiModelProvider {
             val content = response.choices.firstOrNull()?.message?.content
                 ?: return Result.failure(Exception("Empty response from DeepSeek"))
             Result.success(content.trim())
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun chatWithTools(
+        messages: List<AiMessage>,
+        systemPrompt: String,
+        tools: List<ToolDef> = GabiTools.definitions
+    ): Result<ToolMessage> {
+        return try {
+            val allMessages = mutableListOf(ToolMessage(role = "system", content = systemPrompt)) +
+                    messages.map { ToolMessage(role = it.role, content = it.content) }
+
+            val response = api.chatWithTools(
+                auth = "Bearer $apiKey",
+                request = ToolChatRequest(
+                    model = "deepseek-chat",
+                    messages = allMessages,
+                    tools = tools,
+                    temperature = 0.3f,
+                    maxTokens = 1024
+                )
+            )
+            val message = response.choices.firstOrNull()?.message
+                ?: return Result.failure(Exception("Empty response from DeepSeek"))
+            Result.success(message)
         } catch (e: Exception) {
             Result.failure(e)
         }

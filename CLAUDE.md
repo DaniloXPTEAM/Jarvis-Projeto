@@ -233,6 +233,53 @@ puro e foram pra `EncryptedSharedPreferences` (Android Keystore, AES-256).
   pra migrar — não precisou de código de migração.
 - Validado: `./gradlew :app:compileDebugKotlin` → `BUILD SUCCESSFUL`.
 
+## Roteamento por function-calling (Android) — Etapa 3, 21/08/2026
+
+`CommandParser` (regex) deixa de ser o classificador principal. Agora quem
+decide qual ferramenta usar é a própria IA (Groq/DeepSeek, API compatível
+com tools da OpenAI) — o regex vira só o **fallback offline** (sem
+internet/sem chave).
+
+- `ai/ToolCalling.kt`: modelos compartilhados do formato "tool calling" da
+  OpenAI (`ToolDef`, `ToolCall`, `ToolMessage`, etc.) + `GabiTools.definitions`
+  — a lista de ferramentas (open_app, call_contact, set_alarm, search_web,
+  search_youtube, send_whatsapp_message, read_notifications, open_settings,
+  take_photo, get_weather, set_reminder, share_content, bluetooth_connect,
+  ask_claude), cada uma com JSON schema dos parâmetros.
+- `GroqProvider`/`DeepSeekProvider` ganharam `chatWithTools(...)`, além do
+  `chat()` normal que já existia (não mudou, outros usos continuam iguais).
+- `ai/AiToolRouter.kt`: converte a escolha de ferramenta da IA de volta pro
+  mesmo `ParsedCommand` que o `CommandParser` já produzia — por isso o resto
+  do pipeline (`executeCommand`, `resolveSkillReply`, confirmação de ações
+  sensíveis como ligar/mandar WhatsApp) não precisou de nenhuma mudança.
+- `set_reminder` pede a data/hora em ISO-8601 (`trigger_at`) em vez de a IA
+  calcular só em texto livre — o prompt de roteamento inclui a data/hora atual
+  (`AiToolRouter.currentDateTimeContext()`) pra IA calcular certo horários
+  relativos ("em 30 minutos", "amanhã às 9h").
+- `JavisRepository.sendMessage()`: tenta `routeWithAi()` primeiro (Groq, com
+  fallback pro DeepSeek); se os dois falharem (sem internet/sem chave), cai
+  pro `commandParser.parse(userText)` de sempre — mesma robustez offline que
+  já existia.
+- **Decisão do usuário**: Groq continua sendo o provedor principal (não
+  Ollama — Ollama não roda nativamente no Android, exigiria PC ligado na
+  mesma rede, o que quebra a ideia de assistente sempre disponível no bolso).
+- **Chave do Groq nativa no app**: o usuário forneceu uma chave gratuita do
+  Groq criada especificamente para este app e pediu pra ela vir embutida,
+  sem precisar configurar em Ajustes. Implementado via
+  `android/local.properties` (nunca vai pro git — já está no `.gitignore` em
+  3 níveis, confirmado com `git ls-files` que nunca foi commitado) +
+  `build.gradle.kts` lendo esse arquivo de verdade (antes só lia
+  `project.findProperty`, que não pega `local.properties` sozinho — corrigido)
+  → `BuildConfig.GROQ_API_KEY`. `JavisRepository` usa
+  `prefs.groqApiKey.first().ifBlank { BuildConfig.GROQ_API_KEY }` — chave do
+  usuário em Ajustes tem prioridade se ele configurar uma própria depois.
+  ⚠️ Ressalva de segurança: uma chave embutida no `BuildConfig` é
+  extraível por quem descompilar o APK final — risco baixo pra uma chave
+  gratuita de uso pessoal, mas não é "seguro" no sentido forte. Se decidir
+  distribuir o APK publicamente, vale reconsiderar essa escolha.
+- Validado: `./gradlew clean :app:compileDebugKotlin` → `BUILD SUCCESSFUL`,
+  e conferido que `BuildConfig.java` gerado realmente contém a chave.
+
 ## Plano em 3 etapas (fazendo uma por vez)
 
 - **Etapa 1 — Destravar o app web**: ✅ concluída (20/08, noite). Criar

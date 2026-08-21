@@ -5,8 +5,10 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.AlarmClock
 import android.provider.ContactsContract
+import com.gabi.assistant.BuildConfig
 import com.gabi.assistant.accessibility.JavisAccessibilityService
 import com.gabi.assistant.ai.AiModelProvider
+import com.gabi.assistant.ai.AiToolRouter
 import com.gabi.assistant.ai.ClaudeProvider
 import com.gabi.assistant.ai.CommandParser
 import com.gabi.assistant.ai.CommandType
@@ -14,6 +16,7 @@ import com.gabi.assistant.ai.DeepSeekProvider
 import com.gabi.assistant.ai.GroqProvider
 import com.gabi.assistant.ai.JavisPersonality
 import com.gabi.assistant.ai.ParsedCommand
+import com.gabi.assistant.ai.RouteResult
 import com.gabi.assistant.data.db.MessageDao
 import com.gabi.assistant.data.model.AiMessage
 import com.gabi.assistant.data.model.AiProvider
@@ -66,41 +69,51 @@ class JavisRepository @Inject constructor(
         messageDao.insert(Message(sessionId = sessionId, role = MessageRole.USER, content = userText))
         memoryManager.learnFromConversation(userText)
 
-        val parsed = commandParser.parse(userText)
-        if (parsed.type != CommandType.UNKNOWN && !parsed.requiresConfirmation) {
-            executeCommand(parsed)
+        val recentMessages = messageDao.getRecentMessages(20)
+        val contextSummary = memoryManager.buildContextSummary()
+        val systemPrompt = buildString {
+            append(JavisPersonality.SYSTEM_PROMPT)
+            if (contextSummary.isNotBlank()) {
+                append("\n\nO que você sabe sobre este usuário: $contextSummary")
+            }
         }
+        val aiMessages = recentMessages
+            .filter { it.role != MessageRole.SYSTEM }
+            .takeLast(16)
+            .map { AiMessage(it.role.name.lowercase(), it.content) }
 
-        // Skills que produzem a própria resposta (clima, Claude, lembrete) — pulam o Groq
-        val skillReply: String? = resolveSkillReply(parsed)
+        val providerPref: AiProvider = prefs.aiProvider.first()
+        // Chave própria do usuário (Ajustes) tem prioridade; senão usa a nativa do app.
+        groqProvider.apiKey = prefs.groqApiKey.first().ifBlank { BuildConfig.GROQ_API_KEY }
+        deepSeekProvider.apiKey = prefs.deepSeekApiKey.first()
+        val primary: AiModelProvider = if (providerPref == AiProvider.GROQ) groqProvider else deepSeekProvider
+        val fallback: AiModelProvider = if (providerPref == AiProvider.GROQ) deepSeekProvider else groqProvider
 
-        val result: Result<String> = if (skillReply != null) {
-            Result.success(skillReply)
+        // Roteamento: deixa a própria IA escolher a ferramenta certa (function calling),
+        // em vez do CommandParser por regex. Se não houver IA disponível (sem chave/sem
+        // internet), cai pro parser offline — mesma robustez de antes.
+        val route = routeWithAi(aiMessages, systemPrompt, providerPref)
+
+        val result: Result<String> = if (route is RouteResult.DirectReply) {
+            Result.success(route.text)
         } else {
-            val recentMessages = messageDao.getRecentMessages(20)
-            val contextSummary = memoryManager.buildContextSummary()
-            val systemPrompt = buildString {
-                append(JavisPersonality.SYSTEM_PROMPT)
-                if (contextSummary.isNotBlank()) {
-                    append("\n\nO que você sabe sobre este usuário: $contextSummary")
-                }
+            val parsed: ParsedCommand = (route as? RouteResult.Command)?.parsed
+                ?: commandParser.parse(userText)
+
+            if (parsed.type != CommandType.UNKNOWN && !parsed.requiresConfirmation) {
+                executeCommand(parsed)
             }
 
-            val aiMessages = recentMessages
-                .filter { it.role != MessageRole.SYSTEM }
-                .takeLast(16)
-                .map { AiMessage(it.role.name.lowercase(), it.content) }
+            // Skills que produzem a própria resposta (clima, Claude, lembrete) — pulam a IA
+            val skillReply: String? = resolveSkillReply(parsed)
 
-            val providerPref: AiProvider = prefs.aiProvider.first()
-            groqProvider.apiKey = prefs.groqApiKey.first()
-            deepSeekProvider.apiKey = prefs.deepSeekApiKey.first()
-
-            val primary: AiModelProvider = if (providerPref == AiProvider.GROQ) groqProvider else deepSeekProvider
-            val fallback: AiModelProvider = if (providerPref == AiProvider.GROQ) deepSeekProvider else groqProvider
-
-            var r = primary.chat(aiMessages, systemPrompt)
-            if (r.isFailure) r = fallback.chat(aiMessages, systemPrompt)
-            r
+            if (skillReply != null) {
+                Result.success(skillReply)
+            } else {
+                var r = primary.chat(aiMessages, systemPrompt)
+                if (r.isFailure) r = fallback.chat(aiMessages, systemPrompt)
+                r
+            }
         }
 
         result.onSuccess { reply ->
@@ -111,6 +124,29 @@ class JavisRepository @Inject constructor(
         }
 
         return result
+    }
+
+    /** Tenta rotear via IA (function calling); retorna null se nenhum provedor respondeu. */
+    private suspend fun routeWithAi(
+        aiMessages: List<AiMessage>,
+        systemPrompt: String,
+        providerPref: AiProvider
+    ): RouteResult? {
+        val routingPrompt = "$systemPrompt\n\n${AiToolRouter.currentDateTimeContext()}"
+        var toolResult = if (providerPref == AiProvider.GROQ) {
+            groqProvider.chatWithTools(aiMessages, routingPrompt)
+        } else {
+            deepSeekProvider.chatWithTools(aiMessages, routingPrompt)
+        }
+        if (toolResult.isFailure) {
+            toolResult = if (providerPref == AiProvider.GROQ) {
+                deepSeekProvider.chatWithTools(aiMessages, routingPrompt)
+            } else {
+                groqProvider.chatWithTools(aiMessages, routingPrompt)
+            }
+        }
+        val route = AiToolRouter.route(toolResult)
+        return if (route == RouteResult.Failed) null else route
     }
 
     /** Skills que devolvem uma resposta direta (pulam o Groq). null = deixa pro Groq. */

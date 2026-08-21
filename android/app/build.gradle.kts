@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,6 +8,14 @@ plugins {
     alias(libs.plugins.ksp)
     kotlin("kapt")
 }
+
+// Chaves locais (nunca commitadas — android/local.properties está no .gitignore).
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+fun localProp(key: String): String =
+    (localProperties.getProperty(key) ?: project.findProperty(key) as String?) ?: ""
 
 android {
     namespace = "com.gabi.assistant"
@@ -20,10 +30,10 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "GROQ_API_KEY", "\"${project.findProperty("GROQ_API_KEY") ?: ""}\"")
-        buildConfigField("String", "ELEVENLABS_API_KEY", "\"${project.findProperty("ELEVENLABS_API_KEY") ?: ""}\"")
-        buildConfigField("String", "DEEPSEEK_API_KEY", "\"${project.findProperty("DEEPSEEK_API_KEY") ?: ""}\"")
-        buildConfigField("String", "OPENROUTER_API_KEY", "\"${project.findProperty("OPENROUTER_API_KEY") ?: ""}\"")
+        buildConfigField("String", "GROQ_API_KEY", "\"${localProp("GROQ_API_KEY")}\"")
+        buildConfigField("String", "ELEVENLABS_API_KEY", "\"${localProp("ELEVENLABS_API_KEY")}\"")
+        buildConfigField("String", "DEEPSEEK_API_KEY", "\"${localProp("DEEPSEEK_API_KEY")}\"")
+        buildConfigField("String", "OPENROUTER_API_KEY", "\"${localProp("OPENROUTER_API_KEY")}\"")
     }
 
     buildTypes {
