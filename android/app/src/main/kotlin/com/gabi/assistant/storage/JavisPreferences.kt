@@ -31,6 +31,7 @@ class JavisPreferences @Inject constructor(
         val KEY_WAKE_WORD_ENABLED = booleanPreferencesKey("wake_word_enabled")
         val KEY_USER_ONBOARDED = booleanPreferencesKey("user_onboarded")
         val KEY_CONTINUOUS_MODE = booleanPreferencesKey("continuous_mode")
+        val KEY_PROACTIVE_NOTIFICATIONS = booleanPreferencesKey("proactive_notifications")
     }
 
     val groqApiKey: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_GROQ)
@@ -48,6 +49,9 @@ class JavisPreferences @Inject constructor(
     val notificationsEnabled: Flow<Boolean> = ds.data.map { it[KEY_NOTIFICATIONS_ENABLED] ?: true }
     val continuousMode: Flow<Boolean> = ds.data.map { it[KEY_CONTINUOUS_MODE] ?: false }
     val userOnboarded: Flow<Boolean> = ds.data.map { it[KEY_USER_ONBOARDED] ?: false }
+    /** Se a Gabi avisa sozinha ("Você recebeu um zap de X, quer que eu leia ou é segredo?")
+     *  quando chega WhatsApp/Gmail novo, em vez de só responder quando perguntada. Desligado por padrão. */
+    val proactiveNotifications: Flow<Boolean> = ds.data.map { it[KEY_PROACTIVE_NOTIFICATIONS] ?: false }
 
     suspend fun setGroqApiKey(key: String) = secureKeys.set(SecureKeyStore.KEY_GROQ, key)
     suspend fun setElevenLabsApiKey(key: String) = secureKeys.set(SecureKeyStore.KEY_ELEVENLABS, key)
@@ -61,4 +65,5 @@ class JavisPreferences @Inject constructor(
     suspend fun setNotificationsEnabled(b: Boolean) = ds.edit { it[KEY_NOTIFICATIONS_ENABLED] = b }
     suspend fun setContinuousMode(b: Boolean) = ds.edit { it[KEY_CONTINUOUS_MODE] = b }
     suspend fun setUserOnboarded(b: Boolean) = ds.edit { it[KEY_USER_ONBOARDED] = b }
+    suspend fun setProactiveNotifications(b: Boolean) = ds.edit { it[KEY_PROACTIVE_NOTIFICATIONS] = b }
 }

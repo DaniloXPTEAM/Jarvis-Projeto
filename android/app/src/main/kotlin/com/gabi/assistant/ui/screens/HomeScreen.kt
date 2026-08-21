@@ -1,5 +1,7 @@
 package com.gabi.assistant.ui.screens
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,10 +23,14 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.gabi.assistant.ui.components.GabiCharacter
+import com.gabi.assistant.ui.components.GabiCharacterState
 import com.gabi.assistant.ui.components.JavisBottomBar
 import com.gabi.assistant.ui.navigation.Screen
 import com.gabi.assistant.ui.theme.*
+import com.gabi.assistant.ui.viewmodel.HomeViewModel
 import kotlinx.coroutines.isActive
 import kotlin.math.PI
 import kotlin.math.acos
@@ -35,20 +41,29 @@ import kotlin.math.sqrt
 import java.util.Calendar
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltViewModel()) {
     val hour = remember { Calendar.getInstance().get(Calendar.HOUR_OF_DAY) }
     val greeting = when (hour) {
         in 5..11 -> "Bom dia"
         in 12..17 -> "Boa tarde"
         else -> "Boa noite"
     }
+    val characterState by viewModel.characterState.collectAsState()
+
     Scaffold(bottomBar = { JavisBottomBar(navController) }, containerColor = DarkBg) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween) {
             Column(modifier = Modifier.fillMaxWidth().padding(top = 24.dp), horizontalAlignment = Alignment.Start) {
                 Text(greeting, color = TextSecondary, fontSize = 14.sp)
                 Text("Gabi", color = OrangeAccent, fontSize = 32.sp, fontWeight = FontWeight.Bold)
             }
-            GabiOrb(sizeDp = 220, modifier = Modifier.clickable { navController.navigate(Screen.Chat.route) })
+            // Personagem ilustrada da Gabi (assets/gabi-idle.png, gabi-listening.png,
+            // gabi-talking.png); cai pro Orb de partículas se os arquivos sumirem —
+            // os dois reagem ao estado real de voz (ouvindo/falando).
+            GabiCharacter(
+                state = characterState,
+                modifier = Modifier.size(220.dp).clickable { navController.navigate(Screen.Chat.route) },
+                fallback = { GabiOrb(state = characterState, sizeDp = 220) }
+            )
             Text("Toque na Gabi para conversar", color = TextSecondary, fontSize = 13.sp)
             Row(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 QuickCard("Clima", "Como está?", Icons.Default.WbSunny) { navController.navigate(Screen.Chat.route) }
@@ -69,8 +84,13 @@ private fun RowScope.QuickCard(title: String, subtitle: String, icon: androidx.c
     }
 }
 
+/**
+ * Orb de partículas — laranja calmo parado (IDLE), acelera e clareia pra um
+ * dourado quase branco enquanto ESCUTA, e pulsa num coral quente enquanto FALA.
+ * As três cores/velocidades interpolam suavemente entre si conforme [state] muda.
+ */
 @Composable
-fun GabiOrb(modifier: Modifier = Modifier, sizeDp: Int = 220) {
+fun GabiOrb(modifier: Modifier = Modifier, sizeDp: Int = 220, state: GabiCharacterState = GabiCharacterState.IDLE) {
     val points = remember { buildOrbPoints(ORB_POINTS) }
     val edges  = remember(points) { buildOrbEdges(points, ORB_EDGE_THRESHOLD) }
 
@@ -81,9 +101,38 @@ fun GabiOrb(modifier: Modifier = Modifier, sizeDp: Int = 220) {
         }
     }
 
+    val speedMultiplier by animateFloatAsState(
+        targetValue = when (state) {
+            GabiCharacterState.LISTENING -> 2.2f
+            GabiCharacterState.TALKING -> 1.6f
+            GabiCharacterState.IDLE -> 1f
+        },
+        label = "orb_speed"
+    )
+    val glowIntensity by animateFloatAsState(
+        targetValue = if (state == GabiCharacterState.IDLE) 1f else 1.6f,
+        label = "orb_glow"
+    )
+    val glowColor by animateColorAsState(
+        targetValue = when (state) {
+            GabiCharacterState.LISTENING -> Color(0xFFFFE9B8) // dourado quase branco, alerta
+            GabiCharacterState.TALKING -> Color(0xFFFF7A66)   // coral quente, ritmo de fala
+            GabiCharacterState.IDLE -> Color(0xFFFF8C42)      // laranja calmo de sempre
+        },
+        label = "orb_glow_color"
+    )
+    val particleColor by animateColorAsState(
+        targetValue = when (state) {
+            GabiCharacterState.LISTENING -> Color(0xFFFFF3D6)
+            GabiCharacterState.TALKING -> Color(0xFFFFA98F)
+            GabiCharacterState.IDLE -> Color(0xFFFFB347)
+        },
+        label = "orb_particle_color"
+    )
+
     Box(modifier = modifier.size(sizeDp.dp), contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
-            drawParticleOrb(points, edges, timeMs)
+            drawParticleOrb(points, edges, timeMs * speedMultiplier, glowColor, particleColor, glowIntensity)
         }
     }
 }
@@ -92,11 +141,6 @@ fun GabiOrb(modifier: Modifier = Modifier, sizeDp: Int = 220) {
 
 private const val ORB_POINTS = 220
 private const val ORB_EDGE_THRESHOLD = 0.42f
-
-private val OrbEdgeColor      = Color(0xFFFFB347) // laranja
-private val OrbParticleLight  = Color(0xFFFFD9A0) // laranja claro
-private val OrbParticleOrange = Color(0xFFFFB347)
-private val OrbGlow           = Color(0xFFFF8C42)
 
 private class OrbPoint(val x: Float, val y: Float, val z: Float, val phase: Float)
 private class OrbProjection(val sx: Float, val sy: Float, val depth: Float, val scale: Float)
@@ -131,7 +175,10 @@ private fun buildOrbEdges(points: List<OrbPoint>, threshold: Float): List<IntArr
 private fun DrawScope.drawParticleOrb(
     points: List<OrbPoint>,
     edges: List<IntArray>,
-    timeMs: Float
+    timeMs: Float,
+    glowColor: Color = Color(0xFFFF8C42),
+    particleColor: Color = Color(0xFFFFB347),
+    glowIntensity: Float = 1f
 ) {
     val w = size.width
     val h = size.height
@@ -175,9 +222,9 @@ private fun DrawScope.drawParticleOrb(
         val pb = projections[edge[1]]
         val d = (pa.depth + pb.depth) * 0.5f
         if (d < 0.2f) continue
-        val alpha = (d * 0.18f).coerceIn(0f, 0.30f)
+        val alpha = (d * 0.18f * glowIntensity).coerceIn(0f, 0.42f)
         drawLine(
-            color = OrbEdgeColor.copy(alpha = alpha),
+            color = glowColor.copy(alpha = alpha),
             start = Offset(pa.sx, pa.sy),
             end = Offset(pb.sx, pb.sy),
             strokeWidth = max(0.6f * unit, 0.5f)
@@ -189,7 +236,7 @@ private fun DrawScope.drawParticleOrb(
         if (p.depth < 0.1f) return@forEachIndexed
         val radius = p.scale * (2.2f + p.depth * 1.8f) * unit
         val alpha = (0.4f + p.depth * 0.6f).coerceIn(0f, 1f)
-        val color = if (idx % 2 == 0) OrbParticleLight else OrbParticleOrange
+        val color = if (idx % 2 == 0) particleColor.copy(alpha = (particleColor.alpha)) else glowColor
         drawCircle(
             color = color.copy(alpha = alpha),
             radius = max(radius, 0.5f),
@@ -200,7 +247,7 @@ private fun DrawScope.drawParticleOrb(
     // Brilho do núcleo
     drawCircle(
         brush = Brush.radialGradient(
-            colors = listOf(OrbGlow.copy(alpha = 0.28f), Color.Transparent),
+            colors = listOf(glowColor.copy(alpha = (0.28f * glowIntensity).coerceIn(0f, 0.85f)), Color.Transparent),
             center = Offset(cx, cy),
             radius = R * 0.55f
         ),

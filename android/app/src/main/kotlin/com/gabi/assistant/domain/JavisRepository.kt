@@ -37,6 +37,9 @@ import com.gabi.assistant.voice.AndroidTtsFallback
 import com.gabi.assistant.voice.ElevenLabsTts
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -65,15 +68,71 @@ class JavisRepository @Inject constructor(
 ) {
     val currentSessionId: String = UUID.randomUUID().toString()
 
+    // Estado do aviso proativo pendente ("Quer que eu leia ou é segredo?") — enquanto o
+    // app está aberto, guarda a última pergunta feita sozinha pra interpretar a próxima
+    // fala do usuário como resposta a ela, antes de cair no roteamento normal.
+    private var pendingProactivePackage: String? = null
+    private var pendingProactiveText: String = ""
+    private var pendingProactiveAt: Long = 0L
+
     companion object {
         private const val GMAIL_PACKAGE = "com.google.android.gm"
+        private const val WHATSAPP_PACKAGE = "com.whatsapp"
+        private const val PENDING_PROMPT_TIMEOUT_MS = 90_000L
     }
 
     fun getMessages(sessionId: String): Flow<List<Message>> =
         messageDao.getMessagesBySession(sessionId)
 
+    /**
+     * Fica ouvindo notificação nova de WhatsApp/Gmail enquanto o app está aberto (chamado
+     * do ChatViewModel) e avisa a Gabi sozinha, se `proactiveNotifications` estiver ligado
+     * em Ajustes. Não funciona com o app em segundo plano — é o escopo escolhido pra
+     * primeira versão, evita precisar de um foreground service dedicado.
+     */
+    suspend fun watchProactiveNotifications(sessionId: String) {
+        JavisNotificationListenerService.newNotification.collect { item ->
+            if (!prefs.proactiveNotifications.first()) return@collect
+            val label = when (item.packageName) {
+                WHATSAPP_PACKAGE -> "zap"
+                GMAIL_PACKAGE -> "email"
+                else -> return@collect
+            }
+            pendingProactivePackage = item.packageName
+            pendingProactiveText = item.text
+            pendingProactiveAt = System.currentTimeMillis()
+            val announcement = "Você recebeu um $label de ${item.title}. Quer que eu leia ou é segredo?"
+            messageDao.insert(Message(sessionId = sessionId, role = MessageRole.ASSISTANT, content = announcement))
+            speak(announcement)
+        }
+    }
+
+    /** Se houver um aviso proativo pendente, interpreta a fala atual como resposta a ele. */
+    private suspend fun resolvePendingProactivePrompt(userText: String, sessionId: String): Result<String>? {
+        if (pendingProactivePackage == null) return null
+        val expired = System.currentTimeMillis() - pendingProactiveAt > PENDING_PROMPT_TIMEOUT_MS
+        pendingProactivePackage = null
+        if (expired) return null
+
+        val norm = java.text.Normalizer.normalize(userText.lowercase(), java.text.Normalizer.Form.NFD)
+            .replace(Regex("\\p{InCombiningDiacriticalMarks}+"), "")
+        val wantsRead = listOf("le", "leia", "ler", "sim", "quero", "pode", "manda", "claro").any { norm.contains(it) }
+        val wantsSecret = listOf("segredo", "nao", "depois", "deixa", "guarda").any { norm.contains(it) }
+        if (!wantsRead && !wantsSecret) return null
+
+        val reply = if (wantsRead) {
+            pendingProactiveText.ifBlank { "Só veio o aviso mesmo, sem prévia de texto." }
+        } else {
+            "Combinado, fica em segredo."
+        }
+        messageDao.insert(Message(sessionId = sessionId, role = MessageRole.ASSISTANT, content = reply))
+        speak(reply)
+        return Result.success(reply)
+    }
+
     suspend fun sendMessage(userText: String, sessionId: String): Result<String> {
         messageDao.insert(Message(sessionId = sessionId, role = MessageRole.USER, content = userText))
+        resolvePendingProactivePrompt(userText, sessionId)?.let { return it }
         memoryManager.learnFromConversation(userText)
 
         val recentMessages = messageDao.getRecentMessages(20)
@@ -217,19 +276,29 @@ class JavisRepository @Inject constructor(
         else -> null
     }
 
-    suspend fun speak(text: String) {
-        val useElevenLabs = prefs.useElevenLabs.first()
-        val elKey = prefs.elevenLabsApiKey.first()
+    private val _isSpeaking = MutableStateFlow(false)
+    /** Se a Gabi está falando agora (qualquer motor, ElevenLabs ou nativo) — usado pra
+     *  animar o Orb/personagem em tempo real, não é só um getter que precisa ser sondado. */
+    val isSpeaking: StateFlow<Boolean> = _isSpeaking.asStateFlow()
 
-        if (useElevenLabs && elKey.isNotBlank()) {
-            elevenLabsTts.apiKey = elKey
-            elevenLabsTts.voiceId = prefs.elevenLabsVoiceId.first()
-                .ifBlank { ElevenLabsTts.DEFAULT_VOICE_ID }
-            elevenLabsTts.speak(text)
-        } else {
-            androidTts.speechRate = prefs.speechRate.first()
-            androidTts.pitch = prefs.ttsPitch.first()
-            androidTts.speak(text)
+    suspend fun speak(text: String) {
+        _isSpeaking.value = true
+        try {
+            val useElevenLabs = prefs.useElevenLabs.first()
+            val elKey = prefs.elevenLabsApiKey.first()
+
+            if (useElevenLabs && elKey.isNotBlank()) {
+                elevenLabsTts.apiKey = elKey
+                elevenLabsTts.voiceId = prefs.elevenLabsVoiceId.first()
+                    .ifBlank { ElevenLabsTts.DEFAULT_VOICE_ID }
+                elevenLabsTts.speak(text)
+            } else {
+                androidTts.speechRate = prefs.speechRate.first()
+                androidTts.pitch = prefs.ttsPitch.first()
+                androidTts.speak(text)
+            }
+        } finally {
+            _isSpeaking.value = false
         }
     }
 

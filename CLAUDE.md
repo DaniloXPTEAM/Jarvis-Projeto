@@ -380,4 +380,61 @@ gerenciamento de arquivos.
   `permissions.defaultMode: "dontAsk"`, então qualquer ação não coberta pela
   lista `deny` é aprovada sem interromper — antes só "Bash"/"PowerShell"
   estavam liberados como ferramenta inteira, o que ainda deixava buracos
-  (comandos compostos, outras ferramentas). Próxima sessão: começar a Etapa 3.
+  (comandos compostos, outras ferramentas).
+- **21/08/2026, Etapa 3**: chaves de API criptografadas
+  (`EncryptedSharedPreferences`), roteamento por function-calling (Groq/
+  DeepSeek escolhem a ferramenta em vez de regex), chave nativa do Groq
+  embutida via `local.properties`, Gmail (prévia) + Agenda (ler e criar)
+  implementados. Ver seções próprias acima pra cada um.
+
+## Personagem da Gabi (GabiCharacter) + Orb reativo — Etapa 3, 21/08/2026
+
+Pedido do usuário: em vez do Orb abstrato de partículas, mostrar uma
+personagem ilustrada (inspirada na afilhada dele — é pra ela que o app está
+sendo feito) com 3 poses trocando por crossfade conforme o estado da Gabi.
+
+- **`ui/components/GabiCharacter.kt`** (novo): carrega 3 poses de
+  `assets/gabi-idle.png`, `gabi-listening.png`, `gabi-talking.png` e faz
+  crossfade suave entre elas conforme `GabiCharacterState`
+  (IDLE/LISTENING/TALKING). Inclui remoção de fundo por chroma key (magenta)
+  com suavização de borda por distância de cor + supressão de vazamento de
+  cor — pensado originalmente pra caso a arte viesse com fundo magenta sólido
+  em vez de canal alfa real, mas é inofensivo rodar em cima de um PNG já
+  transparente (o caso real, ver abaixo), então funciona nos dois cenários.
+  Se algum arquivo de pose não existir, cai pro `fallback` (o Orb) sem
+  quebrar — não trava a tela esperando asset que não existe.
+- **Assets de verdade recebidos e já embutidos**: o usuário gerou a
+  personagem (menina ruiva de vestido vermelho, estilo 3D animado) em 3
+  poses com **canal alfa real** (não precisou do chroma key na prática,
+  mas o código já suporta os dois casos). Arquivos copiados de
+  `%TEMP%\gabi-idle.png` (+ `-listening`, `-talking`) pra
+  `android/app/src/main/assets/`. **Confirmado com `unzip -l` no APK final**
+  que os 3 arquivos (768×768, ~570-620KB cada) estão de fato embutidos no
+  build — não é só teoria, testei o pipeline completo.
+- **Reatividade de verdade** (o pedido de duas mensagens atrás, "só tá bom se
+  o Orb reagir de verdade"): antes o Orb só tinha uma animação decorativa
+  contínua, sem relação com o estado real de voz.
+  - `JavisRepository` ganhou `isSpeaking: StateFlow<Boolean>`, ligado/desligado
+    em volta da chamada de `speak()` (funciona pros dois motores de TTS).
+  - `JavisSpeechRecognizer.isListening` já existia como `StateFlow<Boolean>`
+    reativo — só precisava ser consumido.
+  - Novo `ui/viewmodel/HomeViewModel.kt`: combina os dois Singletons acima
+    num único `GabiCharacterState` (LISTENING > TALKING > IDLE, nessa
+    prioridade). Por serem Singletons, reflete o estado real do app inteiro,
+    não importa qual tela disparou a escuta/fala.
+  - `HomeScreen.kt` passa esse estado pro `GabiCharacter` (e pro `GabiOrb`
+    como fallback). O Orb agora muda cor/velocidade de verdade: laranja calmo
+    parado (IDLE) → dourado quase branco e mais rápido (LISTENING) → coral
+    quente (TALKING) — com `animateColorAsState`/`animateFloatAsState` pra
+    transição suave entre estados, não um corte seco.
+- **Reforma visual mais ampla** (fundo/paleta/tipografia do app inteiro,
+  saindo do visual "painel hacker" atual): ainda não decidida — mostrei 3
+  direções num artefato visual (Estrela-Guia, Bolha de Sabão, Lanterna
+  Mágica) antes da personagem entrar em cena; com a personagem definida
+  agora, essas direções provavelmente precisam ser refeitas ao redor da
+  paleta dela (vermelho do vestido, ruivo do cabelo) em vez de abstratas.
+  **Pendente pra próxima sessão.**
+- Validado: `./gradlew clean :app:compileDebugKotlin` **e**
+  `./gradlew :app:assembleDebug` (o build completo do APK, não só
+  compilação) → `BUILD SUCCESSFUL` nos dois, com verificação real de que os
+  assets foram parar no APK.

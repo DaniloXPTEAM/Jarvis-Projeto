@@ -182,6 +182,19 @@ fun SettingsScreen(
                         colors = SwitchDefaults.colors(checkedThumbColor = CyanAccent, checkedTrackColor = CyanAccent.copy(0.3f))
                     )
                 }
+                Spacer(Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Avisos proativos", color = TextPrimary)
+                        Text("A Gabi avisa sozinha quando chega WhatsApp ou email novo, e pergunta se quer que ela leia", color = TextSecondary,
+                            style = MaterialTheme.typography.bodySmall)
+                    }
+                    Switch(
+                        checked = localState.proactiveNotifications,
+                        onCheckedChange = { localState = localState.copy(proactiveNotifications = it) },
+                        colors = SwitchDefaults.colors(checkedThumbColor = CyanAccent, checkedTrackColor = CyanAccent.copy(0.3f))
+                    )
+                }
             }
 
             // ── Dados ─────────────────────────────────────────────────────

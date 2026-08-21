@@ -23,7 +23,8 @@ data class SettingsUiState(
     val ttsPitch: Float = 1.15f,   // tom feminino caloroso (acima de 1.0)
     val useElevenLabs: Boolean = false,
     val notificationsEnabled: Boolean = true,
-    val continuousMode: Boolean = false
+    val continuousMode: Boolean = false,
+    val proactiveNotifications: Boolean = false
 )
 
 @HiltViewModel
@@ -52,8 +53,9 @@ class SettingsViewModel @Inject constructor(
         ) { rate, pitch, useEl, notif, cont ->
             PartialB(rate, pitch, useEl, notif, cont)
         },
-        prefs.anthropicApiKey
-    ) { a, b, anthropic ->
+        prefs.anthropicApiKey,
+        prefs.proactiveNotifications
+    ) { a, b, anthropic, proactive ->
         SettingsUiState(
             groqApiKey = a.groqApiKey,
             elevenLabsApiKey = a.elevenLabsApiKey,
@@ -65,7 +67,8 @@ class SettingsViewModel @Inject constructor(
             ttsPitch = b.ttsPitch,
             useElevenLabs = b.useElevenLabs,
             notificationsEnabled = b.notificationsEnabled,
-            continuousMode = b.continuousMode
+            continuousMode = b.continuousMode,
+            proactiveNotifications = proactive
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SettingsUiState())
 
@@ -87,6 +90,7 @@ class SettingsViewModel @Inject constructor(
             prefs.setUseElevenLabs(state.useElevenLabs)
             prefs.setNotificationsEnabled(state.notificationsEnabled)
             prefs.setContinuousMode(state.continuousMode)
+            prefs.setProactiveNotifications(state.proactiveNotifications)
             _savedMessage.value = "Ajustes salvos"
         }
     }

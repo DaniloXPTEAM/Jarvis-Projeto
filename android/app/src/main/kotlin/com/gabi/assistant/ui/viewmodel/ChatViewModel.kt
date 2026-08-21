@@ -39,7 +39,15 @@ class ChatViewModel @Inject constructor(
     init {
         observeMessages()
         observeSpeech()
+        observeProactiveNotifications()
         sendGreeting()
+    }
+
+    /** Enquanto esta tela (o app) estiver aberta, deixa a Gabi avisar sozinha sobre WhatsApp/Gmail novos. */
+    private fun observeProactiveNotifications() {
+        viewModelScope.launch {
+            repository.watchProactiveNotifications(sessionId)
+        }
     }
 
     private fun observeMessages() {
