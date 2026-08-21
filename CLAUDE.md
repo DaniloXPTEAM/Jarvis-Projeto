@@ -18,6 +18,54 @@ Documentos de referência já existentes (não duplicar aqui, só consultar):
 `SPEC.md` (spec visual original), `AUDITORIA.md` (auditoria do Android),
 `ANALISE_REPOS.md`, `RENDER-GUIA.md`, `VERIFICACAO.md`.
 
+## Backlog / começar a próxima sessão por aqui
+
+Sessão de 21/08/2026 encerrada com a Etapa 3 praticamente fechada. Ordem de
+prioridade pro que falta (discutida e confirmada com o usuário):
+
+1. 🔴 **Bug: confirmação de ações não usa o roteamento por IA.**
+   `ChatViewModel.sendMessage()` (linha ~106) decide se uma ação precisa de
+   confirmação (`requiresConfirmation`) chamando só `commandParser.parse(text)`
+   — o parser por **regex** antigo, não o roteamento por function-calling da
+   Etapa 3. Se a IA (não o regex) for quem identifica uma ação sensível
+   (`call_contact`/`send_whatsapp_message`/`set_alarm`), a tela não sabe disso,
+   não mostra o diálogo de confirmação, e o `JavisRepository` também não
+   executa (porque `requiresConfirmation=true` pula `executeCommand`) — a ação
+   simplesmente não acontece, sem avisar por quê, e cai numa resposta de
+   conversa genérica. É o item mais importante da lista — falha silenciosa em
+   ações que envolvem ligar/mandar mensagem de verdade.
+2. 🟡 **Dashboard com dado real na Home.** Os 3 `QuickCard` em `HomeScreen.kt`
+   (linhas ~69-71: "Clima"/"Como está?", "Memória"/"Lembretes",
+   "Avisos"/"Notificações") ainda são texto fixo, não dado de verdade.
+   Combinado com o usuário fazer isso puxando: clima real (`WeatherAgent`,
+   já existe), contagem de lembretes pendentes, contagem de notificações
+   reais (`JavisNotificationListenerService`, já existe). Foi combinado e
+   acabou não saindo porque a conversa desviou pro tema visual/personagem.
+3. 🟡 **WhatsApp: fallback de busca.** `openWhatsAppChatByName` (Accessibility
+   Service) só acha contato que já está visível na lista de conversas
+   recentes — não abre a lupa de busca do WhatsApp se não achar. Usuário
+   perguntou sobre a confiabilidade do envio, expliquei a limitação, ele não
+   pediu formalmente pra corrigir ainda mas ficou marcado como a melhoria
+   mais valiosa ali.
+4. 🟢 **Reforma visual mais ampla** (fundo/paleta/tipografia do app inteiro,
+   saindo do visual "painel hacker" herdado do fork original). Mostrei 3
+   direções num artefato (Estrela-Guia/Bolha de Sabão/Lanterna Mágica) antes
+   da personagem entrar em cena — precisam ser refeitas ao redor da paleta
+   dela (vermelho do vestido, ruivo do cabelo) em vez de abstratas. Ver seção
+   "Personagem da Gabi" mais abaixo pros detalhes técnicos já prontos
+   (`GabiCharacter.kt`, assets reais já no projeto).
+5. 🟢 **Gerenciamento de arquivos** (`AUDITORIA.md` item #33) — infraestrutura
+   existe (`FileHelper` + permissão de armazenamento), sem tela/fluxo de
+   verdade. Não discutido ainda com o usuário, só mapeado.
+
+**Ponto cego geral, vale lembrar sempre:** nada disso foi testado num
+aparelho/emulador real ainda — só validado por `./gradlew compileDebugKotlin`
+e `assembleDebug` (compila e o APK monta certo). Comportamento real (voz
+reconhecendo direito, chroma key/crossfade renderizando bem, fluxos de
+confirmação, etc.) só se confirma rodando de verdade. Considerar abrir no
+Android Studio / testar num aparelho como um próximo passo válido a qualquer
+momento, não só quando o backlog acima estiver zerado.
+
 ## Origem desta pasta
 
 Esta pasta (`Projeto Gabi`) foi copiada **inteira** em 20/08/2026 a partir de
@@ -386,6 +434,14 @@ gerenciamento de arquivos.
   DeepSeek escolhem a ferramenta em vez de regex), chave nativa do Groq
   embutida via `local.properties`, Gmail (prévia) + Agenda (ler e criar)
   implementados. Ver seções próprias acima pra cada um.
+- **21/08/2026, fechamento da sessão**: avisos proativos de WhatsApp/Gmail
+  (toggle em Ajustes) e a personagem ilustrada da Gabi (`GabiCharacter.kt` +
+  assets reais da personagem já no projeto + Orb reativo de verdade a
+  ouvir/falar) — ver seções próprias acima. Depois disso, revisão do que
+  ainda falta junto com o usuário resultou no backlog priorizado no topo
+  deste arquivo (bug de confirmação de ações, dashboard com dado real,
+  fallback de busca do WhatsApp, reforma visual, gerenciamento de arquivos).
+  **Sessão encerrada aqui — próxima sessão começa pelo item 1 do backlog.**
 
 ## Personagem da Gabi (GabiCharacter) + Orb reativo — Etapa 3, 21/08/2026
 
