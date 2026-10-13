@@ -61,6 +61,7 @@ object AiToolRouter {
 
             "search_web" -> ParsedCommand(CommandType.SEARCH_WEB, target = str("query"))
             "search_youtube" -> ParsedCommand(CommandType.SEARCH_YOUTUBE, target = str("query"))
+            "search_spotify" -> ParsedCommand(CommandType.SEARCH_SPOTIFY, target = str("query"))
 
             "send_whatsapp_message" -> {
                 val contact = str("contact_name")
@@ -95,6 +96,13 @@ object AiToolRouter {
             }
 
             "read_gmail" -> ParsedCommand(CommandType.READ_GMAIL)
+
+            "save_memory" -> {
+                val key = str("key").ifBlank { "memoria_${System.currentTimeMillis()}" }
+                val value = str("value")
+                val type = str("type").ifBlank { "PREFERENCE" }
+                ParsedCommand(CommandType.SAVE_MEMORY, target = key, extra = "$type|$value")
+            }
 
             else -> ParsedCommand(CommandType.UNKNOWN)
         }

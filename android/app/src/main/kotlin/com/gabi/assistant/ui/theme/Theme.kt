@@ -5,16 +5,23 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-val CyanAccent = Color(0xFF00D4FF)
-val OrangeAccent = Color(0xFFFFB347)
-val BlueAccent = Color(0xFF0066FF)
-val DarkBg = Color(0xFF050A0F)
-val SurfaceDark = Color(0xFF0D1421)
-val SurfaceMid = Color(0xFF131D2E)
-val TextPrimary = Color(0xFFE8F4FD)
-val TextSecondary = Color(0xFF7B9AB2)
+// Paleta "Céu de Outono" — dourado/teal sobre azul-noite, em torno da
+// personagem real da Gabi (ver mockup aprovado). Nomes antigos (Cyan/Orange/
+// Blue) mantidos porque são referenciados em vários arquivos — só os valores
+// mudaram, pra não precisar renomear em todo o app.
+val CyanAccent = Color(0xFFFFCF8C)
+val OrangeAccent = Color(0xFFD9A35C)
+val BlueAccent = Color(0xFF5FB8AC)
+val DarkBg = Color(0xFF0A0F16)
+val SurfaceDark = Color(0xFF141D27)
+val SurfaceMid = Color(0xFF1A2530)
+val TextPrimary = Color(0xFFEAF6F5)
+val TextSecondary = Color(0xFF8EA7AC)
 val ErrorRed = Color(0xFFFF4D6A)
 val SuccessGreen = Color(0xFF00E5B0)
+/** Verde de marca do Spotify — usado só na caixinha de som reativa do Quarto da Gabi,
+ *  pra ficar claramente reconhecível como "isso é o Spotify tocando" à primeira vista. */
+val SpotifyGreen = Color(0xFF1ED760)
 
 private val JavisColorScheme = darkColorScheme(
     primary = CyanAccent,

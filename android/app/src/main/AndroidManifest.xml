@@ -58,11 +58,42 @@
     <!-- Vibrate -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
-    <!-- Visibilidade de pacotes (Android 11+/API 30+): necessÃ¡ria para detectar se o
-         motor "Google Text-to-Speech" estÃ¡ instalado e usÃ¡-lo explicitamente (vozes
-         neurais, mais naturais que o motor padrÃ£o de alguns fabricantes). -->
+    <!-- Visibilidade de pacotes (Android 11+/API 30+): sem declarar aqui, o Android nem
+         deixa o app VER se está instalado (isPackageInstalled sempre falso) nem
+         RESOLVER o intent explícito de abrir (getLaunchIntentForPackage sempre nulo) —
+         é por isso que "abrir WhatsApp"/"manda WhatsApp" nunca funcionava mesmo com o
+         app instalado: câmera/discador funcionam porque usam intents IMPLÍCITOS
+         (ACTION_IMAGE_CAPTURE, ACTION_DIAL), que o Android sempre resolve; abrir um
+         app específico por package (WhatsApp, Instagram etc.) precisa dele listado
+         aqui. Lista = todos os packages explícitos usados em CommandParser.appAliases. -->
     <queries>
         <package android:name="com.google.android.tts" />
+        <package android:name="com.whatsapp" />
+        <package android:name="com.whatsapp.w4b" />
+        <package android:name="com.google.android.youtube" />
+        <package android:name="com.android.chrome" />
+        <package android:name="com.android.calculator2" />
+        <package android:name="com.android.contacts" />
+        <package android:name="com.android.documentsui" />
+        <package android:name="com.android.gallery3d" />
+        <package android:name="com.google.android.apps.maps" />
+        <package android:name="com.google.android.gm" />
+        <package android:name="com.android.dialer" />
+        <package android:name="com.android.messaging" />
+        <package android:name="com.facebook.katana" />
+        <package android:name="com.instagram.android" />
+        <package android:name="com.zhiliaoapp.musically" />
+        <package android:name="org.telegram.messenger" />
+        <package android:name="com.twitter.android" />
+        <package android:name="com.spotify.music" />
+        <package android:name="com.google.android.music" />
+        <package android:name="com.netflix.mediaclient" />
+        <package android:name="com.snapchat.android" />
+        <package android:name="com.deepseek.chat" />
+        <package android:name="com.openai.chatgpt" />
+        <package android:name="com.android.deskclock" />
+        <package android:name="com.android.calendar" />
+        <package android:name="com.amazon.mShop.android.shopping" />
     </queries>
 
     <application
@@ -137,6 +168,18 @@
         <receiver
             android:name=".receiver.ReminderReceiver"
             android:exported="false" />
+
+        <!-- Widget de atalho da tela inicial: toque abre a Gabi já ouvindo -->
+        <receiver
+            android:name=".widget.GabiWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/gabi_widget_info" />
+        </receiver>
 
     </application>
 

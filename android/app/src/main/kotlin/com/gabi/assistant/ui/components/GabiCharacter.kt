@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -75,6 +76,86 @@ fun GabiCharacter(
             missingAssets -> fallback()
             // ainda carregando (primeiro frame) — não mostra nada por uma fração de segundo
         }
+    }
+}
+
+/**
+ * Miniatura circular só com o rosto da Gabi (pose idle), pra usar como ícone
+ * — ex. avatar central da barra de baixo. Carrega e processa só 1 arquivo
+ * (não as 3 poses do [GabiCharacter]), e recorta pro topo da imagem via
+ * ContentScale.Crop + Alignment.TopCenter, já que as poses são corpo inteiro.
+ */
+@Composable
+fun GabiFaceAvatar(modifier: Modifier = Modifier, fallback: @Composable () -> Unit = {}) {
+    val context = LocalContext.current
+    var face by remember { mutableStateOf<ImageBitmap?>(null) }
+    var missing by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        val bitmap = withContext(Dispatchers.IO) {
+            try {
+                context.assets.open(POSE_IDLE_FILE).use { BitmapFactory.decodeStream(it) }
+                    ?.let { chromaKeyToTransparent(it) }
+            } catch (e: Exception) {
+                null
+            }
+        }
+        if (bitmap == null) missing = true else face = bitmap
+    }
+
+    val current = face
+    when {
+        current != null -> Image(
+            bitmap = current,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            alignment = Alignment.TopCenter,
+            modifier = modifier
+        )
+        missing -> fallback()
+    }
+}
+
+/**
+ * Carrega e mostra UM arquivo de `assets/` pelo nome — usado pelas poses de rotina do
+ * Quarto (`gabi-comer.png`, `gabi-dormir.png`...) e pelo fundo do quarto
+ * (`room-bg.png`), que não fazem parte do ciclo de 3 poses do [GabiCharacter].
+ * [chromaKey] liga o mesmo processamento de fundo transparente das outras poses —
+ * desligado pro `room-bg.png`, que é uma cena opaca, não um recorte de personagem.
+ */
+@Composable
+fun GabiAssetImage(
+    fileName: String,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Fit,
+    chromaKey: Boolean = true,
+    fallback: @Composable () -> Unit = {}
+) {
+    val context = LocalContext.current
+    var bitmap by remember(fileName) { mutableStateOf<ImageBitmap?>(null) }
+    var missing by remember(fileName) { mutableStateOf(false) }
+
+    LaunchedEffect(fileName) {
+        val loaded = withContext(Dispatchers.IO) {
+            try {
+                context.assets.open(fileName).use { BitmapFactory.decodeStream(it) }
+                    ?.let { if (chromaKey) chromaKeyToTransparent(it) else it.asImageBitmap() }
+            } catch (e: Exception) {
+                null
+            }
+        }
+        if (loaded == null) missing = true else bitmap = loaded
+    }
+
+    val current = bitmap
+    when {
+        current != null -> Image(
+            bitmap = current,
+            contentDescription = null,
+            contentScale = contentScale,
+            modifier = modifier
+        )
+        missing -> fallback()
     }
 }
 

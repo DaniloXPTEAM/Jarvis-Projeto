@@ -24,8 +24,7 @@ import com.gabi.assistant.ui.theme.*
 fun MicButton(
     isListening: Boolean,
     isProcessing: Boolean,
-    onPress: () -> Unit,
-    onRelease: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val pulseAnim = rememberInfiniteTransition(label = "pulse")
@@ -77,13 +76,7 @@ fun MicButton(
                         Brush.radialGradient(listOf(SurfaceMid, SurfaceDark))
                 )
                 .pointerInput(Unit) {
-                    detectTapGestures(
-                        onPress = {
-                            onPress()
-                            tryAwaitRelease()
-                            onRelease()
-                        }
-                    )
+                    detectTapGestures(onTap = { onClick() })
                 }
         ) {
             if (isProcessing) {

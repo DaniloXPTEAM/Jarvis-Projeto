@@ -30,6 +30,8 @@ interface OpenMeteoApi {
 
 data class WeatherResponse(val current: CurrentWeather? = null)
 
+data class WeatherSummary(val cityName: String, val tempC: Int, val description: String, val emoji: String)
+
 data class CurrentWeather(
     @SerializedName("temperature_2m") val temperature: Double = 0.0,
     @SerializedName("apparent_temperature") val feelsLike: Double = 0.0,
@@ -122,6 +124,38 @@ class WeatherAgent @Inject constructor() {
             Log.e("WeatherAgent", "erro clima: ${e.message}")
             "Não consegui acessar o clima. Verifica sua conexão com a internet."
         }
+    }
+
+    /** Versão estruturada do clima atual, pra UI (card do dashboard) em vez de frase falada. */
+    suspend fun getCurrentWeatherSummary(cityQuery: String? = null): WeatherSummary? {
+        val (lat, lon, name) = resolveCity(cityQuery)
+        return try {
+            val resp = api.getForecast(lat, lon)
+            val c = if (resp.isSuccessful) resp.body()?.current else null
+            c ?: return null
+            WeatherSummary(
+                cityName = name,
+                tempC = c.temperature.toInt(),
+                description = codeToText(c.code).replaceFirstChar { it.uppercase() },
+                emoji = codeToEmoji(c.code)
+            )
+        } catch (e: Exception) {
+            Log.e("WeatherAgent", "erro clima (summary): ${e.message}")
+            null
+        }
+    }
+
+    private fun codeToEmoji(code: Int): String = when (code) {
+        0, 1 -> "☀️"
+        2 -> "⛅"
+        3 -> "☁️"
+        45, 48 -> "🌫️"
+        51, 53, 55, 56, 57 -> "🌦️"
+        61, 63, 65, 80, 81, 82 -> "🌧️"
+        66, 67 -> "🌨️"
+        71, 73, 75, 77, 85, 86 -> "❄️"
+        95, 96, 99 -> "⛈️"
+        else -> "🌡️"
     }
 
     private fun codeToText(code: Int): String = when (code) {

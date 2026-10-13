@@ -20,7 +20,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.*
@@ -28,12 +27,13 @@ import com.gabi.assistant.ui.components.*
 import com.gabi.assistant.ui.navigation.Screen
 import com.gabi.assistant.ui.theme.*
 import com.gabi.assistant.ui.viewmodel.ChatViewModel
+import com.gabi.assistant.ui.viewmodel.sharedChatViewModel
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ChatScreen(
     navController: NavController,
-    viewModel: ChatViewModel = hiltViewModel()
+    viewModel: ChatViewModel = sharedChatViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
@@ -76,7 +76,10 @@ fun ChatScreen(
                             .background(Brush.radialGradient(listOf(CyanAccent.copy(0.3f), BlueAccent.copy(0.1f)))),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.SmartToy, null, tint = CyanAccent, modifier = Modifier.size(22.dp))
+                        GabiFaceAvatar(
+                            modifier = Modifier.fillMaxSize(),
+                            fallback = { Icon(Icons.Default.SmartToy, null, tint = CyanAccent, modifier = Modifier.size(22.dp)) }
+                        )
                     }
                     Spacer(Modifier.width(10.dp))
                     Column {
@@ -213,14 +216,13 @@ fun ChatScreen(
                 MicButton(
                     isListening = uiState.voiceState.isListening,
                     isProcessing = uiState.isLoading,
-                    onPress = {
+                    onClick = {
                         if (micPermission.status.isGranted) {
-                            viewModel.startListening()
+                            viewModel.toggleContinuousMode()
                         } else {
                             micPermission.launchPermissionRequest()
                         }
-                    },
-                    onRelease = { viewModel.stopListening() }
+                    }
                 )
             }
         }

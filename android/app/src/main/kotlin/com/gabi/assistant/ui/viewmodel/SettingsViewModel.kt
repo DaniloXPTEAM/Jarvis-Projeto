@@ -24,7 +24,9 @@ data class SettingsUiState(
     val useElevenLabs: Boolean = false,
     val notificationsEnabled: Boolean = true,
     val continuousMode: Boolean = false,
-    val proactiveNotifications: Boolean = false
+    val proactiveNotifications: Boolean = false,
+    val spotifyClientId: String = "",
+    val spotifyClientSecret: String = ""
 )
 
 @HiltViewModel
@@ -54,8 +56,9 @@ class SettingsViewModel @Inject constructor(
             PartialB(rate, pitch, useEl, notif, cont)
         },
         prefs.anthropicApiKey,
-        prefs.proactiveNotifications
-    ) { a, b, anthropic, proactive ->
+        prefs.proactiveNotifications,
+        combine(prefs.spotifyClientId, prefs.spotifyClientSecret) { id, secret -> PartialC(id, secret) }
+    ) { a, b, anthropic, proactive, c ->
         SettingsUiState(
             groqApiKey = a.groqApiKey,
             elevenLabsApiKey = a.elevenLabsApiKey,
@@ -68,7 +71,9 @@ class SettingsViewModel @Inject constructor(
             useElevenLabs = b.useElevenLabs,
             notificationsEnabled = b.notificationsEnabled,
             continuousMode = b.continuousMode,
-            proactiveNotifications = proactive
+            proactiveNotifications = proactive,
+            spotifyClientId = c.spotifyClientId,
+            spotifyClientSecret = c.spotifyClientSecret
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SettingsUiState())
 
@@ -91,6 +96,8 @@ class SettingsViewModel @Inject constructor(
             prefs.setNotificationsEnabled(state.notificationsEnabled)
             prefs.setContinuousMode(state.continuousMode)
             prefs.setProactiveNotifications(state.proactiveNotifications)
+            prefs.setSpotifyClientId(state.spotifyClientId)
+            prefs.setSpotifyClientSecret(state.spotifyClientSecret)
             _savedMessage.value = "Ajustes salvos"
         }
     }
@@ -127,5 +134,10 @@ class SettingsViewModel @Inject constructor(
         val useElevenLabs: Boolean,
         val notificationsEnabled: Boolean,
         val continuousMode: Boolean
+    )
+
+    private data class PartialC(
+        val spotifyClientId: String,
+        val spotifyClientSecret: String
     )
 }

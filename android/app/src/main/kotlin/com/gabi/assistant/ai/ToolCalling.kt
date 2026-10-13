@@ -81,88 +81,55 @@ object GabiTools {
     private fun tool(name: String, description: String, parameters: JsonObject): ToolDef =
         ToolDef(function = ToolFunctionDef(name, description, parameters))
 
+    // Descrições enxutas de propósito: cada tool aqui é reenviada por INTEIRO em toda
+    // mensagem (custo de token fixo, não só uma vez) — texto verboso vira custo real
+    // de API a cada turno de conversa. requiresConfirmation já é reforçado no app
+    // (AiToolRouter), então não precisa repetir isso na descrição pro modelo.
     val definitions: List<ToolDef> = listOf(
-        tool(
-            "open_app", "Abre um aplicativo no aparelho pelo nome (ex.: whatsapp, youtube, chrome).",
-            params(listOf("app_name")) { add("app_name", stringProp("Nome do app, em minúsculas.")) }
-        ),
-        tool(
-            "call_contact", "Liga para um contato da agenda pelo nome. Sempre exige confirmação do usuário antes de ligar.",
-            params(listOf("contact_name")) { add("contact_name", stringProp("Nome do contato a ligar.")) }
-        ),
-        tool(
-            "set_alarm", "Define um alarme no relógio do aparelho.",
-            params { add("description", stringProp("Descrição livre do alarme pedido pelo usuário.")) }
-        ),
-        tool(
-            "search_web", "Busca um termo no Google.",
-            params(listOf("query")) { add("query", stringProp("O que buscar.")) }
-        ),
-        tool(
-            "search_youtube", "Busca um termo no YouTube.",
-            params(listOf("query")) { add("query", stringProp("O que buscar no YouTube.")) }
-        ),
-        tool(
-            "send_whatsapp_message", "Envia uma mensagem de WhatsApp para um contato. Sempre exige confirmação antes de enviar.",
+        tool("open_app", "Abre um app pelo nome.",
+            params(listOf("app_name")) { add("app_name", stringProp("nome do app, minúsculo")) }),
+        tool("call_contact", "Liga para um contato.",
+            params(listOf("contact_name")) { add("contact_name", stringProp("nome do contato")) }),
+        tool("set_alarm", "Define um alarme.",
+            params { add("description", stringProp("descrição livre do alarme")) }),
+        tool("search_web", "Busca no Google.",
+            params(listOf("query")) { add("query", stringProp("termo de busca")) }),
+        tool("search_youtube", "Busca no YouTube.",
+            params(listOf("query")) { add("query", stringProp("termo de busca")) }),
+        tool("search_spotify", "Busca uma música/artista/playlist no Spotify e abre os resultados.",
+            params(listOf("query")) { add("query", stringProp("termo de busca (música, artista ou playlist)")) }),
+        tool("send_whatsapp_message", "Manda mensagem de WhatsApp.",
             params(listOf("contact_name", "message")) {
-                add("contact_name", stringProp("Nome do contato/grupo destinatário."))
-                add("message", stringProp("Texto da mensagem a enviar."))
-            }
-        ),
-        tool("read_notifications", "Lê as notificações recentes do aparelho em voz alta.", params {}),
-        tool("open_settings", "Abre as configurações do sistema Android.", params {}),
-        tool("take_photo", "Abre a câmera para tirar uma foto.", params {}),
-        tool(
-            "get_weather", "Consulta a previsão do tempo/clima atual de uma cidade.",
-            params { add("city", stringProp("Cidade consultada. Vazio = cidade padrão do usuário.")) }
-        ),
-        tool(
-            "set_reminder",
-            "Cria um lembrete que vai notificar o usuário num horário específico no futuro.",
+                add("contact_name", stringProp("contato/grupo destinatário"))
+                add("message", stringProp("texto da mensagem"))
+            }),
+        tool("read_notifications", "Lê notificações recentes em voz alta.", params {}),
+        tool("open_settings", "Abre configurações do Android.", params {}),
+        tool("take_photo", "Abre a câmera.", params {}),
+        tool("get_weather", "Consulta o clima atual.",
+            params { add("city", stringProp("cidade; vazio = padrão do usuário")) }),
+        tool("set_reminder", "Cria lembrete interno num horário futuro.",
             params(listOf("subject", "trigger_at")) {
-                add("subject", stringProp("Do que o lembrete trata, em poucas palavras."))
-                add(
-                    "trigger_at",
-                    stringProp(
-                        "Data e hora alvo em ISO-8601 (ex.: 2026-08-21T20:00:00), calculada a partir " +
-                            "da data/hora atual informada no prompt e do que o usuário pediu " +
-                            "(\"em 30 minutos\", \"amanhã às 9h\", etc.)."
-                    )
-                )
-            }
-        ),
-        tool(
-            "share_content", "Compartilha um texto (geralmente a última resposta da Gabi) via o menu de compartilhamento do Android.",
-            params { add("text", stringProp("Texto a compartilhar. Vazio = usa a última resposta da Gabi.")) }
-        ),
-        tool("bluetooth_connect", "Liga o Bluetooth e roteia o áudio da Gabi pra um fone/caixa conectado.", params {}),
-        tool(
-            "ask_claude", "Encaminha uma pergunta específica pro Claude (Anthropic) responder, quando o usuário pede explicitamente para falar com o Claude.",
-            params(listOf("query")) { add("query", stringProp("A pergunta a enviar ao Claude.")) }
-        ),
-        tool(
-            "read_calendar", "Lê os próximos compromissos da agenda/calendário do usuário em voz alta.",
-            params {}
-        ),
-        tool(
-            "create_calendar_event",
-            "Cria um novo compromisso/evento na agenda do usuário (não é um lembrete interno do app, é um evento de calendário de verdade).",
+                add("subject", stringProp("do que se trata, poucas palavras"))
+                add("trigger_at", stringProp("ISO-8601 (ex: 2026-08-21T20:00:00), calculado a partir da data/hora atual do prompt"))
+            }),
+        tool("share_content", "Compartilha texto via menu do Android.",
+            params { add("text", stringProp("texto; vazio = última resposta da Gabi")) }),
+        tool("bluetooth_connect", "Liga Bluetooth e roteia o áudio da Gabi pra ele.", params {}),
+        tool("ask_claude", "Encaminha pergunta pro Claude, só se o usuário pedir Claude explicitamente.",
+            params(listOf("query")) { add("query", stringProp("pergunta a enviar")) }),
+        tool("read_calendar", "Lê próximos compromissos da agenda em voz alta.", params {}),
+        tool("create_calendar_event", "Cria evento real na agenda do sistema (não é lembrete interno).",
             params(listOf("title", "start_at")) {
-                add("title", stringProp("Título do compromisso, em poucas palavras."))
-                add(
-                    "start_at",
-                    stringProp(
-                        "Data e hora de início em ISO-8601 (ex.: 2026-08-22T15:00:00), calculada " +
-                            "a partir da data/hora atual informada no prompt."
-                    )
-                )
-            }
-        ),
-        tool(
-            "read_gmail",
-            "Verifica se chegou email novo no Gmail e lê a prévia (remetente, assunto e trecho do corpo) " +
-                "das notificações recentes do Gmail. Não lê o corpo completo do email.",
-            params {}
-        )
+                add("title", stringProp("título, poucas palavras"))
+                add("start_at", stringProp("ISO-8601 (ex: 2026-08-22T15:00:00), calculado a partir da data/hora atual do prompt"))
+            }),
+        tool("read_gmail", "Confere e lê prévia (remetente/assunto/trecho) de email novo no Gmail.", params {}),
+        tool("save_memory", "Guarda preferência/rotina/hábito/fato do usuário pra lembrar depois. Use sempre que ele ensinar algo sobre si, mesmo sem pedir pra 'salvar'.",
+            params(listOf("key", "value", "type")) {
+                add("key", stringProp("chave curta única, snake_case (ex: 'rotina_bom_dia')"))
+                add("value", stringProp("o que lembrar, completo"))
+                add("type", stringProp("USER_NAME, PREFERENCE, HABIT, ROUTINE, FACT ou FAVORITE_APP"))
+            })
     )
 }

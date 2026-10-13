@@ -48,6 +48,12 @@ class JavisSpeechRecognizer @Inject constructor(
     private var recognizer: SpeechRecognizer? = null
     private var restartRunnable: Runnable? = null
     private var transientAttempts = 0
+    // O próprio stopListening() pode disparar um onError (ex.: ERROR_CLIENT) como
+    // efeito colateral de cancelar a sessão em andamento — sem essa flag, esse erro
+    // era tratado como "transiente" e reagendava um reinício sozinho, mesmo com o
+    // usuário tendo acabado de mandar parar. Confirmado ao vivo em log (13/10/2026):
+    // "Erro transiente" chegava 14ms depois do stopListening().
+    private var stoppedByUser = false
 
     private val _events = MutableStateFlow<SpeechEvent?>(null)
     val events: StateFlow<SpeechEvent?> = _events
@@ -75,6 +81,11 @@ class JavisSpeechRecognizer @Inject constructor(
 
         override fun onError(error: Int) {
             _isListening.value = false
+
+            if (stoppedByUser) {
+                stoppedByUser = false
+                return
+            }
 
             // Erros transientes do serviço de reconhecimento: recria e tenta de novo.
             if (error == SpeechRecognizer.ERROR_CLIENT || error == SpeechRecognizer.ERROR_RECOGNIZER_BUSY) {
@@ -109,6 +120,7 @@ class JavisSpeechRecognizer @Inject constructor(
 
     fun startListening() {
         if (_isListening.value) return
+        stoppedByUser = false
 
         if (!SpeechRecognizer.isRecognitionAvailable(context)) {
             emitError(-1, "Reconhecimento de voz indisponível neste aparelho.")
@@ -165,12 +177,16 @@ class JavisSpeechRecognizer @Inject constructor(
         putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
         putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
         putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 500L)
-        putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 1500L)
-        putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 1000L)
+        // 1500ms/1000ms cortava a fala no meio de uma pausa natural de frase (o usuário
+        // ainda segurando o botão e falando) — aumentado pra dar mais margem antes do
+        // reconhecedor decidir que a fala acabou.
+        putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 2500L)
+        putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 1800L)
     }
 
     fun stopListening() {
         _isListening.value = false
+        stoppedByUser = true
         restartRunnable?.let { mainHandler.removeCallbacks(it) }
         restartRunnable = null
         try {

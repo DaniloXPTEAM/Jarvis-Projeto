@@ -1,16 +1,23 @@
 package com.gabi.assistant.bluetooth
 
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.AudioManager
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
+import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.resume
 
 /**
  * Controle Bluetooth do aparelho.
@@ -81,6 +88,70 @@ class BluetoothController @Inject constructor(
         runCatching {
             audioManager.isBluetoothScoOn = false
             audioManager.stopBluetoothSco()
+        }
+    }
+
+    /**
+     * Busca aparelhos Bluetooth NOVOS por perto (não só os já pareados) — antes disso
+     * não existia, era a lacuna real por trás de "o Bluetooth não acha nada": a Gabi
+     * só sabia rotear áudio pro que já estava pareado manualmente, nunca fazia
+     * descoberta de verdade. `BluetoothAdapter.startDiscovery()` é assíncrono — os
+     * aparelhos chegam um por um via broadcast `ACTION_FOUND`, e o scan avisa quando
+     * termina via `ACTION_DISCOVERY_FINISHED` (tipicamente ~12s). `neverForLocation`
+     * já declarado no manifesto pro `BLUETOOTH_SCAN` dispensa localização em
+     * Android 12+; ler o nome de cada aparelho encontrado (`device.name`) exige
+     * `BLUETOOTH_CONNECT`, já concedido.
+     */
+    suspend fun discoverDevices(): List<String> {
+        val a = adapter ?: return emptyList()
+        if (!a.isEnabled) return emptyList()
+        return withTimeoutOrNull(15_000) {
+            suspendCancellableCoroutine { cont ->
+                val found = linkedSetOf<String>()
+                val receiver = object : BroadcastReceiver() {
+                    override fun onReceive(ctx: Context, intent: Intent) {
+                        when (intent.action) {
+                            BluetoothDevice.ACTION_FOUND -> {
+                                @Suppress("DEPRECATION")
+                                val device = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
+                                val name = runCatching { device?.name }.getOrNull()
+                                if (!name.isNullOrBlank()) found.add(name)
+                            }
+                            BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {
+                                runCatching { context.unregisterReceiver(this) }
+                                if (cont.isActive) cont.resume(found.toList())
+                            }
+                        }
+                    }
+                }
+                val filter = IntentFilter().apply {
+                    addAction(BluetoothDevice.ACTION_FOUND)
+                    addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
+                }
+                ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_EXPORTED)
+
+                val started = runCatching { a.startDiscovery() }.getOrDefault(false)
+                if (!started) {
+                    runCatching { context.unregisterReceiver(receiver) }
+                    if (cont.isActive) cont.resume(emptyList())
+                    return@suspendCancellableCoroutine
+                }
+                cont.invokeOnCancellation {
+                    runCatching { context.unregisterReceiver(receiver) }
+                    runCatching { a.cancelDiscovery() }
+                }
+            }
+        } ?: emptyList()
+    }
+
+    /** Abre a tela nativa de Bluetooth do Android — pra o usuário parear um aparelho
+     *  novo achado pela busca (parear programaticamente pede confirmação de PIN/tela
+     *  do sistema de qualquer forma, então é mais confiável deixar o usuário tocar). */
+    fun openBluetoothSettings() {
+        runCatching {
+            context.startActivity(
+                Intent(Settings.ACTION_BLUETOOTH_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
         }
     }
 

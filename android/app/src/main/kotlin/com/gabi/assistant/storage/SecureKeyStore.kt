@@ -54,5 +54,7 @@ class SecureKeyStore @Inject constructor(
         const val KEY_ELEVENLABS = "elevenlabs_api_key"
         const val KEY_DEEPSEEK = "deepseek_api_key"
         const val KEY_ANTHROPIC = "anthropic_api_key"
+        const val KEY_SPOTIFY_CLIENT_ID = "spotify_client_id"
+        const val KEY_SPOTIFY_CLIENT_SECRET = "spotify_client_secret"
     }
 }

@@ -62,6 +62,17 @@ fun PermissionsScreen(navController: NavController, viewModel: OnboardingViewMod
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
                     Manifest.permission.POST_NOTIFICATIONS else null
             ),
+            // Sem isso concedido, ligar Bluetooth/rotear áudio pra caixa/fone falha
+            // em silêncio (SecurityException engolida por runCatching) — antes nem
+            // aparecia como pedido nenhum, só ficava declarado no manifesto sem efeito.
+            PermDef("Bluetooth (conectar)", "Rotear a voz da Gabi pra um fone/caixa", Icons.Default.Bluetooth,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                    Manifest.permission.BLUETOOTH_CONNECT else null
+            ),
+            PermDef("Bluetooth (buscar)", "Ver dispositivos Bluetooth por perto", Icons.Default.BluetoothSearching,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                    Manifest.permission.BLUETOOTH_SCAN else null
+            ),
             PermDef("Leitor de notificações", "Ler notificações de todos os apps",
                 Icons.Default.NotificationsActive,
                 null, isSystem = true, systemAction = Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS),

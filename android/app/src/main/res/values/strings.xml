@@ -16,4 +16,9 @@
     <string name="reminder_channel_name">Lembretes</string>
     <string name="reminder_channel_desc">Notificações dos lembretes criados pela Gabi</string>
     <string name="reminder_notification_title">⏰ Lembrete da Gabi</string>
+
+    <!-- Widget de atalho (tela inicial) -->
+    <string name="widget_gabi_label">Falar com a Gabi</string>
+    <string name="widget_gabi_description">Toque pra abrir a Gabi já ouvindo — sem precisar abrir o app manualmente</string>
+    <string name="widget_gabi_text">Falar com a Gabi</string>
 </resources>

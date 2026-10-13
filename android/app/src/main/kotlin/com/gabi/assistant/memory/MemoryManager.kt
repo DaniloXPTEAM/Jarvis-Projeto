@@ -58,37 +58,6 @@ class MemoryManager @Inject constructor(
         }
     }
 
-    /**
-     * Extracts learnable facts from a conversation turn.
-     * Simple heuristic — production can be enhanced with NLP.
-     */
-    suspend fun learnFromConversation(userText: String) {
-        val lower = userText.lowercase()
-
-        // Learn name
-        Regex("(?:my name is|i'm|i am|call me)\\s+(\\w+)", RegexOption.IGNORE_CASE)
-            .find(userText)?.groupValues?.get(1)?.let { name ->
-                remember(MemoryType.USER_NAME, "user_name", name.replaceFirstChar { it.uppercase() })
-            }
-
-        // Learn preferences
-        Regex("i (?:like|love|enjoy|prefer)\\s+(.+?)(?:\\.|\$)", RegexOption.IGNORE_CASE)
-            .find(userText)?.groupValues?.get(1)?.let { pref ->
-                remember(MemoryType.PREFERENCE, "likes_$pref", pref)
-            }
-
-        Regex("i (?:hate|dislike|don't like)\\s+(.+?)(?:\\.|\$)", RegexOption.IGNORE_CASE)
-            .find(userText)?.groupValues?.get(1)?.let { pref ->
-                remember(MemoryType.PREFERENCE, "dislikes_$pref", pref)
-            }
-
-        // Learn habits/routines
-        if (lower.contains("every morning") || lower.contains("every day") ||
-            lower.contains("every night") || lower.contains("always")) {
-            remember(MemoryType.HABIT, "routine_${System.currentTimeMillis()}", userText.take(100))
-        }
-    }
-
     suspend fun forget(key: String) {
         memoryDao.getByKey(key)?.let { memoryDao.delete(it) }
     }

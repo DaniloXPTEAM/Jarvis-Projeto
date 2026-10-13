@@ -24,6 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.gabi.assistant.data.model.AiProvider
 import com.gabi.assistant.ui.components.JavisBottomBar
+import com.gabi.assistant.ui.navigation.Screen
 import com.gabi.assistant.ui.theme.*
 import com.gabi.assistant.ui.viewmodel.SettingsUiState
 import com.gabi.assistant.ui.viewmodel.SettingsViewModel
@@ -103,6 +104,31 @@ fun SettingsScreen(
                 )
             }
 
+            // ── Spotify ──────────────────────────────────────────────────
+            SettingsSection("Spotify") {
+                Text(
+                    "Opcional — sem isso, \"toca uma música\" só abre a busca no Spotify " +
+                        "(você escolhe e toca manualmente). Com um Client ID/Secret grátis, " +
+                        "a Gabi acha e já abre a faixa certa direto.",
+                    color = TextSecondary,
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Spacer(Modifier.height(8.dp))
+                ApiKeyField(
+                    label = "Spotify Client ID",
+                    value = localState.spotifyClientId,
+                    hint = "Crie um app grátis em developer.spotify.com/dashboard",
+                    onChange = { localState = localState.copy(spotifyClientId = it) }
+                )
+                Spacer(Modifier.height(8.dp))
+                ApiKeyField(
+                    label = "Spotify Client Secret",
+                    value = localState.spotifyClientSecret,
+                    hint = "Também fica na página do app criado",
+                    onChange = { localState = localState.copy(spotifyClientSecret = it) }
+                )
+            }
+
             // ── Voz ───────────────────────────────────────────────────────
             SettingsSection("Voz") {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -166,6 +192,12 @@ fun SettingsScreen(
                     description = "Ativar atalho global + automação de apps",
                     onClick = { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
                 )
+                Spacer(Modifier.height(8.dp))
+                PermissionButton(
+                    label = "Revisar todas as permissões",
+                    description = "Microfone, contatos, Bluetooth, agenda etc. — a mesma tela da primeira abertura",
+                    onClick = { navController.navigate(Screen.Permissions.route) }
+                )
             }
 
             // ── Recursos ──────────────────────────────────────────────────
@@ -195,6 +227,15 @@ fun SettingsScreen(
                         colors = SwitchDefaults.colors(checkedThumbColor = CyanAccent, checkedTrackColor = CyanAccent.copy(0.3f))
                     )
                 }
+            }
+
+            // ── Arquivos ──────────────────────────────────────────────────
+            SettingsSection("Arquivos") {
+                PermissionButton(
+                    label = "Gerenciar arquivos",
+                    description = "Navegar, abrir, renomear e apagar arquivos de uma pasta escolhida",
+                    onClick = { navController.navigate(Screen.Files.route) }
+                )
             }
 
             // ── Dados ─────────────────────────────────────────────────────
@@ -230,6 +271,17 @@ fun SettingsScreen(
                 Spacer(Modifier.width(8.dp))
                 Text("Salvar ajustes", color = DarkBg, fontWeight = FontWeight.Bold)
             }
+
+            // Resolve a confusão real de testar um APK antigo achando que era o mais
+            // novo (vários "app-debug.apk" com o mesmo nome baixados ao longo do dia) —
+            // dá pra conferir aqui, sem precisar perguntar, qual build está instalado.
+            Text(
+                "Build: ${com.gabi.assistant.BuildConfig.BUILD_TIME}",
+                color = TextSecondary.copy(0.5f),
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
 
             Spacer(Modifier.height(16.dp))
         }

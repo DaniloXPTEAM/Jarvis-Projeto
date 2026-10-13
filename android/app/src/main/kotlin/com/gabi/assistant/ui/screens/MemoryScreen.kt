@@ -80,6 +80,15 @@ fun MemoryCard(memory: Memory, onDelete: () -> Unit) {
         MemoryType.FAVORITE_APP -> CyanAccent.copy(0.7f)
         MemoryType.COMMAND -> BlueAccent.copy(0.7f)
     }
+    val typeLabel = when (memory.type) {
+        MemoryType.USER_NAME -> "Nome"
+        MemoryType.PREFERENCE -> "Preferência"
+        MemoryType.HABIT -> "Hábito"
+        MemoryType.ROUTINE -> "Rotina"
+        MemoryType.FACT -> "Fato"
+        MemoryType.FAVORITE_APP -> "App favorito"
+        MemoryType.COMMAND -> "Comando"
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -97,7 +106,7 @@ fun MemoryCard(memory: Memory, onDelete: () -> Unit) {
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                memory.type.name.replace("_", " ").lowercase().replaceFirstChar { it.uppercase() },
+                typeLabel,
                 style = MaterialTheme.typography.labelSmall,
                 color = typeColor
             )

@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Properties
 
 plugins {
@@ -34,6 +36,19 @@ android {
         buildConfigField("String", "ELEVENLABS_API_KEY", "\"${localProp("ELEVENLABS_API_KEY")}\"")
         buildConfigField("String", "DEEPSEEK_API_KEY", "\"${localProp("DEEPSEEK_API_KEY")}\"")
         buildConfigField("String", "OPENROUTER_API_KEY", "\"${localProp("OPENROUTER_API_KEY")}\"")
+        // "Nativo", sem precisar digitar em Ajustes — mesmo padrão das outras chaves
+        // acima. Pedido pelo usuário em 26/08/2026, com conta dedicada da Gabi já
+        // logada no app do Spotify do celular (é essa conta que decide de onde a
+        // música sai — o Client ID/Secret aqui só autentica o APP pra buscar, não
+        // controla login/conta nenhuma).
+        buildConfigField("String", "SPOTIFY_CLIENT_ID", "\"${localProp("SPOTIFY_CLIENT_ID")}\"")
+        buildConfigField("String", "SPOTIFY_CLIENT_SECRET", "\"${localProp("SPOTIFY_CLIENT_SECRET")}\"")
+        // Mostrado em Ajustes — resolveu confusão real de testar um APK antigo achando
+        // que era o mais novo (vários "app-debug.apk" com o mesmo nome ao longo do dia).
+        buildConfigField(
+            "String", "BUILD_TIME",
+            "\"${SimpleDateFormat("dd/MM HH:mm").format(Date())}\""
+        )
     }
 
     buildTypes {
@@ -112,6 +127,9 @@ dependencies {
 
     // Chaves de API criptografadas (Android Keystore)
     implementation(libs.androidx.security.crypto)
+
+    // Gerenciador de arquivos (Storage Access Framework)
+    implementation(libs.androidx.documentfile)
 
     // Coroutines
     implementation(libs.coroutines.android)

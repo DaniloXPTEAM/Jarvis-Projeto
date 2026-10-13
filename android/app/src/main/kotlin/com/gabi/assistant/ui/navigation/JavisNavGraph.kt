@@ -21,10 +21,15 @@ sealed class Screen(val route: String) {
     object Notifications : Screen("notifications")
     object Settings : Screen("settings")
     object Permissions : Screen("permissions")
+    object Files : Screen("files")
+    object Room : Screen("room")
 }
 
 @Composable
-fun JavisNavGraph(navController: NavHostController = rememberNavController()) {
+fun JavisNavGraph(
+    navController: NavHostController = rememberNavController(),
+    autoStartListening: MutableState<Boolean>? = null
+) {
     val onboardingViewModel: OnboardingViewModel = hiltViewModel()
     val userOnboarded by onboardingViewModel.userOnboarded.collectAsState()
 
@@ -45,11 +50,13 @@ fun JavisNavGraph(navController: NavHostController = rememberNavController()) {
         popEnterTransition = { fadeIn(tween(220)) + slideInHorizontally(tween(220)) { -it / 8 } },
         popExitTransition = { fadeOut(tween(180)) + slideOutHorizontally(tween(180)) { it / 8 } }
     ) {
-        composable(Screen.Home.route) { HomeScreen(navController = navController) }
+        composable(Screen.Home.route) { HomeScreen(navController = navController, autoStartListening = autoStartListening) }
         composable(Screen.Chat.route) { ChatScreen(navController = navController) }
         composable(Screen.Memory.route) { MemoryScreen(navController = navController) }
         composable(Screen.Notifications.route) { NotificationsScreen(navController = navController) }
         composable(Screen.Settings.route) { SettingsScreen(navController = navController) }
         composable(Screen.Permissions.route) { PermissionsScreen(navController = navController) }
+        composable(Screen.Files.route) { FilesScreen(navController = navController) }
+        composable(Screen.Room.route) { RoomScreen(navController = navController) }
     }
 }

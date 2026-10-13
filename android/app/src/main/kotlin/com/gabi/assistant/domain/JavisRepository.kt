@@ -5,6 +5,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import android.provider.AlarmClock
 import android.provider.CalendarContract
 import android.provider.ContactsContract
@@ -24,23 +25,27 @@ import com.gabi.assistant.data.db.MessageDao
 import com.gabi.assistant.data.model.AiMessage
 import com.gabi.assistant.data.model.AiProvider
 import com.gabi.assistant.data.model.Message
+import com.gabi.assistant.data.model.MemoryType
 import com.gabi.assistant.data.model.MessageRole
 import com.gabi.assistant.memory.MemoryManager
 import com.gabi.assistant.notifications.JavisNotificationListenerService
 import android.media.AudioManager
 import com.gabi.assistant.bluetooth.BluetoothController
 import com.gabi.assistant.reminder.ReminderScheduler
+import com.gabi.assistant.skills.SpotifyClient
 import com.gabi.assistant.skills.WeatherAgent
 import com.gabi.assistant.storage.JavisPreferences
 import com.gabi.assistant.util.ShareHelper
 import com.gabi.assistant.voice.AndroidTtsFallback
 import com.gabi.assistant.voice.ElevenLabsTts
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -59,6 +64,8 @@ data class SendMessageOutcome(
     val pendingCommand: ParsedCommand? = null
 )
 
+enum class WhatsAppSendResult { Success, AccessibilityDisabled, ContactNotFound, SendFailed }
+
 @Singleton
 class JavisRepository @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -74,7 +81,8 @@ class JavisRepository @Inject constructor(
     private val claudeProvider: ClaudeProvider,
     private val reminderScheduler: ReminderScheduler,
     private val shareHelper: ShareHelper,
-    private val bluetoothController: BluetoothController
+    private val bluetoothController: BluetoothController,
+    private val spotifyClient: SpotifyClient
 ) {
     val currentSessionId: String = UUID.randomUUID().toString()
 
@@ -153,9 +161,8 @@ class JavisRepository @Inject constructor(
     suspend fun sendMessage(userText: String, sessionId: String): Result<SendMessageOutcome> {
         messageDao.insert(Message(sessionId = sessionId, role = MessageRole.USER, content = userText))
         resolvePendingProactivePrompt(userText, sessionId)?.let { return it }
-        memoryManager.learnFromConversation(userText)
 
-        val recentMessages = messageDao.getRecentMessages(20)
+        val recentMessages = messageDao.getRecentMessages(sessionId, 20)
         val contextSummary = memoryManager.buildContextSummary()
         val systemPrompt = buildString {
             append(JavisPersonality.SYSTEM_PROMPT)
@@ -163,9 +170,17 @@ class JavisRepository @Inject constructor(
                 append("\n\nO que você sabe sobre este usuário: $contextSummary")
             }
         }
+        // getRecentMessages vem em ORDER BY timestamp DESC (mais nova primeiro, de
+        // propósito — outros usos, tipo achar a última resposta pra compartilhar,
+        // dependem disso). Pra API de chat, que espera ordem cronológica com a
+        // mensagem mais recente por ÚLTIMO, precisa pegar as 16 mais novas (.take,
+        // não .takeLast, já que a lista é DESC) e inverter. Sem isso, a IA recebia a
+        // conversa de trás pra frente conforme crescia — respondendo a perguntas
+        // antigas em vez da mensagem atual (bug real, reproduzido em 21/08/2026).
         val aiMessages = recentMessages
             .filter { it.role != MessageRole.SYSTEM }
-            .takeLast(16)
+            .take(16)
+            .reversed()
             .map { AiMessage(it.role.name.lowercase(), it.content) }
 
         val providerPref: AiProvider = prefs.aiProvider.first()
@@ -196,7 +211,7 @@ class JavisRepository @Inject constructor(
                 if (parsed.type != CommandType.UNKNOWN) executeCommand(parsed)
 
                 // Skills que produzem a própria resposta (clima, Claude, lembrete) — pulam a IA
-                val skillReply: String? = resolveSkillReply(parsed)
+                val skillReply: String? = resolveSkillReply(parsed, sessionId)
 
                 if (skillReply != null) {
                     Result.success(SendMessageOutcome(skillReply))
@@ -242,7 +257,7 @@ class JavisRepository @Inject constructor(
     }
 
     /** Skills que devolvem uma resposta direta (pulam o Groq). null = deixa pro Groq. */
-    private suspend fun resolveSkillReply(parsed: ParsedCommand): String? = when (parsed.type) {
+    private suspend fun resolveSkillReply(parsed: ParsedCommand, sessionId: String): String? = when (parsed.type) {
         CommandType.WEATHER -> weatherAgent.getWeatherResponse(parsed.target)
 
         CommandType.SET_REMINDER -> {
@@ -267,7 +282,7 @@ class JavisRepository @Inject constructor(
 
         CommandType.SHARE -> {
             val toShare = parsed.target.ifBlank {
-                messageDao.getRecentMessages(8).firstOrNull { it.role == MessageRole.ASSISTANT }?.content ?: ""
+                messageDao.getRecentMessages(sessionId, 8).firstOrNull { it.role == MessageRole.ASSISTANT }?.content ?: ""
             }
             if (toShare.isNotBlank()) {
                 shareHelper.shareText(toShare)
@@ -280,11 +295,30 @@ class JavisRepository @Inject constructor(
         CommandType.BLUETOOTH_CONNECT -> {
             bluetoothController.requestEnable()
             val am = context.getSystemService(AudioManager::class.java)
-            if (bluetoothController.isEnabled()) {
-                bluetoothController.routeAudioToBluetooth(am)
-                "Pronto! Bluetooth conectado. O som da Gabi vai sair no seu fone ou caixa agora."
-            } else {
-                "Não consegui ligar o Bluetooth. Abri as configurações pra você ativar."
+            when {
+                !bluetoothController.isEnabled() ->
+                    "Não consegui ligar o Bluetooth. Abri as configurações pra você ativar."
+                // Já tem algo pareado — caminho rápido de sempre, sem gastar ~15s
+                // escaneando à toa.
+                bluetoothController.bondedDeviceNames().isNotEmpty() -> {
+                    bluetoothController.routeAudioToBluetooth(am)
+                    "Pronto! Bluetooth conectado. O som da Gabi vai sair no seu fone ou caixa agora."
+                }
+                // Nada pareado ainda — antes disso a Gabi só sabia rotear pro que já
+                // estava pareado, nunca procurava aparelho novo de verdade (limitação
+                // conhecida, reportada pelo usuário). Agora busca de verdade
+                // (`startDiscovery`) e abre a tela nativa de parear — parear
+                // programaticamente pede confirmação de PIN/tela do sistema de
+                // qualquer jeito, então é mais confiável deixar o usuário tocar.
+                else -> {
+                    val found = bluetoothController.discoverDevices()
+                    bluetoothController.openBluetoothSettings()
+                    if (found.isEmpty()) {
+                        "Não achei nenhum aparelho Bluetooth novo por perto. Abri as configurações pra você tentar de novo."
+                    } else {
+                        "Achei ${found.joinToString(", ")} por perto. Abri as configurações de Bluetooth pra você parear."
+                    }
+                }
             }
         }
 
@@ -299,6 +333,20 @@ class JavisRepository @Inject constructor(
 
         CommandType.READ_NOTIFICATIONS -> readNotifications()
 
+        CommandType.SAVE_MEMORY -> {
+            val parts = parsed.extra.split("|", limit = 2)
+            val type = parts.getOrNull(0)?.let {
+                try { MemoryType.valueOf(it) } catch (e: IllegalArgumentException) { MemoryType.PREFERENCE }
+            } ?: MemoryType.PREFERENCE
+            val value = parts.getOrNull(1) ?: ""
+            if (value.isBlank()) {
+                null
+            } else {
+                memoryManager.remember(type, parsed.target, value)
+                "Beleza, vou lembrar disso."
+            }
+        }
+
         else -> null
     }
 
@@ -306,6 +354,12 @@ class JavisRepository @Inject constructor(
     /** Se a Gabi está falando agora (qualquer motor, ElevenLabs ou nativo) — usado pra
      *  animar o Orb/personagem em tempo real, não é só um getter que precisa ser sondado. */
     val isSpeaking: StateFlow<Boolean> = _isSpeaking.asStateFlow()
+
+    private suspend fun speakWithAndroidTts(text: String) {
+        androidTts.speechRate = prefs.speechRate.first()
+        androidTts.pitch = prefs.ttsPitch.first()
+        androidTts.speak(text)
+    }
 
     suspend fun speak(text: String) {
         _isSpeaking.value = true
@@ -317,11 +371,16 @@ class JavisRepository @Inject constructor(
                 elevenLabsTts.apiKey = elKey
                 elevenLabsTts.voiceId = prefs.elevenLabsVoiceId.first()
                     .ifBlank { ElevenLabsTts.DEFAULT_VOICE_ID }
-                elevenLabsTts.speak(text)
+                // Se a ElevenLabs falhar (voz não adicionada à VoiceLab da conta,
+                // créditos zerados, rede), cai pro TTS nativo em vez de ficar em
+                // silêncio total — antes o erro só ia pro Logcat, nunca virava som
+                // nenhum nem avisava o usuário.
+                elevenLabsTts.speak(text).onFailure { e ->
+                    Log.w("JavisRepository", "ElevenLabs falhou (\"$e\"), caindo pro TTS nativo")
+                    speakWithAndroidTts(text)
+                }
             } else {
-                androidTts.speechRate = prefs.speechRate.first()
-                androidTts.pitch = prefs.ttsPitch.first()
-                androidTts.speak(text)
+                speakWithAndroidTts(text)
             }
         } finally {
             _isSpeaking.value = false
@@ -333,11 +392,12 @@ class JavisRepository @Inject constructor(
         androidTts.stop()
     }
 
-    fun executeCommand(cmd: ParsedCommand) {
+    suspend fun executeCommand(cmd: ParsedCommand) {
         when (cmd.type) {
             CommandType.OPEN_APP -> launchApp(cmd.target)
             CommandType.SEARCH_WEB -> searchWeb(cmd.target)
             CommandType.SEARCH_YOUTUBE -> searchYoutube(cmd.target)
+            CommandType.SEARCH_SPOTIFY -> searchSpotify(cmd.target)
             CommandType.OPEN_SETTINGS -> openSettings()
             CommandType.TAKE_PHOTO -> openCamera()
             CommandType.OPEN_WHATSAPP_CHAT -> openWhatsAppChat(cmd.target)
@@ -345,14 +405,29 @@ class JavisRepository @Inject constructor(
         }
     }
 
-    suspend fun executeConfirmedCommand(cmd: ParsedCommand) {
-        when (cmd.type) {
-            CommandType.CALL_CONTACT -> callContact(cmd.target)
-            CommandType.CALL_NUMBER -> callNumber(cmd.target)
-            CommandType.SET_ALARM -> setAlarm(cmd.target)
-            CommandType.SEND_WHATSAPP -> sendWhatsAppMessage(cmd.target, cmd.extra)
-            else -> executeCommand(cmd)
+    /**
+     * Devolve uma frase pra falar no lugar da genérica de quem chamou, só quando o
+     * resultado real precisa ser dito (por ora, só o WhatsApp — as outras ações são
+     * fire-and-forget e não têm como falhar de um jeito que valha explicar por voz).
+     */
+    suspend fun executeConfirmedCommand(cmd: ParsedCommand): String? {
+        return when (cmd.type) {
+            CommandType.CALL_CONTACT -> { callContact(cmd.target); null }
+            CommandType.CALL_NUMBER -> { callNumber(cmd.target); null }
+            CommandType.SET_ALARM -> { setAlarm(cmd.target); null }
+            CommandType.SEND_WHATSAPP -> whatsAppResultMessage(sendWhatsAppMessage(cmd.target, cmd.extra), cmd.target)
+            else -> { executeCommand(cmd); null }
         }
+    }
+
+    private fun whatsAppResultMessage(result: WhatsAppSendResult, contact: String): String = when (result) {
+        WhatsAppSendResult.Success -> "Pronto! Mandei a mensagem pra $contact no WhatsApp."
+        WhatsAppSendResult.AccessibilityDisabled ->
+            "Não consegui — o serviço de acessibilidade da Gabi não está ativado. Vai em Ajustes, permissões, e ativa o serviço de acessibilidade."
+        WhatsAppSendResult.ContactNotFound ->
+            "Abri o WhatsApp mas não achei \"$contact\" nem na lista de conversas nem na busca."
+        WhatsAppSendResult.SendFailed ->
+            "Abri a conversa com $contact mas não consegui escrever ou enviar a mensagem."
     }
 
     fun launchApp(packageNameOrAlias: String) {
@@ -392,6 +467,69 @@ class JavisRepository @Inject constructor(
         }
     }
 
+    /**
+     * Antes disso, "toca uma música"/"abre o Spotify" só existia como OPEN_APP — abria
+     * o Spotify na tela inicial dele e parava aí, mas a IA respondia em texto como se
+     * tivesse escolhido e tocado alguma coisa (alucinação: ela narra a ação sem ter
+     * ferramenta nenhuma pra executá-la de verdade). Reportado em 24/08/2026 ("ela
+     * disse que ia botar uma música... e não fez nada").
+     *
+     * O deep link `spotify:search:<query>` é o mais conhecido, mas é um esquema não
+     * documentado oficialmente e com bug reportado pela própria comunidade Spotify:
+     * abre o app mas a tela de resultados fica em branco. A documentação oficial da
+     * Spotify só cobre link pra conteúdo já identificado por ID (`spotify:track:...`),
+     * não busca livre por texto — pra buscar de verdade precisaria da Web API deles
+     * (search endpoint, com Client ID/Secret gerados de graça em
+     * developer.spotify.com/dashboard) resolvendo o texto pra um ID de faixa antes de
+     * linkar. Isso ainda não foi implementado (depende do usuário criar essa chave).
+     * **Atualizado em 26/08/2026**: agora, se o usuário configurou um Client ID/Secret
+     * da Spotify em Ajustes, tenta resolver a busca pra uma faixa específica via
+     * `SpotifyClient` (Web API de verdade) e abre `spotify:track:<id>` — esse formato
+     * É documentado e confirmado ao vivo abrindo/tocando a faixa direto, sem precisar
+     * o usuário escolher entre resultados. Sem chave configurada (ou se a busca não
+     * achar nada), cai pro link de busca de sempre — confirmado ao vivo abrindo
+     * certinho na tela de resultados (usuário ainda escolhe/toca manualmente).
+     */
+    suspend fun searchSpotify(query: String) {
+        // Chave própria do usuário (Ajustes) tem prioridade; senão usa a nativa do
+        // app (`local.properties`, mesmo padrão do GROQ_API_KEY) — dá pra funcionar
+        // "de fábrica" sem precisar digitar nada em Ajustes.
+        val clientId = prefs.spotifyClientId.first().ifBlank { BuildConfig.SPOTIFY_CLIENT_ID }
+        val clientSecret = prefs.spotifyClientSecret.first().ifBlank { BuildConfig.SPOTIFY_CLIENT_SECRET }
+        if (clientId.isNotBlank() && clientSecret.isNotBlank()) {
+            spotifyClient.clientId = clientId
+            spotifyClient.clientSecret = clientSecret
+            val trackUri = try {
+                spotifyClient.resolveTrackUri(query)
+            } catch (e: Exception) {
+                Log.e("JavisRepository", "searchSpotify: exceção resolvendo track URI: ${e.message}", e)
+                null
+            }
+            if (trackUri != null) {
+                val playIntent = Intent(Intent.ACTION_VIEW, Uri.parse(trackUri))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                try {
+                    context.startActivity(playIntent)
+                    return
+                } catch (e: Exception) {
+                    Log.e("JavisRepository", "searchSpotify: falha abrindo $trackUri: ${e.message}", e)
+                }
+            }
+        }
+
+        val webIntent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("https://open.spotify.com/search/${Uri.encode(query)}")
+        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        try {
+            context.startActivity(webIntent)
+        } catch (_: Exception) {
+            val appIntent = Intent(Intent.ACTION_VIEW, Uri.parse("spotify:search:${Uri.encode(query)}"))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            try { context.startActivity(appIntent) } catch (_: Exception) {}
+        }
+    }
+
     fun openSettings() {
         val intent = Intent(android.provider.Settings.ACTION_SETTINGS)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -405,17 +543,27 @@ class JavisRepository @Inject constructor(
     }
 
     fun openWhatsAppChat(contactName: String) {
-        launchApp("com.whatsapp")
+        launchApp(commandParser.resolveWhatsAppPackage())
     }
 
-    suspend fun sendWhatsAppMessage(contact: String, message: String): Boolean {
-        launchApp("com.whatsapp")
+    /**
+     * Antes essa função só devolvia Boolean, e o `Não consegui" genérico da falha
+     * (quando dava) não distinguia "serviço de acessibilidade desligado" de
+     * "contato não achado" de "achei o chat mas não consegui escrever" — cada motivo
+     * pede uma ação diferente do usuário, e sem isso ela ficava muda sobre qual.
+     */
+    suspend fun sendWhatsAppMessage(contact: String, message: String): WhatsAppSendResult {
+        launchApp(commandParser.resolveWhatsAppPackage())
         kotlinx.coroutines.delay(2000)
-        val acc = JavisAccessibilityService.getInstance() ?: return false
-        val opened = acc.openWhatsAppChatByName(contact)
-        if (!opened) return false
+        val acc = JavisAccessibilityService.getInstance() ?: return WhatsAppSendResult.AccessibilityDisabled
+        // As chamadas de acessibilidade usam Thread.sleep internamente (inclusive o
+        // fallback de busca, que pode dormir ~1s a mais) — tira isso da thread
+        // principal pra não travar a UI enquanto espera a tela do WhatsApp responder.
+        val opened = withContext(Dispatchers.IO) { acc.openWhatsAppChatByName(contact) }
+        if (!opened) return WhatsAppSendResult.ContactNotFound
         kotlinx.coroutines.delay(1500)
-        return acc.whatsAppSendMessage(message)
+        val sent = withContext(Dispatchers.IO) { acc.whatsAppSendMessage(message) }
+        return if (sent) WhatsAppSendResult.Success else WhatsAppSendResult.SendFailed
     }
 
     fun callContact(name: String) {
@@ -456,18 +604,48 @@ class JavisRepository @Inject constructor(
         try { context.startActivity(intent) } catch (_: Exception) {}
     }
 
+    /**
+     * `getInstance()` sozinho tratava "serviço não bound agora" como "permissão nunca
+     * concedida" — mas o Android desconecta o listener sem avisar (ex.: app em background
+     * há muito tempo) mesmo com a permissão real intacta em Configurações. Aqui checamos
+     * o OS primeiro e, se a permissão existe mas o serviço caiu, pedimos rebind.
+     */
+    private fun resolveNotificationService(): JavisNotificationListenerService? {
+        JavisNotificationListenerService.getInstance()?.let { return it }
+        if (JavisNotificationListenerService.hasAccess(context)) {
+            JavisNotificationListenerService.requestRebind(context)
+        }
+        return null
+    }
+
     fun readNotifications(): String {
-        val service = JavisNotificationListenerService.getInstance()
-            ?: return "O acesso às notificações não está ativado. Vá nas Configurações para permitir."
+        val service = resolveNotificationService()
+            ?: return if (JavisNotificationListenerService.hasAccess(context))
+                "Só um segundo, deixa eu me reconectar às notificações. Pergunta de novo em alguns segundos."
+            else "O acesso às notificações não está ativado. Vá nas Configurações para permitir."
         val items = service.getFilteredNotifications()
         if (items.isEmpty()) return "Você não tem notificações ativas agora."
-        return items.take(10).joinToString("\n") { "De ${it.appName}: ${it.title} — ${it.text}" }
+        // Antes pegava até 10 notificações com o texto INTEIRO — pra quem tem grupo de
+        // WhatsApp movimentado (ou spam de grupo de venda), isso virava um muro de
+        // texto gigante, ilegível/impossível de ouvir em voz alta. Confirmado ao vivo
+        // em 26/08/2026: um "leia minhas notificações" trouxe uma parede de mensagens
+        // de grupos aleatórios de venda de conta e chip. Agora limita bem mais e corta
+        // cada texto num tamanho falável.
+        val shown = items.take(5)
+        val summary = shown.joinToString("\n") {
+            val text = it.text.take(80).let { t -> if (it.text.length > 80) "$t…" else t }
+            "De ${it.appName}: ${it.title} — $text"
+        }
+        val extra = items.size - shown.size
+        return if (extra > 0) "$summary\n\n(e mais $extra notificaç${if (extra == 1) "ão" else "ões"})" else summary
     }
 
     /** Prévia de emails novos — lê a notificação do Gmail (remetente/assunto/trecho), não o corpo completo. */
     fun readGmailPreview(): String {
-        val service = JavisNotificationListenerService.getInstance()
-            ?: return "O acesso às notificações não está ativado. Vá nas Configurações para permitir, aí eu consigo avisar quando chegar email."
+        val service = resolveNotificationService()
+            ?: return if (JavisNotificationListenerService.hasAccess(context))
+                "Só um segundo, deixa eu me reconectar às notificações. Pergunta de novo em alguns segundos."
+            else "O acesso às notificações não está ativado. Vá nas Configurações para permitir, aí eu consigo avisar quando chegar email."
         val emails = service.getFilteredNotifications().filter { it.packageName == GMAIL_PACKAGE }
         if (emails.isEmpty()) return "Não tem nenhum email novo agora."
         val list = emails.take(5).joinToString("\n") { "${it.title} — ${it.text}" }

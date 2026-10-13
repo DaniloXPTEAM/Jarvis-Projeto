@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.ContactsContract
+import com.gabi.assistant.accessibility.JavisAccessibilityService
+import com.gabi.assistant.utils.isPackageInstalled
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.Normalizer
 import java.util.Calendar
@@ -13,9 +15,9 @@ import javax.inject.Singleton
 enum class CommandType {
     OPEN_APP, CALL_CONTACT, CALL_NUMBER, SET_ALARM, SEARCH_WEB,
     SEND_WHATSAPP, READ_NOTIFICATIONS, OPEN_SETTINGS, TAKE_PHOTO,
-    SEARCH_YOUTUBE, OPEN_WHATSAPP_CHAT,
+    SEARCH_YOUTUBE, SEARCH_SPOTIFY, OPEN_WHATSAPP_CHAT,
     WEATHER, ASK_CLAUDE, SET_REMINDER, SHARE, BLUETOOTH_CONNECT,
-    READ_CALENDAR, CREATE_CALENDAR_EVENT, READ_GMAIL,
+    READ_CALENDAR, CREATE_CALENDAR_EVENT, READ_GMAIL, SAVE_MEMORY,
     UNKNOWN
 }
 
@@ -421,7 +423,20 @@ class CommandParser @Inject constructor(
             .replace(Regex("[\\p{InCombiningDiacriticalMarks}]"), "")
 
     fun getPackageName(appAlias: String): String {
-        return appAliases[appAlias.lowercase()] ?: appAlias
+        val pkg = appAliases[appAlias.lowercase()] ?: appAlias
+        return if (pkg == JavisAccessibilityService.WA_PACKAGE) resolveWhatsAppPackage() else pkg
+    }
+
+    /**
+     * "whatsapp"/"zap" sempre apontava fixo pra com.whatsapp — quem só tem o WhatsApp
+     * Business instalado (ou usa ele como principal) nunca conseguia nem abrir o app
+     * por voz. Prefere o WhatsApp normal quando os dois estão instalados (é o mais comum),
+     * cai pro Business se só ele existir, e mantém o normal como último fallback.
+     */
+    fun resolveWhatsAppPackage(): String = when {
+        context.isPackageInstalled(JavisAccessibilityService.WA_PACKAGE) -> JavisAccessibilityService.WA_PACKAGE
+        context.isPackageInstalled(JavisAccessibilityService.WA_PACKAGE_BUSINESS) -> JavisAccessibilityService.WA_PACKAGE_BUSINESS
+        else -> JavisAccessibilityService.WA_PACKAGE
     }
 
     fun getLaunchIntent(packageNameOrAction: String): Intent? {

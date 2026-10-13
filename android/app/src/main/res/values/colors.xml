@@ -6,4 +6,10 @@
     <color name="surface_dark">#0D1421</color>
     <color name="text_primary">#E8F4FD</color>
     <color name="text_secondary">#7B9AB2</color>
+
+    <!-- Paleta real do app (Theme.kt/Compose, "Céu de Outono") — usada só pelo widget
+         de tela inicial, que fica fora do Compose e precisa de resources XML normais. -->
+    <color name="widget_bg">#0A0F16</color>
+    <color name="widget_accent">#FFCF8C</color>
+    <color name="widget_text">#EAF6F5</color>
 </resources>

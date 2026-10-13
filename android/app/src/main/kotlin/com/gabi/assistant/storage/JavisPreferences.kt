@@ -32,12 +32,19 @@ class JavisPreferences @Inject constructor(
         val KEY_USER_ONBOARDED = booleanPreferencesKey("user_onboarded")
         val KEY_CONTINUOUS_MODE = booleanPreferencesKey("continuous_mode")
         val KEY_PROACTIVE_NOTIFICATIONS = booleanPreferencesKey("proactive_notifications")
+        val KEY_FILES_TREE_URI = stringPreferencesKey("files_tree_uri")
+        val KEY_GABI_LAST_FED_AT = longPreferencesKey("gabi_last_fed_at")
+        val KEY_GABI_FIRST_USE_AT = longPreferencesKey("gabi_first_use_at")
+        val KEY_GABI_SELECTED_OUTFIT_ID = stringPreferencesKey("gabi_selected_outfit_id")
+        val KEY_GABI_UNLOCK_INTERVAL_DAYS = intPreferencesKey("gabi_unlock_interval_days")
     }
 
     val groqApiKey: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_GROQ)
     val elevenLabsApiKey: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_ELEVENLABS)
     val deepSeekApiKey: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_DEEPSEEK)
     val anthropicApiKey: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_ANTHROPIC)
+    val spotifyClientId: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_SPOTIFY_CLIENT_ID)
+    val spotifyClientSecret: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_SPOTIFY_CLIENT_SECRET)
     val elevenLabsVoiceId: Flow<String> = ds.data.map { it[KEY_ELEVENLABS_VOICE_ID] ?: "" }
     val aiProvider: Flow<AiProvider> = ds.data.map {
         try { AiProvider.valueOf(it[KEY_AI_PROVIDER] ?: AiProvider.GROQ.name) }
@@ -52,11 +59,25 @@ class JavisPreferences @Inject constructor(
     /** Se a Gabi avisa sozinha ("Você recebeu um zap de X, quer que eu leia ou é segredo?")
      *  quando chega WhatsApp/Gmail novo, em vez de só responder quando perguntada. Desligado por padrão. */
     val proactiveNotifications: Flow<Boolean> = ds.data.map { it[KEY_PROACTIVE_NOTIFICATIONS] ?: false }
+    /** URI (SAF, ACTION_OPEN_DOCUMENT_TREE) da pasta que o usuário escolheu pra
+     *  Gabi gerenciar. Vazio até o usuário escolher uma pasta pela primeira vez. */
+    val filesTreeUri: Flow<String> = ds.data.map { it[KEY_FILES_TREE_URI] ?: "" }
+    /** Timestamp (millis) da última vez que alimentou a Gabi no Quarto — 0 = nunca. */
+    val gabiLastFedAt: Flow<Long> = ds.data.map { it[KEY_GABI_LAST_FED_AT] ?: 0L }
+    /** Timestamp (millis) da primeira vez que o Quarto foi aberto — marca o início da
+     *  contagem do guarda-roupa. 0 = ainda não abriu o Quarto nenhuma vez. */
+    val gabiFirstUseAt: Flow<Long> = ds.data.map { it[KEY_GABI_FIRST_USE_AT] ?: 0L }
+    val gabiSelectedOutfitId: Flow<String> = ds.data.map { it[KEY_GABI_SELECTED_OUTFIT_ID] ?: "" }
+    /** De quantos em quantos dias um look novo desbloqueia — sorteado uma vez só (não
+     *  a cada checagem) pra ficar fixo depois de decidido. 0 = ainda não sorteado. */
+    val gabiUnlockIntervalDays: Flow<Int> = ds.data.map { it[KEY_GABI_UNLOCK_INTERVAL_DAYS] ?: 0 }
 
     suspend fun setGroqApiKey(key: String) = secureKeys.set(SecureKeyStore.KEY_GROQ, key)
     suspend fun setElevenLabsApiKey(key: String) = secureKeys.set(SecureKeyStore.KEY_ELEVENLABS, key)
     suspend fun setDeepSeekApiKey(key: String) = secureKeys.set(SecureKeyStore.KEY_DEEPSEEK, key)
     suspend fun setAnthropicApiKey(key: String) = secureKeys.set(SecureKeyStore.KEY_ANTHROPIC, key)
+    suspend fun setSpotifyClientId(key: String) = secureKeys.set(SecureKeyStore.KEY_SPOTIFY_CLIENT_ID, key)
+    suspend fun setSpotifyClientSecret(key: String) = secureKeys.set(SecureKeyStore.KEY_SPOTIFY_CLIENT_SECRET, key)
     suspend fun setElevenLabsVoiceId(id: String) = ds.edit { it[KEY_ELEVENLABS_VOICE_ID] = id }
     suspend fun setAiProvider(p: AiProvider) = ds.edit { it[KEY_AI_PROVIDER] = p.name }
     suspend fun setSpeechRate(r: Float) = ds.edit { it[KEY_SPEECH_RATE] = r }
@@ -66,4 +87,9 @@ class JavisPreferences @Inject constructor(
     suspend fun setContinuousMode(b: Boolean) = ds.edit { it[KEY_CONTINUOUS_MODE] = b }
     suspend fun setUserOnboarded(b: Boolean) = ds.edit { it[KEY_USER_ONBOARDED] = b }
     suspend fun setProactiveNotifications(b: Boolean) = ds.edit { it[KEY_PROACTIVE_NOTIFICATIONS] = b }
+    suspend fun setFilesTreeUri(uri: String) = ds.edit { it[KEY_FILES_TREE_URI] = uri }
+    suspend fun setGabiLastFedAt(millis: Long) = ds.edit { it[KEY_GABI_LAST_FED_AT] = millis }
+    suspend fun setGabiFirstUseAt(millis: Long) = ds.edit { it[KEY_GABI_FIRST_USE_AT] = millis }
+    suspend fun setGabiSelectedOutfitId(id: String) = ds.edit { it[KEY_GABI_SELECTED_OUTFIT_ID] = id }
+    suspend fun setGabiUnlockIntervalDays(days: Int) = ds.edit { it[KEY_GABI_UNLOCK_INTERVAL_DAYS] = days }
 }
