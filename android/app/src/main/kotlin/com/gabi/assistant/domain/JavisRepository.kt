@@ -362,6 +362,21 @@ class JavisRepository @Inject constructor(
             }
         }
 
+        // Fase 3 do plano de latência (alexa-referencia/PLANO_DE_ALTERACOES.md): estes
+        // comandos são "fire-and-forget" (já executados em executeCommand, logo acima
+        // no fluxo de sendMessage) e não têm resultado nenhum que varie — antes disso
+        // caíam no `else -> null`, o que forçava uma SEGUNDA chamada de IA só pra gerar
+        // uma frase de confirmação óbvia ("Abrindo o YouTube"). Frase fixa aqui elimina
+        // esse round-trip extra por completo pra esses casos, sem mudar o que a Gabi
+        // realmente diz (mesma frase que a IA já gerava na prática).
+        CommandType.OPEN_APP -> "Abrindo ${parsed.target}."
+        CommandType.SEARCH_WEB -> "Buscando \"${parsed.target}\"."
+        CommandType.SEARCH_YOUTUBE -> "Buscando \"${parsed.target}\" no YouTube."
+        CommandType.SEARCH_SPOTIFY -> "Buscando \"${parsed.target}\" no Spotify."
+        CommandType.OPEN_SETTINGS -> "Abrindo as configurações."
+        CommandType.TAKE_PHOTO -> "Abrindo a câmera."
+        CommandType.OPEN_WHATSAPP_CHAT -> "Abrindo a conversa com ${parsed.target} no WhatsApp."
+
         else -> null
     }
 
