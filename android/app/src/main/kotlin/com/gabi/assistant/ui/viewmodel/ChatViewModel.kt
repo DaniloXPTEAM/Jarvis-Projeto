@@ -11,6 +11,7 @@ import com.gabi.assistant.ai.ParsedCommand
 import com.gabi.assistant.data.model.Message
 import com.gabi.assistant.data.model.VoiceState
 import com.gabi.assistant.domain.JavisRepository
+import com.gabi.assistant.voice.ContinuousMicMonitor
 import com.gabi.assistant.voice.JavisSpeechRecognizer
 import com.gabi.assistant.voice.JavisVoiceService
 import com.gabi.assistant.voice.SpeechEvent
@@ -50,6 +51,7 @@ data class ChatUiState(
 class ChatViewModel @Inject constructor(
     private val repository: JavisRepository,
     private val speechRecognizer: JavisSpeechRecognizer,
+    private val micMonitor: ContinuousMicMonitor,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -66,7 +68,40 @@ class ChatViewModel @Inject constructor(
         observeMessages()
         observeSpeech()
         observeProactiveNotifications()
+        observeSpeakingForBargeIn()
         sendGreeting()
+    }
+
+    /**
+     * Fase 4 (barge-in): assim que ela COMEÇA a falar, se o modo contínuo estiver
+     * ligado, liga o monitor leve de microfone — sem isso, interromper ela no meio da
+     * fala não tinha como funcionar (o reconhecedor pesado só reabria depois dela
+     * terminar, `speak()` é suspend até o fim). Quando ela termina de falar (sozinha
+     * ou interrompida), o caminho de sempre em `sendMessage()`/`confirmPendingCommand()`
+     * já volta a chamar `continueListeningIfContinuous()`.
+     */
+    private fun observeSpeakingForBargeIn() {
+        viewModelScope.launch {
+            repository.isSpeaking.collect { speaking ->
+                if (speaking && _uiState.value.continuousMode) {
+                    startMicMonitor()
+                }
+            }
+        }
+    }
+
+    /** Liga o monitor leve (sem foco de áudio) — quando ele detectar voz, para o
+     *  monitor, interrompe a fala dela se estiver falando (barge-in), e abre o
+     *  reconhecedor de verdade pra capturar o que o usuário disse. */
+    private fun startMicMonitor() {
+        if (micMonitor.isRunning) return
+        micMonitor.start {
+            micMonitor.stop()
+            if (repository.isSpeaking.value) {
+                repository.stopSpeaking()
+            }
+            startVoiceService()
+        }
     }
 
     /** Enquanto esta tela (o app) estiver aberta, deixa a Gabi avisar sozinha sobre WhatsApp/Gmail novos. */
@@ -121,7 +156,7 @@ class ChatViewModel @Inject constructor(
                             )
                         }
                         if (expected && _uiState.value.continuousMode) {
-                            startVoiceService()
+                            startMicMonitor()
                         }
                     }
                     is SpeechEvent.Ended -> {
@@ -231,9 +266,12 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    /** Volta a ouvir sozinha se o modo contínuo (toque-pra-ativar) estiver ligado. */
+    /** Volta a ouvir sozinha se o modo contínuo (toque-pra-ativar) estiver ligado.
+     *  Usa o monitor LEVE (sem foco de áudio) em vez do reconhecedor pesado direto —
+     *  antes disso, voltar a "ouvir" depois de cada resposta pausava qualquer música
+     *  tocando mesmo sem o usuário ter pedido nada (Fase 4 do plano de latência). */
     private fun continueListeningIfContinuous() {
-        if (_uiState.value.continuousMode) startVoiceService()
+        if (_uiState.value.continuousMode) startMicMonitor()
     }
 
     /**
@@ -255,6 +293,7 @@ class ChatViewModel @Inject constructor(
             repository.stopSpeaking()
             startVoiceService()
         } else {
+            micMonitor.stop()
             stopVoiceService()
         }
     }
@@ -361,6 +400,7 @@ class ChatViewModel @Inject constructor(
     }
 
     override fun onCleared() {
+        micMonitor.stop()
         speechRecognizer.destroy()
         super.onCleared()
     }

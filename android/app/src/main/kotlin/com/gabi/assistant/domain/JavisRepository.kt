@@ -30,6 +30,8 @@ import com.gabi.assistant.data.model.MemoryType
 import com.gabi.assistant.data.model.MessageRole
 import com.gabi.assistant.memory.MemoryManager
 import com.gabi.assistant.notifications.JavisNotificationListenerService
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
 import android.media.AudioManager
 import com.gabi.assistant.bluetooth.BluetoothController
 import com.gabi.assistant.reminder.ReminderScheduler
@@ -368,6 +370,44 @@ class JavisRepository @Inject constructor(
      *  animar o Orb/personagem em tempo real, não é só um getter que precisa ser sondado. */
     val isSpeaking: StateFlow<Boolean> = _isSpeaking.asStateFlow()
 
+    // Fase 4 do plano de latência (alexa-referencia/PLANO_DE_ALTERACOES.md) — antes a
+    // Gabi nunca pedia nem soltava foco de áudio. Pedir foco TRANSIENT enquanto fala é
+    // o motivo normal (e esperado, é o que qualquer assistente de voz faz) de música
+    // pausar DURANTE a resposta dela — soltar o foco logo depois permite o app de
+    // música retomar sozinho. O problema real que isso não resolve sozinho (ela pausar
+    // música mesmo só ESPERANDO, sem estar falando) é do `ContinuousMicMonitor`, que
+    // não pede foco nenhum pra ficar ouvindo em segundo plano.
+    private var audioFocusRequest: AudioFocusRequest? = null
+
+    private fun requestSpeakingAudioFocus() {
+        val audioManager = context.getSystemService(AudioManager::class.java) ?: return
+        val attrs = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_ASSISTANT)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+            .build()
+        val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+            .setAudioAttributes(attrs)
+            .build()
+        audioFocusRequest = request
+        try {
+            audioManager.requestAudioFocus(request)
+        } catch (e: Exception) {
+            Log.w("JavisRepository", "Falha ao pedir foco de áudio: ${e.message}")
+        }
+    }
+
+    private fun abandonSpeakingAudioFocus() {
+        val audioManager = context.getSystemService(AudioManager::class.java) ?: return
+        audioFocusRequest?.let {
+            try {
+                audioManager.abandonAudioFocusRequest(it)
+            } catch (e: Exception) {
+                Log.w("JavisRepository", "Falha ao soltar foco de áudio: ${e.message}")
+            }
+        }
+        audioFocusRequest = null
+    }
+
     private suspend fun speakWithAndroidTts(text: String) {
         androidTts.speechRate = prefs.speechRate.first()
         androidTts.pitch = prefs.ttsPitch.first()
@@ -376,6 +416,7 @@ class JavisRepository @Inject constructor(
 
     suspend fun speak(text: String) {
         _isSpeaking.value = true
+        requestSpeakingAudioFocus()
         try {
             val useElevenLabs = prefs.useElevenLabs.first()
             val elKey = prefs.elevenLabsApiKey.first()
@@ -396,6 +437,7 @@ class JavisRepository @Inject constructor(
                 speakWithAndroidTts(text)
             }
         } finally {
+            abandonSpeakingAudioFocus()
             _isSpeaking.value = false
         }
     }
