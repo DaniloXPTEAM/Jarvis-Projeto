@@ -102,6 +102,20 @@ class JavisNotificationListenerService : NotificationListenerService() {
         } catch (_: SecurityException) {}
     }
 
+    /** Pausa a sessão de mídia do Spotify ativa agora, se houver. Reaproveita o mesmo
+     *  MediaController já usado pra detectar `spotifyPlaying` — não pede permissão nova.
+     *  Devolve false se não há nada tocando (pra Gabi poder dizer a verdade em vez de
+     *  fingir que pausou algo que não existia). */
+    fun pauseSpotify(): Boolean {
+        val controller = currentSpotifyController ?: return false
+        return try {
+            controller.transportControls.pause()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     private fun attachToSpotifySession(controllers: List<MediaController>) {
         currentSpotifyController?.unregisterCallback(spotifyCallback)
         val spotify = controllers.firstOrNull { it.packageName == SPOTIFY_PACKAGE }

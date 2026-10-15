@@ -256,7 +256,7 @@ class JavisRepository @Inject constructor(
             deepSeekProvider.chatWithTools(aiMessages, routingPrompt)
         }
         if (toolResult.isFailure) {
-            Log.d(LATENCY_TAG, "routeWithAi: provedor primário falhou, tentando o outro t=${SystemClock.elapsedRealtime()}")
+            Log.d(LATENCY_TAG, "routeWithAi: provedor primário falhou (${toolResult.exceptionOrNull()?.javaClass?.simpleName}: ${toolResult.exceptionOrNull()?.message}), tentando o outro t=${SystemClock.elapsedRealtime()}")
             toolResult = if (providerPref == AiProvider.GROQ) {
                 deepSeekProvider.chatWithTools(aiMessages, routingPrompt)
             } else {
@@ -341,6 +341,8 @@ class JavisRepository @Inject constructor(
         }
 
         CommandType.READ_GMAIL -> readGmailPreview()
+
+        CommandType.PAUSE_MEDIA -> pauseMedia()
 
         CommandType.READ_NOTIFICATIONS -> readNotifications()
 
@@ -649,6 +651,16 @@ class JavisRepository @Inject constructor(
         }
         val extra = items.size - shown.size
         return if (extra > 0) "$summary\n\n(e mais $extra notificaç${if (extra == 1) "ão" else "ões"})" else summary
+    }
+
+    /** Pausa a música tocando agora (Spotify) — reaproveita o acesso de notificações
+     *  que o serviço já tem (MediaController), sem permissão nova. */
+    fun pauseMedia(): String {
+        val service = resolveNotificationService()
+            ?: return if (JavisNotificationListenerService.hasAccess(context))
+                "Só um segundo, deixa eu me reconectar. Pergunta de novo em alguns segundos."
+            else "Não consigo controlar mídia sem o acesso a notificações ativado. Vá nas Configurações para permitir."
+        return if (service.pauseSpotify()) "Pronto, pausei a música." else "Não achei nenhuma música tocando pra pausar."
     }
 
     /** Prévia de emails novos — lê a notificação do Gmail (remetente/assunto/trecho), não o corpo completo. */

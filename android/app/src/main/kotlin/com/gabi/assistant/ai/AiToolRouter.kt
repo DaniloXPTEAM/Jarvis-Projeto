@@ -86,6 +86,7 @@ object AiToolRouter {
 
             "share_content" -> ParsedCommand(CommandType.SHARE, target = str("text"))
             "bluetooth_connect" -> ParsedCommand(CommandType.BLUETOOTH_CONNECT)
+            "pause_music" -> ParsedCommand(CommandType.PAUSE_MEDIA)
             "ask_claude" -> ParsedCommand(CommandType.ASK_CLAUDE, target = str("query"))
             "read_calendar" -> ParsedCommand(CommandType.READ_CALENDAR)
 

@@ -116,6 +116,7 @@ object GabiTools {
         tool("share_content", "Compartilha texto via menu do Android.",
             params { add("text", stringProp("texto; vazio = última resposta da Gabi")) }),
         tool("bluetooth_connect", "Liga Bluetooth e roteia o áudio da Gabi pra ele.", params {}),
+        tool("pause_music", "Pausa a música tocando no momento (ex: Spotify). Não fecha o app.", params {}),
         tool("ask_claude", "Encaminha pergunta pro Claude, só se o usuário pedir Claude explicitamente.",
             params(listOf("query")) { add("query", stringProp("pergunta a enviar")) }),
         tool("read_calendar", "Lê próximos compromissos da agenda em voz alta.", params {}),

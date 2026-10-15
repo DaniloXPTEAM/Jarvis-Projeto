@@ -92,8 +92,18 @@ class ElevenLabsTts @Inject constructor(
                     // reportado em 25/08/2026 ("trava a Gabi depois que peço pra tocar ou
                     // mandar mensagem"). Sem isso, um MediaPlayer travado prendia a
                     // conversa inteira pra sempre.
+                    //
+                    // Limite FIXO de 20s (valor original) cortava qualquer resposta falada
+                    // que passasse disso NO MEIO da fala — ela simplesmente parava de falar,
+                    // mesmo com tudo funcionando normal, só porque o áudio era longo.
+                    // Reportado pelo diagnóstico de voz (alexa-referencia/, 15/10/2026).
+                    // Agora o limite escala com o tamanho do texto (chute conservador de
+                    // ~12 caracteres/segundo falado, com folga), com piso de 20s (igual
+                    // antes, pra textos curtos) e teto de 3min (ainda protege contra um
+                    // MediaPlayer travado de verdade pra sempre).
                     withContext(Dispatchers.Main) {
-                        val completed = withTimeoutOrNull(20_000) {
+                        val timeoutMs = (text.length * 85L + 20_000L).coerceAtMost(180_000L)
+                        val completed = withTimeoutOrNull(timeoutMs) {
                             suspendCancellableCoroutine<Unit> { cont ->
                                 playAudioFile(tempFile) {
                                     // Só chama onDone/resume se ainda for a corrida ativa — se o

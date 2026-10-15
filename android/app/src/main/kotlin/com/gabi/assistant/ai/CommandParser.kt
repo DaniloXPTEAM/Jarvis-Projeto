@@ -18,6 +18,7 @@ enum class CommandType {
     SEARCH_YOUTUBE, SEARCH_SPOTIFY, OPEN_WHATSAPP_CHAT,
     WEATHER, ASK_CLAUDE, SET_REMINDER, SHARE, BLUETOOTH_CONNECT,
     READ_CALENDAR, CREATE_CALENDAR_EVENT, READ_GMAIL, SAVE_MEMORY,
+    PAUSE_MEDIA,
     UNKNOWN
 }
 
@@ -136,6 +137,11 @@ class CommandParser @Inject constructor(
         // ── Bluetooth (conectar / rotear áudio) ──
         if (isBluetoothConnect(norm)) {
             return ParsedCommand(CommandType.BLUETOOTH_CONNECT)
+        }
+
+        // ── Pausar música ("pausa a musica", "para a musica", "pause a music", "stop a musica") ──
+        if (norm.matches(Regex(".*\\b(pausa|pause|para|parar|stop)\\b.*\\b(musica|som|spotify|cancao|music)\\b.*"))) {
+            return ParsedCommand(CommandType.PAUSE_MEDIA)
         }
 
         return when {

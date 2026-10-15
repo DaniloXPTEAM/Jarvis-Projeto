@@ -95,7 +95,12 @@ class AndroidTtsFallback @Inject constructor(
         // Rede de segurança (13/10/2026, mesmo padrão já usado no ElevenLabsTts): se a
         // fala for interrompida de um jeito que nenhum callback do motor trate, isso
         // evita prender a conversa inteira esperando um callback que nunca chega.
-        val completed = withTimeoutOrNull(20_000) { speakInternal(text) }
+        //
+        // Limite FIXO de 20s cortava respostas longas no meio da fala mesmo funcionando
+        // normal — mesmo bug do ElevenLabsTts.kt, ver comentário lá (15/10/2026). Escala
+        // com o tamanho do texto, piso de 20s, teto de 3min.
+        val timeoutMs = (text.length * 85L + 20_000L).coerceAtMost(180_000L)
+        val completed = withTimeoutOrNull(timeoutMs) { speakInternal(text) }
         if (completed == null) {
             Log.w(TAG, "Timeout esperando o TTS nativo terminar — seguindo em frente")
             tts?.stop()
