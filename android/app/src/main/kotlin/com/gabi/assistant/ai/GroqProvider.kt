@@ -1,5 +1,6 @@
 package com.gabi.assistant.ai
 
+import android.util.Log
 import com.google.gson.annotations.SerializedName
 import com.gabi.assistant.data.model.AiMessage
 import kotlinx.coroutines.delay
@@ -141,6 +142,7 @@ class GroqProvider @Inject constructor() : AiModelProvider {
             block()
         } catch (e: HttpException) {
             if (e.code() == 429 || e.code() == 402) {
+                Log.d("GabiLatency", "Groq rate limit (${e.code()}), tentando de novo em 1.5s")
                 delay(1500)
                 block()
             } else {

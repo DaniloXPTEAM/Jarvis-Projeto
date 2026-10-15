@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
@@ -75,6 +76,7 @@ class JavisSpeechRecognizer @Inject constructor(
         override fun onBufferReceived(buffer: ByteArray?) {}
 
         override fun onEndOfSpeech() {
+            Log.d(LATENCY_TAG, "T0 onEndOfSpeech t=${SystemClock.elapsedRealtime()}")
             _isListening.value = false
             _events.value = SpeechEvent.Ended
         }
@@ -105,7 +107,10 @@ class JavisSpeechRecognizer @Inject constructor(
             val text = results
                 ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 ?.firstOrNull().orEmpty()
-            if (text.isNotBlank()) _events.value = SpeechEvent.Result(text)
+            if (text.isNotBlank()) {
+                Log.d(LATENCY_TAG, "T1 onResults t=${SystemClock.elapsedRealtime()} textLen=${text.length}")
+                _events.value = SpeechEvent.Result(text)
+            }
         }
 
         override fun onPartialResults(partialResults: Bundle?) {
@@ -236,5 +241,8 @@ class JavisSpeechRecognizer @Inject constructor(
         private const val TAG = "JavisSpeechRecognizer"
         private const val MAX_TRANSIENT_RETRIES = 2
         private const val RESTART_DELAY_MS = 300L
+        // Fase 0 do plano de latência (alexa-referencia/PLANO_DE_ALTERACOES.md) — só
+        // medição, filtrar no logcat com `adb logcat -s GabiLatency`.
+        private const val LATENCY_TAG = "GabiLatency"
     }
 }

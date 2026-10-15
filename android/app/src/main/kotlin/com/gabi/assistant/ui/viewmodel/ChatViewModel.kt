@@ -2,6 +2,8 @@ package com.gabi.assistant.ui.viewmodel
 
 import android.content.Context
 import android.content.Intent
+import android.os.SystemClock
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gabi.assistant.ai.CommandType
@@ -26,6 +28,10 @@ import javax.inject.Inject
 // "Gabi" e ela "simplesmente parava de responder", sem aviso nenhum do porquê.
 // Reportado e confirmado ao vivo em 13/10/2026.
 private const val CONVERSATION_WINDOW_MS = 60_000L
+
+// Fase 0 do plano de latência (alexa-referencia/PLANO_DE_ALTERACOES.md) — só
+// medição, filtrar no logcat com `adb logcat -s GabiLatency`.
+private const val LATENCY_TAG = "GabiLatency"
 
 data class ChatUiState(
     val messages: List<Message> = emptyList(),
@@ -219,6 +225,7 @@ class ChatViewModel @Inject constructor(
                 // repository.sendMessage() já espera a fala da Gabi terminar de tocar
                 // (speak() é suspend até o áudio acabar) antes de devolver — chegando aqui,
                 // é seguro voltar a ouvir sem captar a própria voz dela pelo microfone.
+                Log.d(LATENCY_TAG, "T7 fim da fala, religando escuta t=${SystemClock.elapsedRealtime()}")
                 continueListeningIfContinuous()
             }
         }

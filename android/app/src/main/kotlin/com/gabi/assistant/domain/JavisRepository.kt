@@ -5,6 +5,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.SystemClock
 import android.util.Log
 import android.provider.AlarmClock
 import android.provider.CalendarContract
@@ -97,6 +98,9 @@ class JavisRepository @Inject constructor(
         private const val GMAIL_PACKAGE = "com.google.android.gm"
         private const val WHATSAPP_PACKAGE = "com.whatsapp"
         private const val PENDING_PROMPT_TIMEOUT_MS = 90_000L
+        // Fase 0 do plano de latência (alexa-referencia/PLANO_DE_ALTERACOES.md) — só
+        // medição, filtrar no logcat com `adb logcat -s GabiLatency`.
+        private const val LATENCY_TAG = "GabiLatency"
     }
 
     fun getMessages(sessionId: String): Flow<List<Message>> =
@@ -159,6 +163,7 @@ class JavisRepository @Inject constructor(
     }
 
     suspend fun sendMessage(userText: String, sessionId: String): Result<SendMessageOutcome> {
+        Log.d(LATENCY_TAG, "T2 sendMessage start t=${SystemClock.elapsedRealtime()}")
         messageDao.insert(Message(sessionId = sessionId, role = MessageRole.USER, content = userText))
         resolvePendingProactivePrompt(userText, sessionId)?.let { return it }
 
@@ -194,6 +199,7 @@ class JavisRepository @Inject constructor(
         // em vez do CommandParser por regex. Se não houver IA disponível (sem chave/sem
         // internet), cai pro parser offline — mesma robustez de antes.
         val route = routeWithAi(aiMessages, systemPrompt, providerPref)
+        Log.d(LATENCY_TAG, "T3 routeWithAi end t=${SystemClock.elapsedRealtime()} route=${route?.javaClass?.simpleName}")
 
         val result: Result<SendMessageOutcome> = if (route is RouteResult.DirectReply) {
             Result.success(SendMessageOutcome(route.text))
@@ -217,7 +223,11 @@ class JavisRepository @Inject constructor(
                     Result.success(SendMessageOutcome(skillReply))
                 } else {
                     var r = primary.chat(aiMessages, systemPrompt)
-                    if (r.isFailure) r = fallback.chat(aiMessages, systemPrompt)
+                    if (r.isFailure) {
+                        Log.d(LATENCY_TAG, "fallback para ${fallback.name} (primary=${primary.name} falhou) t=${SystemClock.elapsedRealtime()}")
+                        r = fallback.chat(aiMessages, systemPrompt)
+                    }
+                    Log.d(LATENCY_TAG, "T4 primary/fallback.chat end t=${SystemClock.elapsedRealtime()}")
                     r.map { SendMessageOutcome(it) }
                 }
             }
@@ -246,6 +256,7 @@ class JavisRepository @Inject constructor(
             deepSeekProvider.chatWithTools(aiMessages, routingPrompt)
         }
         if (toolResult.isFailure) {
+            Log.d(LATENCY_TAG, "routeWithAi: provedor primário falhou, tentando o outro t=${SystemClock.elapsedRealtime()}")
             toolResult = if (providerPref == AiProvider.GROQ) {
                 deepSeekProvider.chatWithTools(aiMessages, routingPrompt)
             } else {

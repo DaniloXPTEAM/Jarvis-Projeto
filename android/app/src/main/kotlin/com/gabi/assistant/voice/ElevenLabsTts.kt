@@ -2,6 +2,7 @@ package com.gabi.assistant.voice
 
 import android.content.Context
 import android.media.MediaPlayer
+import android.os.SystemClock
 import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -73,6 +74,7 @@ class ElevenLabsTts @Inject constructor(
             val response = client.newCall(request).execute()
             if (response.isSuccessful) {
                 val audioBytes = response.body?.bytes()
+                Log.d(LATENCY_TAG, "T5 ElevenLabs bytes recebidos t=${SystemClock.elapsedRealtime()} bytes=${audioBytes?.size ?: 0}")
                 if (audioBytes != null && audioBytes.isNotEmpty()) {
                     val tempFile = File(context.cacheDir, "javis_tts_${System.currentTimeMillis()}.mp3")
                     tempFile.writeBytes(audioBytes)
@@ -136,7 +138,10 @@ class ElevenLabsTts @Inject constructor(
             mediaPlayer?.release()
             mediaPlayer = MediaPlayer().apply {
                 setDataSource(file.absolutePath)
-                setOnPreparedListener { it.start() }
+                setOnPreparedListener {
+                    Log.d(LATENCY_TAG, "T6 primeiro som t=${SystemClock.elapsedRealtime()}")
+                    it.start()
+                }
                 setOnCompletionListener {
                     it.release()
                     file.delete()
@@ -173,6 +178,9 @@ class ElevenLabsTts @Inject constructor(
 
     companion object {
         private const val TAG = "ElevenLabsTts"
+        // Fase 0 do plano de latência (alexa-referencia/PLANO_DE_ALTERACOES.md) — só
+        // medição, filtrar no logcat com `adb logcat -s GabiLatency`.
+        private const val LATENCY_TAG = "GabiLatency"
 
         // 🎙️ Voz da GABI — feminina, brasileira (pt-BR), calorosa e conversacional.
         // Default: "Roberta — For Conversational" (jovem, amigável, natural em pt-BR).
