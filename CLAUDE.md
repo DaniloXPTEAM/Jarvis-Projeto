@@ -21,7 +21,30 @@ Documentos de referência já existentes (não duplicar aqui, só consultar):
 
 ## Backlog / começar a próxima sessão por aqui
 
-> **➡️ Sessão de 13/10/2026 (a mais recente):** auditoria do que mudou no app desde
+> **➡️ Sessão de 15/10/2026 (a mais recente): plano de latência de voz (inspirado no
+> Alexa, via REA) — Fase 0 e Fase 1 feitas, branch `voz-latencia`, NÃO mergeada na
+> main.** Usuário trouxe um pacote de 6 MDs (`alexa-referencia/`, feito por outra sessão
+> que fez engenharia reversa no APK do Alexa) com um plano de 5 fases pra latência/
+> "não ouve enquanto fala". Detalhes completos, achado mais importante (provedor de IA
+> primário falhando em quase 100% dos turnos) e tudo que falta na seção **"Sessão
+> 15/10/2026 — Plano de latência de voz (branch voz-latencia)"** no FIM deste arquivo —
+> leia-a antes de continuar as próximas fases (2, 3, 4) ou mexer em voz/latência de
+> novo. **Build e install confirmados no aparelho real, mas as correções específicas
+> (pausar música, corte de 20s) ainda NÃO foram confirmadas pelo usuário testando.**
+
+> **➡️ Sessão de 14-15/10/2026: tentando criar o servidor Oracle Cloud
+> para hospedar a voz da Gabi (Pocket TTS) — BLOQUEADO por falta de capacidade ARM
+> gratuita. 11 tentativas, todas falharam, sessão encerrada sem resolver.** Detalhes
+> completos (inclusive o "RESULTADO FINAL") na seção **"Sessão 14-15/10/2026 — Oracle
+> Cloud: criação da VM bloqueada por falta de capacidade"** no FIM deste arquivo. Resumo
+> rápido: conta Oracle Cloud criada (tenancy `rjdrones97`, região Brazil East/São Paulo),
+> chaves SSH já geradas e salvas em `oracle-tts-vm/ssh-keys/` (fora do git), formulário de
+> criação da VM (Ampere A1.Flex, 4 OCPU/24GB, Oracle Linux 9, nova VCN+subnet pública)
+> totalmente pronto e testado — só falta a Oracle ter vaga. **Comece a próxima sessão só
+> tentando de novo** (manualmente ou pedindo retry automático) em vez de reconfigurar
+> tudo do zero. Nada do app Android foi tocado nesta sessão.
+
+> **➡️ Sessão de 13/10/2026:** auditoria do que mudou no app desde
 > 25/08/2026 — achado trabalho real feito pelo usuário com **outro agente de IA
 > (Codex/ChatGPT) entre 13 e 14/09/2026**, nunca documentado aqui antes. Também:
 > **nenhum commit novo desde `b0ac7ba` (25/08)** — tudo depois disso (rodadas 7-12 do
@@ -2352,3 +2375,259 @@ aparelho) — só lido o código. Próximo passo natural: rodar
 `./gradlew compileDebugKotlin` pra confirmar que os dois sistemas de animação não
 têm conflito de verdade, e perguntar ao usuário se os testes novos já passaram
 quando ele rodou pelo Codex.
+
+## Sessão 14-15/10/2026 — Oracle Cloud: criação da VM bloqueada por falta de capacidade
+
+Retomada do plano (já discutido em sessão anterior de pesquisa de voz, 20-21/09) de
+hospedar o Pocket TTS num servidor próprio em vez de rodar no celular — conclusão de
+antes foi que rodar nativo no Android não dá (sem tokenizer SentencePiece, lento demais em
+ARM do celular), então precisa de um servidor tipo o jeito que a ElevenLabs funciona: o
+app manda o texto por HTTP, o servidor gera o áudio e devolve. Escolhido Oracle Cloud
+"Always Free" (ARM Ampere A1, grátis pra sempre, sem cartão de crédito cobrado) como
+hospedagem.
+
+**Conta já criada pelo usuário** (ele mesmo faz login/senha, nunca compartilha comigo):
+tenancy `rjdrones97`, e-mail `rjdrones97@gmail.com`, região **Brazil East (São Paulo)**
+(permanente, não dá pra trocar depois). Confirmado: conta em "Free Trial" (período de
+teste) que depois vira automaticamente só "Always Free" sem cobrar nada — não afeta o
+plano.
+
+**Navegação pelo Oracle Cloud Console foi feita com Playwright** (não automação de mouse
+do SO, que tinha se mostrado pouco confiável em sessões anteriores nesta mesma pasta pra
+outras tarefas). Duas pegadinhas de UI da própria Oracle, não bug meu, úteis se mexer
+nisso de novo:
+- Vários radio buttons/switches da interface da Oracle ficam com o elemento real de
+  clique "atrás" de um overlay que intercepta o ponteiro (ex.: o filtro "Ampere" na
+  escolha de shape, "Create new virtual cloud network", etc.) — `browser_click` normal
+  trava em retry infinito reportando "intercepts pointer events". Contorno que funcionou
+  sempre: achar o `id` do elemento real via `browser_evaluate` e chamar `.click()` nele
+  direto em JS (bypassa a checagem de visibilidade/sobreposição do Playwright).
+- A tela de login (`oracle.com/cloud/sign-in.html`) tem um diálogo de "Country selector"
+  que pode abrir sozinho e bloquear o botão "Next" — mesmo truque de clique direto por
+  JS resolve, ou simplesmente esperar carregar e tentar de novo.
+
+**Configuração da VM, decidida e já preenchida no assistente de criação** (`Instances →
+Create instance`):
+- Shape: **VM.Standard.A1.Flex** (Ampere/ARM, "Always Free-eligible"), ajustado pro
+  **máximo do plano grátis: 4 OCPU / 24 GB de RAM** (o padrão inicial vem em 1 OCPU/6GB —
+  tem que editar manualmente em "Change shape" → expandir a linha → campos "Number of
+  OCPUs"/"Amount of memory (GB)"). Imagem: Oracle Linux 9 (padrão, não mexido).
+- Rede: **"Create new virtual cloud network"** + **"Create new public subnet"** (conta
+  nova, sem VCN nenhuma ainda) — CIDR padrão `10.0.0.0/24`. Achado e não resolvido: nesse
+  fluxo "criar VCN junto", o toggle "Automatically assign public IPv4 address" vem
+  **travado desabilitado** (a Review mostra "Public IPv4 address: No”), mesmo marcando
+  subnet pública — aparenta ser limitação do assistente rápido (a subnet só existe de
+  verdade depois que a instância é criada). **Plano pra quando a VM for criada de
+  verdade**: ir em Instance → VNIC anexada → editar e adicionar IP público manualmente
+  (caminho padrão da Oracle, não deveria dar problema — só não foi testado ainda porque
+  nenhuma instância chegou a ser criada).
+- Chave SSH: **"Generate a key pair for me"** (gera e baixa na hora, não precisa o
+  usuário ter chave própria). **Baixadas e movidas pra
+  `oracle-tts-vm/ssh-keys/`** (fora do projeto Android, pasta nova só pra isso) — chave
+  mais recente/válida é `ssh-key-2026-10-15.key` (+ `.key.pub`), de uma tentativa que
+  teve 4 OCPU/24GB confirmado na Review antes de falhar por capacidade (ver abaixo).
+  Tentativas anteriores geraram outras chaves que foram sobrescritas/ficaram órfãs (sem
+  instância correspondente) — **só confiar na chave mais recente quando uma instância for
+  criada de verdade**, idealmente baixar de novo na hora que der certo, pra não ter
+  dúvida de qual chave é de qual tentativa.
+- `.gitignore` do projeto atualizado: `*.pem`, `*.key`, `*.key.pub` e
+  `oracle-tts-vm/ssh-keys/` adicionados — essas chaves nunca devem ir pro git.
+
+**O bloqueio real: "Out of capacity for shape VM.Standard.A1.Flex in availability domain
+AD-1".** São Paulo só tem **1 availability domain** (AD-1, confirmado — não tem AD-2/AD-3
+pra tentar trocar, ao contrário do que a própria mensagem de erro sugere como solução).
+Isso é a limitação mais conhecida e reclamada do Always Free da Oracle: o shape ARM
+gratuito é concorridíssimo, e regiões mais novas (São Paulo é uma) sofrem mais ainda.
+**7 tentativas seguidas falharam** com esse erro exato (3 manuais + 4 automáticas via
+`CronCreate`, rodando a cada ~15 min por ~1h) — nenhuma teve sucesso. Confirmado por
+`git status`/snapshot da lista de instâncias que **nenhuma VM foi criada** nenhuma vez (a
+tela de Review persiste entre tentativas, então dá pra só reclicar "Create" sem refazer o
+formulário inteiro — mais rápido que recomeçar do zero a cada vez).
+
+**Descoberta lateral, não intencional**: numa tentativa específica, a navegação acabou
+indo parar numa tela de "Resource Manager → Stacks" com uma stack chamada igual à
+instância, status "Active" — **mas sem nenhum job rodado** ("Jobs: No items to display").
+Conclusão: é um artefato interno do assistente de criação da Oracle (quando se usa "criar
+VCN junto", ele monta um stack Terraform por trás dos panos), não uma VM criada de
+verdade — inofensivo, não custa nada, pode ser ignorado ou apagado depois (Resource
+Manager → Stacks → `instance-20261014-2119` → delete), não é urgente.
+
+**Estratégia de retry combinada com o usuário** (depois de eu explicar que o problema é
+puramente de capacidade da Oracle, não algo que dá pra "corrigir" de verdade): usar o
+`CronCreate` pra ficar tentando sozinho em ciclos de ~1h (4 tentativas de ~15 em 15 min
+cada ciclo), sem precisar incomodar o usuário a cada tentativa — só avisa se der certo ou
+se a rodada inteira (4 tentativas) esgotar sem sucesso. **1ª rodada (7 tentativas no
+total contando as manuais) esgotada sem sucesso.** Usuário pediu mais uma rodada de 1h
+(2ª rodada, em andamento no momento em que esta nota foi escrita).
+
+**Pedido extra do usuário, autorizado explicitamente nesta sessão**: desligar o PC físico
+dele (Windows, `shutdown /s`) sozinho, automaticamente, assim que esta 2ª rodada de retry
+terminar — seja por sucesso ou por esgotar as 4 tentativas de novo. Isso já está
+programado dentro do próprio job do `CronCreate` (não precisa confirmar de novo quando
+disparar). **Detalhe técnico importante pra quem for mexer nisso depois**: jobs do
+`CronCreate` são **session-only** — morrem junto com a sessão do Claude Code. Então, se o
+usuário fechar o Claude Code manualmente antes da rodada terminar, o retry automático (e
+o desligamento automático combinado) simplesmente param de existir, sem aviso — não tem
+persistência em disco desse agendamento.
+
+**Pendente pra quando a VM for criada de verdade** (próxima sessão, se a rodada atual não
+resolver): (1) adicionar IP público manualmente na VNIC (ver nota acima); (2) instalar
+Docker na VM; (3) rodar um dos dois wrappers de servidor Pocket TTS já escolhidos em
+sessão anterior (`IceFog72/pocket-tts-openapi` preferido, `ai-joe-git/pocket-tts-server`
+como backup) — nenhum dos dois tem imagem Docker pronta, vai precisar montar um
+Dockerfile customizado; (4) só depois disso entra a integração no app Android (trocar a
+chamada da ElevenLabs por uma chamada HTTP pro servidor próprio — mesma forma de
+integração, não deveria exigir mudança grande de arquitetura no `ElevenLabsTts.kt`/
+`JavisRepository.kt`).
+
+**Se a Oracle continuar sem capacidade depois de várias rodadas**: alternativa já
+discutida e descartada por enquanto, mas vale lembrar — criar a instância com o shape x86
+sempre disponível (`VM.Standard.E2.1.Micro`, Always Free garantido, mas só 1 OCPU/1GB de
+RAM, provavelmente fraco demais pra um modelo de voz) só pra ter algo rodando, e trocar
+pro Ampere A1 mais forte depois quando a Oracle liberar vaga (dá pra ter os dois ao mesmo
+tempo dentro do limite grátis, ou terminar o fraco e recriar o forte).
+
+**RESULTADO FINAL desta sessão (15/10/2026, ~00:26 local): 2ª rodada também esgotada sem
+sucesso.** Total geral: **11 tentativas de criar a VM Ampere A1.Flex, todas falhando com
+"Out of capacity for shape VM.Standard.A1.Flex in availability domain AD-1"** (7 na 1ª
+rodada + 4 na 2ª rodada, intercaladas de ~15 em 15 minutos ao longo de pouco mais de 2h
+seguidas). Nenhuma teve sucesso — **nenhuma VM foi criada**, nenhum recurso cobrável foi
+provisionado (só a Review preenchida + as duas VCNs "fantasma" que a Oracle tentou criar
+junto, que ficam órfãs sem instância associada — baixa prioridade, mas se for limpar a
+conta depois vale checar `Networking → Virtual cloud networks` por VCNs
+`vcn-20261014-*` sem nada usando). **Sessão encerrada aqui via desligamento automático do
+PC**, conforme combinado explicitamente com o usuário (autorização dada nesta mesma
+sessão) — não por decisão unilateral.
+
+**Pendência clara pra próxima sessão**: a Oracle não está liberando capacidade ARM
+gratuita em São Paulo nesse período (tarde/noite de 14/10 até madrugada de 15/10). Tudo
+já está pronto pra tentar de novo a qualquer momento — basta reabrir
+`compute/instances/create` na região Brazil East (São Paulo) e refazer os mesmos passos
+(Change shape → Ampere → A1.Flex → 4 OCPU/24 GB → Select shape → Next → Create new VCN +
+subnet pública → gerar/baixar chave SSH → Next → Next → Create), ou pedir pra eu
+reconfigurar o retry automático. Vale tentar horários diferentes do dia (manhã cedo,
+horário comercial em fuso americano) — a demanda por ARM gratuito varia bastante ao longo
+do dia e não há padrão confirmado ainda de quando costuma liberar.
+
+## Sessão 15/10/2026 — Plano de latência de voz (branch `voz-latencia`)
+
+Usuário trouxe um pacote de 6 arquivos MD (pasta `alexa-referencia/`, não rastreada no
+git ainda) feito por **outra sessão** (engenharia reversa do APK oficial do Alexa via
+REA): `README.md`, `BRIEFING_PARA_CLAUDE_VSCODE.md` (15 tarefas + regras), `DIAGNOSTICO_VOZ_GABI.md`
+(leitura do código da Gabi, antes de qualquer mudança), `PARAMETROS_DE_VOZ.md` (valores
+reais extraídos do Alexa: 16kHz mono PCM16, buffer circular 3s, AEC opcional, foco de
+áudio), `PLANO_DE_ALTERACOES.md` (plano em 6 fases, 0 a 5, com protocolo de teste),
+`EVIDENCIAS_E_AMBIENTE.md`. **Regra de ouro do próprio pacote**: medir antes de otimizar,
+uma fase por vez, um commit por fase, nunca copiar nomes/código `com.amazon.*`, nunca
+`git add -A`, biometria descartada.
+
+**Criada a branch `voz-latencia`** (a partir da `main`, que já estava limpa — o checkpoint
+`17b82d3` de uma sessão anterior tinha salvo os ~2 meses de trabalho não commitado que
+preocupava antes). Todo o trabalho abaixo está só nessa branch, **não mergeada**.
+
+### Fase 0 — medir (3 commits depois, incluindo achados ao vivo)
+
+Adicionado `Log.d(tag="GabiLatency")` com `SystemClock.elapsedRealtime()` em 8 pontos do
+turno de voz (T0 fim da fala do usuário → T7 religar a escuta depois da Gabi terminar de
+falar) — **só instrumentação, nenhum comportamento mudou**, conforme a Fase 0 do próprio
+plano exige. Pontos: `JavisSpeechRecognizer.kt` (T0/T1), `JavisRepository.kt` (T2/T3/T4 +
+log de quando cai no provedor de IA secundário), `ElevenLabsTts.kt` (T5/T6),
+`ChatViewModel.kt` (T7), `GroqProvider.kt` (log de retry 429/402).
+
+**Capturado log real do aparelho do usuário (Xiaomi), ~12 turnos completos, enquanto ele
+testava ao vivo.** Achados reais (não teoria):
+
+1. **🔴 ACHADO MAIS IMPORTANTE, ainda não investigado a fundo**: o provedor de IA
+   **primário falhou em praticamente 100% dos turnos capturados** (todo turno logou
+   "provedor primário falhou, tentando o outro" — confirmado em ~11 de ~12 turnos, sem
+   exceção visível). Isso significa que TODA mensagem paga o custo de uma chamada que
+   falha (Groq, presumindo que é o provedor padrão do usuário) **mais** uma chamada
+   inteira pro DeepSeek como fallback — dobrando o tempo de IA em praticamente todo
+   turno. Adicionei um log do motivo exato da falha (`toolResult.exceptionOrNull()`,
+   commit mais recente) mas **ainda não vi esse log rodar** (foi adicionado depois da
+   captura analisada) — próximo passo óbvio da próxima sessão: capturar de novo e ler o
+   motivo real (chave inválida? rate limit silencioso que não bate no retry de 429/402
+   existente? erro de modelo?). Resolver isso sozinho provavelmente é o maior ganho de
+   latência disponível, maior que qualquer fase do plano.
+2. **T1−T0 (reconhecimento de voz depois do fim da fala) é RÁPIDO**: 108-188ms em todos
+   os turnos, mediana ~140ms. Contradiz a suposição inicial do diagnóstico de que o
+   reconhecimento em si fosse lento — ele não é. A espera de ~1,8-2,5s de silêncio
+   acontece ANTES do `onEndOfSpeech` disparar (não depois), então não aparece nesse
+   intervalo.
+3. **T3−T2 (chamada de IA, já incluindo a falha+retry do item 1) é o maior gargalo
+   medido**: mediana ~1,8-2s, pico de 3,7s num turno. Isso sozinho é mais da metade do
+   tempo até a Gabi começar a falar.
+4. **T5−T3 (ElevenLabs, texto→áudio pronto)**: ~480ms a 1,27s, custo real mas menor que
+   a IA.
+5. **T6−T5 (áudio pronto→primeiro som, MediaPlayer)**: 27-53ms, **irrelevante** — não é
+   gargalo nenhum.
+6. **Tempo total até o primeiro som (T0→T6, fim da fala do usuário → Gabi começa a
+   responder)**: 2,2s a 4,65s nos turnos medidos, mediana perto de 3s. Isso é o número
+   que bate com a queixa "demora muito" do usuário — e é mensurável, não é impressão.
+7. **Confirmado ao vivo**: pelo menos um turno teve `onEndOfSpeech` sem `onResults`
+   nenhum depois (reconhecimento falhou silenciosamente, sem erro visível pro usuário) —
+   bate com o "e parou de ouvir" relatado ao vivo pelo usuário durante o teste.
+8. **Gap de instrumentação encontrado (não é bug, é limitação do log)**: o caminho de
+   CONFIRMAÇÃO por voz ("sim"/"não") não passa por `sendMessage()` — vai direto pro
+   `confirmPendingCommand()`, que não tem os logs T2/T3/T7. Um turno de confirmação
+   mostrou um gap de ~6,1s entre T1 e T5 sem nenhum log no meio — sinaliza que a EXECUÇÃO
+   do comando confirmado (ex.: mandar WhatsApp de verdade via accessibility service) pode
+   ser lenta, mas não dá pra afirmar sem instrumentar esse caminho também (não feito).
+
+### Fase 1 — correções pequenas (feito, NÃO confirmado pelo usuário testando ainda)
+
+1. **Corte de 20s na fala corrigido**: `ElevenLabsTts.kt` e `AndroidTtsFallback.kt`
+   tinham um `withTimeoutOrNull(20_000)` que, segundo o diagnóstico do pacote
+   `alexa-referencia`, cortava qualquer resposta falada com mais de 20s **no meio**, mesmo
+   funcionando normal (é rede de segurança contra travamento, não deveria limitar duração
+   normal). Trocado por um limite proporcional ao texto
+   (`text.length * 85L + 20_000L`, teto de 3min) — textos curtos continuam com piso de
+   20s (comportamento igual a antes), textos longos ganham tempo de verdade,
+   e o teto de 3min ainda protege contra o cenário real de travamento que motivou o
+   timeout originalmente (25/08/2026, "trava a Gabi depois que peço pra tocar ou mandar
+   mensagem"). **Só validado por compilação — o usuário ainda não confirmou ouvindo uma
+   resposta longa inteira no aparelho.**
+2. **Nova capacidade: pausar música.** Durante o teste ao vivo, o usuário reportou que a
+   Gabi "tá dizendo que não consegue pausar a música nem fechar o Spotify" — confirmado
+   no código: não existia NENHUMA ferramenta de controle de mídia (só abrir o Spotify e
+   buscar). Implementado `CommandType.PAUSE_MEDIA` reaproveitando o `MediaController` do
+   Spotify que o `JavisNotificationListenerService` já tinha pra detectar
+   `spotifyPlaying` (nenhuma permissão nova) — `pauseSpotify()` no serviço,
+   `pauseMedia()` no repositório, tool `pause_music` pra IA + regex offline no
+   `CommandParser` (`"pausa/pare/stop" + "musica/som/spotify"`). Se não achar nada
+   tocando, ela admite honestamente em vez de fingir que pausou. **Instalado no
+   aparelho, ainda não confirmado pelo usuário testando "Gabi, pausa a música".**
+
+### O que NÃO foi feito ainda (pendências reais, não "quase prontas")
+
+- **Investigar a causa raiz do item 1 da Fase 0** (provedor de IA primário falhando quase
+  sempre) — maior prioridade da próxima sessão, maior impacto de latência disponível.
+- **Fase 2** (falar por frases, streaming) — não iniciada.
+- **Fase 3** (uma chamada de IA só, sem round-trip duplo) — não iniciada.
+- **Fase 4** (ouvir enquanto fala / barge-in, tratar foco de áudio de verdade) — não
+  iniciada. Explica tanto "ela continua falando mesmo eu chamando ela" (relatado ao vivo)
+  quanto "ela pausa a música mesmo eu não pedindo nada" (o `SpeechRecognizer` pega o
+  microfone toda vez que o modo contínuo religa a escuta, e isso pausa qualquer mídia —
+  comportamento do próprio Android, não bug novo; só se resolve tratando foco de áudio
+  de propósito, que é exatamente o que a Fase 4 propõe).
+- **Fase 5** (palavra de ativação real, Porcupine/openWakeWord) — não iniciada.
+- **Não investigado**: usuário relatou ao vivo "ela tá ouvindo qualquer barulho e para o
+  que tá falando, não só vozes" — **não é efeito de nada mudado nesta sessão** (Fase 0 foi
+  só log, Fase 1 não mexeu em reconhecimento de voz), então é um comportamento
+  pré-existente. Hipótese mais provável (não confirmada): instabilidade do reconhecedor
+  de voz do aparelho do usuário, já documentada em sessão anterior (20-21/09, erro `-1`
+  "o tempo todo"). Precisa investigar com log real de novo.
+- **Branch `voz-latencia` não foi mergeada na `main`** — fazer isso só depois que o
+  usuário confirmar as correções da Fase 1 funcionando de verdade no aparelho.
+
+### Para retomar na próxima sessão
+1. `git checkout voz-latencia` (não `main`).
+2. Pedir pro usuário testar "Gabi, pausa a música" e uma resposta bem longa (pra validar
+   os dois itens da Fase 1).
+3. Capturar log de novo (`adb logcat -c` seguido de `adb logcat -v time GabiLatency:D AndroidRuntime:E *:S`)
+   e **ler o motivo real da falha do provedor primário** (log já existe, só falta
+   capturar com ele ativo) — é o fio mais importante a puxar.
+4. Só depois disso decidir se segue pra Fase 2/3 (menos impacto isolado, mas afeta todo
+   turno) ou direto pra Fase 4 (resolve "não ouve enquanto fala" e "pausa música", os
+   dois mais reclamados ao vivo pelo usuário).
+
