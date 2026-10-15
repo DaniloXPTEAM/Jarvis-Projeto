@@ -42,6 +42,7 @@ class JavisPreferences @Inject constructor(
     val groqApiKey: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_GROQ)
     val elevenLabsApiKey: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_ELEVENLABS)
     val deepSeekApiKey: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_DEEPSEEK)
+    val openRouterApiKey: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_OPENROUTER)
     val anthropicApiKey: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_ANTHROPIC)
     val spotifyClientId: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_SPOTIFY_CLIENT_ID)
     val spotifyClientSecret: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_SPOTIFY_CLIENT_SECRET)
@@ -55,6 +56,13 @@ class JavisPreferences @Inject constructor(
     //    Voltado pra GROQ como padrão (a chave nova dele está confirmada funcionando
     //    via curl E via log real do app) — DeepSeek fica só como secundário, até o
     //    usuário resolver a cobrança em platform.deepseek.com.
+    // 3) Essa troca de "padrão" no código NUNCA tinha efeito nenhum nesse aparelho: o
+    //    usuário tinha salvo DEEPSEEK em Ajustes em 17/09/2026 (confirmado lendo o
+    //    arquivo de preferências direto do celular via adb) — um valor EXPLÍCITO no
+    //    DataStore sempre vence o `?: AiProvider.GROQ.name` abaixo, que só vale quando
+    //    a chave nunca foi escrita. Por isso `aiProvider` deixou de ser "o único
+    //    provedor usado" — `JavisRepository` agora tenta os TRÊS (Groq, DeepSeek,
+    //    OpenRouter) em cadeia, começando por este aqui mas nunca travando nele.
     val aiProvider: Flow<AiProvider> = ds.data.map {
         try { AiProvider.valueOf(it[KEY_AI_PROVIDER] ?: AiProvider.GROQ.name) }
         catch (e: Exception) { AiProvider.GROQ }
@@ -84,6 +92,7 @@ class JavisPreferences @Inject constructor(
     suspend fun setGroqApiKey(key: String) = secureKeys.set(SecureKeyStore.KEY_GROQ, key)
     suspend fun setElevenLabsApiKey(key: String) = secureKeys.set(SecureKeyStore.KEY_ELEVENLABS, key)
     suspend fun setDeepSeekApiKey(key: String) = secureKeys.set(SecureKeyStore.KEY_DEEPSEEK, key)
+    suspend fun setOpenRouterApiKey(key: String) = secureKeys.set(SecureKeyStore.KEY_OPENROUTER, key)
     suspend fun setAnthropicApiKey(key: String) = secureKeys.set(SecureKeyStore.KEY_ANTHROPIC, key)
     suspend fun setSpotifyClientId(key: String) = secureKeys.set(SecureKeyStore.KEY_SPOTIFY_CLIENT_ID, key)
     suspend fun setSpotifyClientSecret(key: String) = secureKeys.set(SecureKeyStore.KEY_SPOTIFY_CLIENT_SECRET, key)

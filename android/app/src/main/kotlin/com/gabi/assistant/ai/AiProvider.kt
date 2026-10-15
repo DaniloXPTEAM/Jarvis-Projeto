@@ -10,6 +10,16 @@ interface AiModelProvider {
         temperature: Float = 0.7f,
         maxTokens: Int = 1024
     ): Result<String>
+
+    // Adicionado quando o roteamento virou uma CADEIA de provedores (Groq → DeepSeek →
+    // OpenRouter) em vez de só primário+1 fallback (15/10/2026) — formaliza o que
+    // GroqProvider/DeepSeekProvider já tinham como método próprio, pra dar pra iterar
+    // os provedores genericamente em vez de ter um `if` pra cada par possível.
+    suspend fun chatWithTools(
+        messages: List<AiMessage>,
+        systemPrompt: String,
+        tools: List<ToolDef> = GabiTools.definitions
+    ): Result<ToolMessage>
 }
 
 object JavisPersonality {

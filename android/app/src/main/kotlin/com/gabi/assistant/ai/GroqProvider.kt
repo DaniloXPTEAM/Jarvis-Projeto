@@ -100,10 +100,10 @@ class GroqProvider @Inject constructor() : AiModelProvider {
         }
     }
 
-    suspend fun chatWithTools(
+    override suspend fun chatWithTools(
         messages: List<AiMessage>,
         systemPrompt: String,
-        tools: List<ToolDef> = GabiTools.definitions
+        tools: List<ToolDef>
     ): Result<ToolMessage> {
         return try {
             val allMessages = mutableListOf(ToolMessage(role = "system", content = systemPrompt)) +

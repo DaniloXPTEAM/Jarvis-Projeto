@@ -20,6 +20,7 @@ import com.gabi.assistant.ai.CommandType
 import com.gabi.assistant.ai.DeepSeekProvider
 import com.gabi.assistant.ai.GroqProvider
 import com.gabi.assistant.ai.JavisPersonality
+import com.gabi.assistant.ai.OpenRouterProvider
 import com.gabi.assistant.ai.ParsedCommand
 import com.gabi.assistant.ai.RouteResult
 import com.gabi.assistant.data.db.MessageDao
@@ -74,6 +75,7 @@ class JavisRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val groqProvider: GroqProvider,
     private val deepSeekProvider: DeepSeekProvider,
+    private val openRouterProvider: OpenRouterProvider,
     private val messageDao: MessageDao,
     private val memoryManager: MemoryManager,
     private val prefs: JavisPreferences,
@@ -194,13 +196,13 @@ class JavisRepository @Inject constructor(
         // Chave própria do usuário (Ajustes) tem prioridade; senão usa a nativa do app.
         groqProvider.apiKey = prefs.groqApiKey.first().ifBlank { BuildConfig.GROQ_API_KEY }
         deepSeekProvider.apiKey = prefs.deepSeekApiKey.first()
-        val primary: AiModelProvider = if (providerPref == AiProvider.GROQ) groqProvider else deepSeekProvider
-        val fallback: AiModelProvider = if (providerPref == AiProvider.GROQ) deepSeekProvider else groqProvider
+        openRouterProvider.apiKey = prefs.openRouterApiKey.first().ifBlank { BuildConfig.OPENROUTER_API_KEY }
+        val providerChain = buildProviderChain(providerPref)
 
         // Roteamento: deixa a própria IA escolher a ferramenta certa (function calling),
         // em vez do CommandParser por regex. Se não houver IA disponível (sem chave/sem
         // internet), cai pro parser offline — mesma robustez de antes.
-        val route = routeWithAi(aiMessages, systemPrompt, providerPref)
+        val route = routeWithAi(aiMessages, systemPrompt, providerChain)
         Log.d(LATENCY_TAG, "T3 routeWithAi end t=${SystemClock.elapsedRealtime()} route=${route?.javaClass?.simpleName}")
 
         val result: Result<SendMessageOutcome> = if (route is RouteResult.DirectReply) {
@@ -224,12 +226,8 @@ class JavisRepository @Inject constructor(
                 if (skillReply != null) {
                     Result.success(SendMessageOutcome(skillReply))
                 } else {
-                    var r = primary.chat(aiMessages, systemPrompt)
-                    if (r.isFailure) {
-                        Log.d(LATENCY_TAG, "fallback para ${fallback.name} (primary=${primary.name} falhou) t=${SystemClock.elapsedRealtime()}")
-                        r = fallback.chat(aiMessages, systemPrompt)
-                    }
-                    Log.d(LATENCY_TAG, "T4 primary/fallback.chat end t=${SystemClock.elapsedRealtime()}")
+                    val r = chatChain(providerChain, aiMessages, systemPrompt)
+                    Log.d(LATENCY_TAG, "T4 chat chain end t=${SystemClock.elapsedRealtime()}")
                     r.map { SendMessageOutcome(it) }
                 }
             }
@@ -245,28 +243,67 @@ class JavisRepository @Inject constructor(
         return result
     }
 
-    /** Tenta rotear via IA (function calling); retorna null se nenhum provedor respondeu. */
+    /**
+     * Ordem de tentativa dos provedores de IA: o preferido (Ajustes) primeiro, depois
+     * os outros dois numa ordem fixa. Virou uma CADEIA de 3 (15/10/2026) em vez de só
+     * primário+1 fallback depois de ver, ao vivo, os dois únicos provedores de então
+     * falharem em sequência no mesmo dia (Groq com chave revogada, DeepSeek sem
+     * crédito) — e descobrir que a preferência salva no aparelho (`JavisPreferences.
+     * aiProvider`) pode estar desatualizada há meses sem o usuário lembrar, então
+     * nunca mais confiar em "o preferido sempre funciona" sozinho.
+     */
+    private fun buildProviderChain(preferred: AiProvider): List<AiModelProvider> {
+        val byType = mapOf(
+            AiProvider.GROQ to groqProvider,
+            AiProvider.DEEPSEEK to deepSeekProvider,
+            AiProvider.OPENROUTER to openRouterProvider
+        )
+        val fixedOrder = listOf(AiProvider.GROQ, AiProvider.DEEPSEEK, AiProvider.OPENROUTER)
+        return (listOf(preferred) + fixedOrder.filter { it != preferred }).mapNotNull { byType[it] }
+    }
+
+    /** Tenta rotear via IA (function calling) em cada provedor da cadeia, na ordem, até
+     *  um responder de verdade; retorna null se todos falharem. */
     private suspend fun routeWithAi(
         aiMessages: List<AiMessage>,
         systemPrompt: String,
-        providerPref: AiProvider
+        providerChain: List<AiModelProvider>
     ): RouteResult? {
         val routingPrompt = "$systemPrompt\n\n${AiToolRouter.currentDateTimeContext()}"
-        var toolResult = if (providerPref == AiProvider.GROQ) {
-            groqProvider.chatWithTools(aiMessages, routingPrompt)
-        } else {
-            deepSeekProvider.chatWithTools(aiMessages, routingPrompt)
+        providerChain.forEachIndexed { index, provider ->
+            val toolResult = provider.chatWithTools(aiMessages, routingPrompt)
+            val route = AiToolRouter.route(toolResult)
+            if (route != RouteResult.Failed) return route
+            val isLast = index == providerChain.lastIndex
+            Log.d(
+                LATENCY_TAG,
+                "routeWithAi: ${provider.name} falhou (${toolResult.exceptionOrNull()?.javaClass?.simpleName}: ${toolResult.exceptionOrNull()?.message})" +
+                    (if (isLast) ", nenhum provedor respondeu" else ", tentando o próximo") +
+                    " t=${SystemClock.elapsedRealtime()}"
+            )
         }
-        if (toolResult.isFailure) {
-            Log.d(LATENCY_TAG, "routeWithAi: provedor primário falhou (${toolResult.exceptionOrNull()?.javaClass?.simpleName}: ${toolResult.exceptionOrNull()?.message}), tentando o outro t=${SystemClock.elapsedRealtime()}")
-            toolResult = if (providerPref == AiProvider.GROQ) {
-                deepSeekProvider.chatWithTools(aiMessages, routingPrompt)
-            } else {
-                groqProvider.chatWithTools(aiMessages, routingPrompt)
-            }
+        return null
+    }
+
+    /** Mesma cadeia, pro caminho de fala livre (sem nenhuma ferramenta envolvida). */
+    private suspend fun chatChain(
+        providerChain: List<AiModelProvider>,
+        aiMessages: List<AiMessage>,
+        systemPrompt: String
+    ): Result<String> {
+        var last: Result<String> = Result.failure(Exception("Nenhum provedor de IA configurado"))
+        providerChain.forEachIndexed { index, provider ->
+            val r = provider.chat(aiMessages, systemPrompt)
+            if (r.isSuccess) return r
+            last = r
+            val isLast = index == providerChain.lastIndex
+            Log.d(
+                LATENCY_TAG,
+                "chatChain: ${provider.name} falhou" + (if (isLast) ", nenhum provedor respondeu" else ", tentando o próximo") +
+                    " t=${SystemClock.elapsedRealtime()}"
+            )
         }
-        val route = AiToolRouter.route(toolResult)
-        return if (route == RouteResult.Failed) null else route
+        return last
     }
 
     /** Skills que devolvem uma resposta direta (pulam o Groq). null = deixa pro Groq. */
