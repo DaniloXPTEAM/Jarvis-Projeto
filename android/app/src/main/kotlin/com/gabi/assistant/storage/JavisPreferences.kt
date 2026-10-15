@@ -46,17 +46,18 @@ class JavisPreferences @Inject constructor(
     val spotifyClientId: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_SPOTIFY_CLIENT_ID)
     val spotifyClientSecret: Flow<String> = secureKeys.asFlow(SecureKeyStore.KEY_SPOTIFY_CLIENT_SECRET)
     val elevenLabsVoiceId: Flow<String> = ds.data.map { it[KEY_ELEVENLABS_VOICE_ID] ?: "" }
-    // Padrão trocado pra DEEPSEEK (15/10/2026): a chave nativa do Groq tinha sido
-    // revogada/morta (confirmado HTTP 401 "Invalid API Key" via curl direto) sem
-    // ninguém perceber — como o roteamento por IA sempre tenta o "principal" primeiro
-    // e só cai pro outro se falhar, TODA mensagem pagava o custo de uma chamada Groq
-    // fadada a falhar antes de cair pro DeepSeek (que já tinha chave própria do
-    // usuário configurada e funcionando) — dobrando a latência de toda resposta.
-    // Decisão do usuário: DeepSeek principal agora, Groq fica como secundário (chave
-    // já renovada em paralelo, ver local.properties).
+    // Histórico (15/10/2026, mesma sessão, duas reviravoltas em sequência):
+    // 1) A chave nativa do Groq estava revogada (HTTP 401) — trocado o padrão pra
+    //    DEEPSEEK, já que ele tinha chave própria do usuário funcionando.
+    // 2) Só que, testando ao vivo logo depois, o DEEPSEEK passou a devolver HTTP 402
+    //    "Payment Required" em toda chamada — a conta/chave DeepSeek do usuário está
+    //    sem crédito ou com problema de cobrança (confirmado em log real, não teoria).
+    //    Voltado pra GROQ como padrão (a chave nova dele está confirmada funcionando
+    //    via curl E via log real do app) — DeepSeek fica só como secundário, até o
+    //    usuário resolver a cobrança em platform.deepseek.com.
     val aiProvider: Flow<AiProvider> = ds.data.map {
-        try { AiProvider.valueOf(it[KEY_AI_PROVIDER] ?: AiProvider.DEEPSEEK.name) }
-        catch (e: Exception) { AiProvider.DEEPSEEK }
+        try { AiProvider.valueOf(it[KEY_AI_PROVIDER] ?: AiProvider.GROQ.name) }
+        catch (e: Exception) { AiProvider.GROQ }
     }
     val speechRate: Flow<Float> = ds.data.map { it[KEY_SPEECH_RATE] ?: 1.0f }
     val ttsPitch: Flow<Float> = ds.data.map { it[KEY_TTS_PITCH] ?: 1.05f }

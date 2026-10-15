@@ -110,6 +110,17 @@ class JavisSpeechRecognizer @Inject constructor(
             if (text.isNotBlank()) {
                 Log.d(LATENCY_TAG, "T1 onResults t=${SystemClock.elapsedRealtime()} textLen=${text.length}")
                 _events.value = SpeechEvent.Result(text)
+            } else {
+                // onResults pode disparar com a lista de resultados VAZIA em vez de
+                // onError — comportamento real confirmado no aparelho do usuário
+                // (Xiaomi/HyperOS, sessão 20-21/09/2026 e 15/10/2026): ela "ouviu" mas o
+                // serviço de voz do sistema não transcreveu nada. Como nenhum evento era
+                // emitido nesse caso, o modo contínuo ficava preso pra sempre em
+                // "Escutando…" sem reiniciar — o usuário via a tela travada, tinha que
+                // tocar manualmente de novo. Emite o mesmo erro -1 que o resto do app já
+                // trata como "transiente, só tenta ouvir de novo" (ChatViewModel reage
+                // reabrindo o monitor de microfone).
+                emitError(-1, "Não ouvi nada. Pode falar de novo?")
             }
         }
 
