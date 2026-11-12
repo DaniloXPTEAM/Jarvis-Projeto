@@ -1,0 +1,57 @@
+[
+  {
+    "file": "gen_prosody.py",
+    "sha256": "5632fd83389577a70948e8b380724910a4f0528afeef15834576848e94fdeab2",
+    "source": "C:\\Users\\Dannilo\\AppData\\Local\\Temp\\claude\\c--CRiando-coisa-nova-Projeto-Gabi\\7d2bce3a-bc6d-4b43-a279-c640a61587a2\\scratchpad\\gen_prosody.py"
+  },
+  {
+    "file": "gen_prosody2.py",
+    "sha256": "637e9611e3e9edf27516b34b10f8d33efe77380411f6631b9eb41e8801a44f14",
+    "source": "C:\\Users\\Dannilo\\AppData\\Local\\Temp\\claude\\c--CRiando-coisa-nova-Projeto-Gabi\\7d2bce3a-bc6d-4b43-a279-c640a61587a2\\scratchpad\\gen_prosody2.py"
+  },
+  {
+    "file": "rtf_bench.py",
+    "sha256": "6f3602b7622b61e66f75b2eba9c707df6540bd26d07ba4c1de91aa63cb064554",
+    "source": "C:\\Users\\Dannilo\\AppData\\Local\\Temp\\claude\\c--CRiando-coisa-nova-Projeto-Gabi\\7d2bce3a-bc6d-4b43-a279-c640a61587a2\\scratchpad\\rtf_bench.py"
+  },
+  {
+    "file": "bench_onnx.py",
+    "sha256": "1171ad4d0fac4d23c77e32b058abac02c430e42059b797a875e6cc31a756d858",
+    "source": "C:\\Users\\Dannilo\\AppData\\Local\\Temp\\claude\\c--CRiando-coisa-nova-Projeto-Gabi\\7d2bce3a-bc6d-4b43-a279-c640a61587a2\\scratchpad\\bench_onnx.py"
+  },
+  {
+    "file": "out/onnx_bench_results.json",
+    "sha256": "582d59420fea5b8d37b7bd092909f4f34f7e8c21edc2da4e3c8c095629edb816",
+    "source": "C:\\Users\\Dannilo\\AppData\\Local\\Temp\\claude\\c--CRiando-coisa-nova-Projeto-Gabi\\7d2bce3a-bc6d-4b43-a279-c640a61587a2\\scratchpad\\out\\onnx_bench_results.json"
+  },
+  {
+    "file": "out/B3_onnx.wav",
+    "sha256": "f398d0dca121a76688c9319a4b986191aebf5e82c9e1ffdd80240e64f60b7b35",
+    "source": "C:\\Users\\Dannilo\\AppData\\Local\\Temp\\claude\\c--CRiando-coisa-nova-Projeto-Gabi\\7d2bce3a-bc6d-4b43-a279-c640a61587a2\\scratchpad\\out\\B3_onnx.wav"
+  },
+  {
+    "file": "out/C3_onnx.wav",
+    "sha256": "011f84a9dd82f6c824cd09c770822ccf806025b294951436445cbb7c62987c85",
+    "source": "C:\\Users\\Dannilo\\AppData\\Local\\Temp\\claude\\c--CRiando-coisa-nova-Projeto-Gabi\\7d2bce3a-bc6d-4b43-a279-c640a61587a2\\scratchpad\\out\\C3_onnx.wav"
+  },
+  {
+    "file": "pocket-onnx/README.md",
+    "sha256": "05ed0a614d1b512918aa02062624407040680c9a8e8fd6f437e4b59519f0bbff",
+    "source": "C:\\Users\\Dannilo\\AppData\\Local\\Temp\\claude\\c--CRiando-coisa-nova-Projeto-Gabi\\7d2bce3a-bc6d-4b43-a279-c640a61587a2\\scratchpad\\pocket-onnx\\README.md"
+  },
+  {
+    "file": "pocket-onnx/onnx/portuguese_24l/bundle.json",
+    "sha256": "5bf5cf4b75d1848dd13c863d92d6c3a6e4521aac2799dab8f1162a1944e337b8",
+    "source": "C:\\Users\\Dannilo\\AppData\\Local\\Temp\\claude\\c--CRiando-coisa-nova-Projeto-Gabi\\7d2bce3a-bc6d-4b43-a279-c640a61587a2\\scratchpad\\pocket-onnx\\onnx\\portuguese_24l\\bundle.json"
+  },
+  {
+    "file": "pocket-onnx\\generate.py",
+    "sha256": "963a16a8c1969bb5e7588820784f3b287867f3e8ee96adf61182e4ffc4da167b",
+    "source": "C:\\Users\\Dannilo\\AppData\\Local\\Temp\\claude\\c--CRiando-coisa-nova-Projeto-Gabi\\7d2bce3a-bc6d-4b43-a279-c640a61587a2\\scratchpad\\pocket-onnx\\generate.py"
+  },
+  {
+    "file": "pocket-onnx\\pocket_tts_onnx.py",
+    "sha256": "4381a4396ba08b2626a25a87001e3c51dbacd136e1022d2d40a8cefb14b44be0",
+    "source": "C:\\Users\\Dannilo\\AppData\\Local\\Temp\\claude\\c--CRiando-coisa-nova-Projeto-Gabi\\7d2bce3a-bc6d-4b43-a279-c640a61587a2\\scratchpad\\pocket-onnx\\pocket_tts_onnx.py"
+  }
+]

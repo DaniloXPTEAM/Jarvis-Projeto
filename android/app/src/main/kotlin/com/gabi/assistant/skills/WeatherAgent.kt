@@ -92,18 +92,19 @@ class WeatherAgent @Inject constructor() {
         java.text.Normalizer.normalize(s.lowercase(), java.text.Normalizer.Form.NFD)
             .replace(Regex("[\\p{InCombiningDiacriticalMarks}]"), "")
 
-    private fun resolveCity(query: String?): Triple<Double, Double, String> {
+    internal fun resolveCity(query: String?): Triple<Double, Double, String>? {
         if (query.isNullOrBlank()) return Triple(defaultLat, defaultLon, defaultName)
         val q = normalize(query)
         // "clima em sao paulo" → pega o que vem depois de em/de/para
         val cleaned = q.replace(Regex(".*(em|de|para|do|da)\\s+"), "").trim()
         cities.entries.firstOrNull { cleaned.contains(it.key) }?.let { return it.value }
         cities.entries.firstOrNull { q.contains(it.key) }?.let { return it.value }
-        return Triple(defaultLat, defaultLon, query.trim().replaceFirstChar { it.uppercase() })
+        return null
     }
 
     suspend fun getWeatherResponse(cityQuery: String? = null): String {
         val (lat, lon, name) = resolveCity(cityQuery)
+            ?: return "Não encontrei essa cidade no cadastro de clima. Informe uma capital ou outra cidade cadastrada."
         return try {
             val resp = api.getForecast(lat, lon)
             if (!resp.isSuccessful) return "Não consegui pegar o clima agora. Tenta daqui a pouco."
@@ -120,6 +121,8 @@ class WeatherAgent @Inject constructor() {
             }
             "Agora em $name: $temp°C, $desc. Sensação térmica de $sens°C. Umidade de ${c.humidity}%" +
                 " e vento a ${c.windSpeed.toInt()} km/h. $feel"
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e("WeatherAgent", "erro clima: ${e.message}")
             "Não consegui acessar o clima. Verifica sua conexão com a internet."
@@ -128,7 +131,7 @@ class WeatherAgent @Inject constructor() {
 
     /** Versão estruturada do clima atual, pra UI (card do dashboard) em vez de frase falada. */
     suspend fun getCurrentWeatherSummary(cityQuery: String? = null): WeatherSummary? {
-        val (lat, lon, name) = resolveCity(cityQuery)
+        val (lat, lon, name) = resolveCity(cityQuery) ?: return null
         return try {
             val resp = api.getForecast(lat, lon)
             val c = if (resp.isSuccessful) resp.body()?.current else null
@@ -139,6 +142,8 @@ class WeatherAgent @Inject constructor() {
                 description = codeToText(c.code).replaceFirstChar { it.uppercase() },
                 emoji = codeToEmoji(c.code)
             )
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e("WeatherAgent", "erro clima (summary): ${e.message}")
             null

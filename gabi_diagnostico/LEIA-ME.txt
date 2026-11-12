@@ -1,0 +1,15 @@
+DIAGNOSTICO GABI - SEM API E SEM TOKENS
+
+Requisitos: Windows PowerShell e adb instalado no PATH, depuracao USB ativada e autorizada no celular.
+
+1. Conecte o celular por USB e confirme o aviso de depuracao.
+2. No PowerShell, entre na pasta onde salvou o arquivo.
+3. Execute:
+   powershell -NoProfile -ExecutionPolicy Bypass -File .\diagnosticar_gabi.ps1
+4. Informe o pacote Android da Gabi (o script lista candidatos).
+5. Durante os 90 segundos, converse com a Gabi e reproduza a demora.
+6. O script salva logs, informacoes de memoria, CPU, audio e renderizacao numa nova pasta.
+
+O script nao altera o codigo, nao reinstala o aplicativo e nao envia dados pela internet. Limpa apenas o buffer de logcat antes do teste (nao os dados do aplicativo).
+
+IMPORTANTE: sem marcacoes internas no codigo, os logs nao medem precisamente os intervalos entre reconhecimento, inferencia e sintese. Para isso, serao necessarios eventos temporizados dentro do aplicativo. Nao compartilhe logs brutos sem revisar informacoes sensiveis.

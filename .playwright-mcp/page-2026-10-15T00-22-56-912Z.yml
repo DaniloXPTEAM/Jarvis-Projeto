@@ -1,0 +1,330 @@
+- generic [ref=f23e1]:
+  - generic [ref=f23e2]:
+    - link "Skip to main content" [ref=f23e3] [cursor=pointer]:
+      - /url: "#skipToContent"
+    - generic [ref=f23e5]:
+      - generic [ref=f23e6]:
+        - generic [ref=f23e16]:
+          - generic [ref=f23e21]:
+            - alert [ref=f23e23]:
+              - generic [ref=f23e24]:
+                - img "Warning" [ref=f23e26]
+                - generic [ref=f23e30]:
+                  - heading "Free Tier account" [level=2] [ref=f23e31]
+                  - generic [ref=f23e33]:
+                    - generic [ref=f23e34]:
+                      - text: You are in a Free Trial. When your trial is over, your account is limited to Always Free resources.
+                      - link "Upgrade" [ref=f23e35] [cursor=pointer]:
+                        - /url: /account-management/payment-method
+                      - text: at any time.
+                    - link "Learn more" [ref=f23e37] [cursor=pointer]:
+                      - /url: https://docs.cloud.oracle.com/iaas/Content/FreeTier/freetier.htm
+                - button "Close" [ref=f23e40] [cursor=pointer]
+            - generic [ref=f23e46]: Messages region has new messages. Press F6 to navigate.
+          - generic [ref=f23e48]:
+            - application [ref=f23e49]:
+              - button "Navigation menu." [ref=f23e50] [cursor=pointer]:
+                - img "Navigation menu." [ref=f23e53]
+            - link "Console home page" [ref=f23e55] [cursor=pointer]:
+              - /url: /
+              - heading [level=1] [aria-hidden] [ref=f23e56]
+            - generic "Search" [ref=f23e67]:
+              - generic [ref=f23e68]:
+                - textbox "Search resources, services, documentation, and Marketplace" [ref=f23e69]
+                - generic "Search resources, services, documentation, and Marketplace" [ref=f23e71]
+            - generic [ref=f23e76]:
+              - button "Region menu, active region is Brazil East (Sao Paulo)" [ref=f23e78] [cursor=pointer]:
+                - combobox [ref=f23e80]:
+                  - generic [ref=f23e85]: Brazil East (Sao Paulo)
+              - button "Developer tools" [ref=f23e87] [cursor=pointer]:
+                - button "Developer tools" [ref=f23e90]
+              - button "Unread announcements" [ref=f23e94] [cursor=pointer]:
+                - button [ref=f23e96]:
+                  - img "Unread announcements" [ref=f23e97]
+              - button "Help menu" [ref=f23e101] [cursor=pointer]:
+                - combobox [ref=f23e103]:
+                  - img "Help menu" [ref=f23e104]
+              - button "User menu" [ref=f23e107] [cursor=pointer]:
+                - combobox [ref=f23e109]:
+                  - img "Profile" [ref=f23e110]
+              - button "Console AI" [ref=f23e114] [cursor=pointer]
+        - main [ref=f23e119]:
+          - generic "Main content" [ref=f23e814]:
+            - iframe [active] [ref=f23e816]:
+              - generic [ref=f26e2]:
+                - generic [ref=f26e6]:
+                  - heading [level=4] [ref=f26e102]: Compute
+                  - navigation [ref=f26e103]:
+                    - generic [ref=f26e18]:
+                      - button [ref=f26e104] [cursor=pointer]
+                      - generic [ref=f26e24]: Compute
+                    - list [ref=f26e26]:
+                      - listitem [ref=f26e27]:
+                        - link [ref=f26e105] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute
+                          - text: Overview
+                      - listitem [ref=f26e31]:
+                        - link [ref=f26e106] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instances
+                          - text: Instances
+                      - listitem [ref=f26e35]:
+                        - link [ref=f26e107] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instance-maintenance
+                          - text: Instance Maintenance
+                      - listitem [ref=f26e39]:
+                        - link [ref=f26e108] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/dedicated-vm-hosts
+                          - text: Dedicated Virtual Machine Hosts
+                      - listitem [ref=f26e43]:
+                        - link [ref=f26e109] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instance-configs
+                          - text: Instance Configurations
+                      - listitem [ref=f26e47]:
+                        - link [ref=f26e110] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instance-pools
+                          - text: Instance Pools
+                      - listitem [ref=f26e51]:
+                        - link [ref=f26e111] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/cluster-networks
+                          - text: Cluster Networks
+                      - listitem [ref=f26e55]:
+                        - link [ref=f26e112] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/compute-clusters
+                          - text: Compute Clusters
+                      - listitem [ref=f26e59]:
+                        - link [ref=f26e113] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/auto-scaling
+                          - text: Autoscaling Configurations
+                      - listitem [ref=f26e63]:
+                        - link [ref=f26e114] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/capacity-reservations
+                          - text: Capacity Reservations
+                      - listitem [ref=f26e67]:
+                        - link [ref=f26e115] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/images
+                          - text: Custom Images
+                  - button [ref=f26e116] [cursor=pointer]
+                - dialog "Side Panel" [ref=f26e2068]:
+                  - generic [ref=f26e123]:
+                    - banner [ref=f26e124]:
+                      - heading "Create compute instance" [level=1] [ref=f26e2069]
+                    - generic [ref=f26e140]:
+                      - generic [ref=f26e142]:
+                        - generic [ref=f26e144] [cursor=pointer]:
+                          - generic [ref=f26e145]: Basic information
+                          - button "Basic information" [ref=f26e2070]
+                        - separator [ref=f26e157]
+                      - generic [ref=f26e287]:
+                        - generic [ref=f26e289] [cursor=pointer]:
+                          - generic [ref=f26e290]: Security
+                          - button "Security" [ref=f26e2091]
+                        - separator [ref=f26e302]
+                      - generic [ref=f26e304]:
+                        - generic [ref=f26e305]:
+                          - generic [ref=f26e307] [cursor=pointer]:
+                            - generic [ref=f26e309]:
+                              - generic [aria-hidden] [ref=f26e313]: "3"
+                              - generic [ref=f26e314]:
+                                - generic [ref=f26e315]: Networking
+                                - generic [ref=f26e317]: Required
+                            - button "Networking Required" [expanded] [ref=f26e2092]
+                          - separator [ref=f26e321]
+                        - generic [ref=f26e2157]:
+                          - paragraph [ref=f26e2158]:
+                            - generic [ref=f26e2159]:
+                              - text: A
+                              - link "virtual network interface card (VNIC)" [ref=f26e2160] [cursor=pointer]:
+                                - /url: https://docs.cloud.oracle.com/iaas/Content/Network/Tasks/managingVNICs.htm
+                              - text: connects your instance to a
+                              - link "virtual cloud network (VCN)" [ref=f26e2161] [cursor=pointer]:
+                                - /url: https://docs.cloud.oracle.com/iaas/Content/Network/Tasks/managingVCNs.htm
+                              - text: and endpoints in and outside the VCN. Having a public IP address is required to make this instance accessible from the internet.
+                          - generic [ref=f26e2162]:
+                            - group [ref=f26e2165]:
+                              - heading "Primary VNIC" [level=2] [ref=f26e2167]
+                            - generic [ref=f26e2172]:
+                              - generic [ref=f26e2173]: VNIC name
+                              - textbox "VNIC name" [ref=f26e2174]
+                            - radiogroup "Primary network" [ref=f26e2178]:
+                              - generic [ref=f26e2179]:
+                                - generic [ref=f26e2180]: Primary network
+                                - generic [ref=f26e2185]:
+                                  - generic [ref=f26e2187]:
+                                    - radio "Select existing virtual cloud network" [ref=f26e2189]
+                                    - generic [ref=f26e2196]: Select existing virtual cloud network
+                                  - generic [ref=f26e2198]:
+                                    - radio "Create new virtual cloud network" [checked] [ref=f26e2200]
+                                    - generic [ref=f26e2205]: Create new virtual cloud network
+                                  - generic [ref=f26e2207]:
+                                    - radio "Specify OCID" [ref=f26e2209]
+                                    - generic [ref=f26e2214]: Specify OCID
+                            - generic [ref=f26e2536]:
+                              - generic [ref=f26e2537]: New virtual cloud network name
+                              - textbox "New virtual cloud network name" [ref=f26e2538]: vcn-20261014-2122
+                            - generic [ref=f26e2542]:
+                              - generic [ref=f26e2543]:
+                                - generic [ref=f26e2544]: Create in compartment
+                                - combobox "Create in compartment" [ref=f26e2545]: rjdrones97 (root)
+                              - generic [aria-hidden] [ref=f26e2549] [cursor=pointer]
+                            - radiogroup "Subnet" [ref=f26e2250]:
+                              - generic [ref=f26e2251]:
+                                - generic [ref=f26e2252]: Subnet
+                                - generic [ref=f26e2556]:
+                                  - radio "Create new public subnet" [checked] [ref=f26e2558]
+                                  - generic [ref=f26e2565]: Create new public subnet
+                            - generic [ref=f26e2569]:
+                              - generic [ref=f26e2570]: New subnet name
+                              - textbox "New subnet name" [ref=f26e2571]: subnet-20261014-2122
+                            - generic [ref=f26e2575]:
+                              - generic [ref=f26e2576]:
+                                - generic [ref=f26e2577]: Create in compartment
+                                - combobox "Create in compartment" [ref=f26e2578]: rjdrones97 (root)
+                              - generic [aria-hidden] [ref=f26e2582] [cursor=pointer]
+                            - generic [ref=f26e2591]:
+                              - generic [ref=f26e2592]: CIDR block
+                              - textbox "CIDR block" [ref=f26e2593]: 10.0.0.0/24
+                            - generic [ref=f26e2597]:
+                              - alert [ref=f26e2599]:
+                                - generic [ref=f26e2600]:
+                                  - img "Warning" [ref=f26e2602]
+                                  - generic [ref=f26e2606]:
+                                    - heading "Warning" [level=2] [ref=f26e2607]
+                                    - generic [ref=f26e2610]:
+                                      - text: There are additional options available when you use the Networking pages in the console. To have the full range of options,
+                                      - link "Create a VCN" [ref=f26e2611] [cursor=pointer]:
+                                        - /url: https://docs.cloud.oracle.com/iaas/Content/Network/Tasks/create_vcn.htm
+                                      - text: and
+                                      - link "Create a Subnet" [ref=f26e2612] [cursor=pointer]:
+                                        - /url: https://docs.cloud.oracle.com/iaas/Content/Network/Tasks/create_subnet.htm
+                                      - text: and then select an existing VCN and subnet when you create a compute instance.
+                              - generic [ref=f26e2613]: Messages region has new messages. Press F6 to navigate.
+                            - generic [ref=f26e2312]:
+                              - group [ref=f26e2315]:
+                                - heading "Private IPv4 address assignment" [level=2] [ref=f26e2317]
+                                - generic [ref=f26e2319]:
+                                  - generic [ref=f26e2320]:
+                                    - text: If the VNIC must be reachable only by your cloud or on-premises resources, it must have a private IPv4 address. To assign the VNIC a private IPv4 address, select a subnet that’s configured to support private IPv4 addresses.
+                                    - link "Learn more about private IPv4 addresses" [ref=f26e2321] [cursor=pointer]:
+                                      - /url: https://docs.cloud.oracle.com/iaas/Content/Network/Tasks/managingIPaddresses.htm
+                                  - group [ref=f26e2325]:
+                                    - heading "Subnet IPv4 prefixes" [level=3] [ref=f26e2327]
+                                    - generic [ref=f26e2330]:
+                                      - combobox [disabled] [ref=f26e2335]
+                                      - generic [ref=f26e2347]:
+                                        - generic [ref=f26e2348]: Private IPv4 address
+                                        - generic [ref=f26e2352]:
+                                          - generic [ref=f26e2354]:
+                                            - generic [ref=f26e2355]: Automatically assign private IPv4 address
+                                            - generic [ref=f26e2359]: Oracle assigns the next unused address in the chosen subnet to the VNIC
+                                            - radio "Automatically assign private IPv4 address" [checked] [disabled] [ref=f26e2361]
+                                          - generic [ref=f26e2363]:
+                                            - generic [ref=f26e2364]: Manually assign private IPv4 address
+                                            - generic [ref=f26e2368]: Enter an unused address in the chosen subnet for the VNIC
+                                            - radio "Manually assign private IPv4 address" [disabled] [ref=f26e2370]
+                                          - generic [ref=f26e2372]:
+                                            - generic [ref=f26e2373]: Provide existing private IPv4 OCID
+                                            - generic [ref=f26e2377]: Enter the OCID of an existing private IPv4 address in the chosen subnet for the VNIC
+                                            - radio "Provide existing private IPv4 OCID" [disabled] [ref=f26e2379]
+                              - group [ref=f26e2384]:
+                                - heading "Public IPv4 address assignment" [level=2] [ref=f26e2386]
+                                - generic [ref=f26e2388]:
+                                  - generic [ref=f26e2389]:
+                                    - text: If the VNIC must be reachable from the internet, it must have a public IPv4 address. Learn more about public
+                                    - link "IPv4 addresses" [ref=f26e2390] [cursor=pointer]:
+                                      - /url: https://docs.cloud.oracle.com/iaas/Content/Network/Tasks/managingpublicIPs.htm
+                                  - generic [ref=f26e2391]:
+                                    - generic [ref=f26e2393]:
+                                      - generic [ref=f26e2394]:
+                                        - generic [ref=f26e2395]: Automatically assign public IPv4 address
+                                        - switch "Automatically assign public IPv4 address" [disabled] [ref=f26e2398]
+                                      - generic [ref=f26e2399]: If you're not sure whether you need a public IP address, you can always assign one later.
+                                    - generic [ref=f26e2402]:
+                                      - alert [ref=f26e2404]:
+                                        - generic [ref=f26e2405]:
+                                          - img "Warning" [ref=f26e2407]
+                                          - generic [ref=f26e2411]:
+                                            - heading "Warning" [level=2] [ref=f26e2412]
+                                            - generic [ref=f26e2413]: You must select a public subnet to assign a public IPv4 address.
+                                      - generic [ref=f26e2416]: Messages region has new messages. Press F6 to navigate.
+                              - group [ref=f26e2419]:
+                                - heading "IPv6 address assignment" [level=2] [ref=f26e2421]
+                                - generic [ref=f26e2423]:
+                                  - generic [ref=f26e2424]:
+                                    - text: An IPv6 address can be reachable or not reachable from the internet.
+                                    - link "Learn more about IPv6 addresses" [ref=f26e2425] [cursor=pointer]:
+                                      - /url: https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/ipv6.htm
+                                  - generic [ref=f26e2426]:
+                                    - generic [ref=f26e2429]:
+                                      - generic [ref=f26e2430]: Assign IPv6 address from subnet prefix
+                                      - switch "Assign IPv6 address from subnet prefix" [disabled] [ref=f26e2433]
+                                    - generic [ref=f26e2436]:
+                                      - alert [ref=f26e2438]:
+                                        - generic [ref=f26e2439]:
+                                          - img "Warning" [ref=f26e2441]
+                                          - generic [ref=f26e2445]:
+                                            - heading "Warning" [level=2] [ref=f26e2446]
+                                            - generic [ref=f26e2447]: You must select a subnet enabled to use IPv6 assign an IPv6 addresses.
+                                      - generic [ref=f26e2450]: Messages region has new messages. Press F6 to navigate.
+                          - generic [ref=f26e2454] [cursor=pointer]:
+                            - button "Advanced options" [ref=f26e2455]
+                            - heading "Advanced options" [level=2] [ref=f26e2459]
+                          - group [ref=f26e2462]:
+                            - heading "Add SSH keys" [level=2] [ref=f26e2464]
+                            - generic [ref=f26e2466]:
+                              - generic [ref=f26e2467]:
+                                - text: Generate an
+                                - link "SSH key pair" [ref=f26e2468] [cursor=pointer]:
+                                  - /url: https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/managingkeypairs.htm
+                                - text: to connect to the instance using a Secure Shell (SSH) connection, or upload a public key that you already have.
+                              - generic [ref=f26e2469]:
+                                - radiogroup [ref=f26e2472]:
+                                  - generic [ref=f26e2474]:
+                                    - generic [ref=f26e2476]:
+                                      - radio "Generate a key pair for me" [checked] [ref=f26e2478]
+                                      - generic [ref=f26e2485]: Generate a key pair for me
+                                    - generic [ref=f26e2487]:
+                                      - radio "Upload public key file (.pub)" [ref=f26e2489]
+                                      - generic [ref=f26e2494]: Upload public key file (.pub)
+                                    - generic [ref=f26e2496]:
+                                      - radio "Paste public key" [ref=f26e2498]
+                                      - generic [ref=f26e2503]: Paste public key
+                                    - generic [ref=f26e2505]:
+                                      - radio "No SSH keys" [ref=f26e2507]
+                                      - generic [ref=f26e2512]: No SSH keys
+                                - paragraph [ref=f26e2514]: Download the private key so that you can connect to the instance using SSH. It will not be shown again.
+                                - generic [ref=f26e2515]:
+                                  - button "Download private key" [active] [ref=f26e2517] [cursor=pointer]
+                                  - button "Download public key" [ref=f26e2519] [cursor=pointer]
+                      - generic [ref=f26e324]:
+                        - generic [ref=f26e326]:
+                          - generic [ref=f26e328]:
+                            - generic [aria-hidden] [ref=f26e332]: "4"
+                            - generic [ref=f26e333]:
+                              - generic [ref=f26e334]: Storage
+                              - generic [ref=f26e336]: Required
+                          - button "Storage Required" [ref=f26e2093]
+                        - separator [ref=f26e340]
+                      - generic [ref=f26e343]:
+                        - generic [ref=f26e345]:
+                          - generic [ref=f26e346]: Review
+                          - button "Review" [ref=f26e2094]
+                        - separator [ref=f26e360]
+                    - generic [ref=f26e365]:
+                      - generic [ref=f26e367]:
+                        - generic [ref=f26e368]:
+                          - generic [ref=f26e369]: Tasks Completed
+                          - generic [ref=f26e370]: 2 of 4
+                        - progressbar "Progress 50%" [ref=f26e2520]
+                      - generic [ref=f26e372]:
+                        - button "Cancel" [ref=f26e2096] [cursor=pointer]
+                        - button "View estimated cost" [ref=f26e2521] [cursor=pointer]
+                        - button "Previous" [ref=f26e2097] [cursor=pointer]
+                        - button "Next" [ref=f26e2098] [cursor=pointer]
+      - generic [ref=f23e804]:
+        - generic [ref=f23e805]:
+          - link "Terms of Use and Privacy" [ref=f23e807] [cursor=pointer]:
+            - /url: http://www.oracle.com/legal/privacy/index.html
+          - complementary "Open Cookie Preferences Modal" [ref=f23e808]:
+            - link "Cookie Preferences, opens a dedicated popup modal window" [ref=f23e809] [cursor=pointer]: Cookie Preferences
+        - generic [ref=f23e810]: Copyright © 2026, Oracle and/or its affiliates. All rights reserved.
+  - status

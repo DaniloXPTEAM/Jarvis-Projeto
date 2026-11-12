@@ -1,0 +1,60 @@
+Fase A — Reprodutibilidade vocal (dossiê KIRANA_GABI_DOSSIE_COMPLETO.md, secao 33/37)
+Gerado em: 13/10/2026, maquina local do usuario (CPU, sem GPU), Windows.
+
+=== Referencia ===
+Fonte: Gabi Voz isolada.mp3
+SHA-256 (fonte): dde199211292cc2629d75a33c747a0d053f6b0f9d783a0e3d5501641f6cbf9d3
+Extracao: primeiros 20.000000s, mono, 24000 Hz (ffmpeg -t 20 -ac 1 -ar 24000)
+Arquivo: ref20.wav
+SHA-256 (ref20.wav): 1070f07faf354acb9ac7761c55138218f87e4d50ee0f55bad31ea9e328bdf128
+Observacao: ref20.wav e deterministico (mesmo comando sempre reproduz o mesmo arquivo
+a partir do MP3 original) e bate com a descricao do ref20.wav usado na sessao de
+21/09/2026 (mesma duracao, mesmo sample rate, mesmo metodo de extracao).
+
+=== Ambiente de execucao ===
+Python: 3.13.15
+Pacote pocket-tts: 3.3.0 (instalado via pip em 13/10/2026 — pode ser mais novo que a
+versao usada em 21/09/2026; o pacote original NAO teve a versao registrada na sessao
+anterior, entao nao da pra confirmar se e a mesma)
+torch: 2.14.1+cpu
+Modelo: Pocket TTS, variante "portuguese_24l" (24 layers)
+  weights_path: hf://kyutai/pocket-tts/languages/portuguese_24l/model.safetensors
+    @2dd944b099d06bb9edbd221fef138685711d9bf0
+  tokenizer: hf://kyutai/pocket-tts-without-voice-cloning/languages/portuguese_24l/
+    tokenizer.json@4e1e0a3e611c51c0b4ed8174fc10f32a54644303
+Comando CLI usado (identico ao da sessao de 21/09, nenhum parametro extra):
+  pocket-tts generate -q --text "<texto>" --voice ref20.wav --language portuguese_24l
+    --output-path <arquivo>.wav
+Parametros de temperatura/sampler-decode-steps: NAO especificados (usa o default do
+pacote) — mesma escolha feita na sessao original, entao e reproducao fiel do metodo,
+mas NAO necessariamente do resultado byte-a-byte.
+Seed: a CLI do pocket-tts NAO expoe parametro de seed — geracao e estocastica, dois
+runs com o mesmo comando produzem audios diferentes (mas da mesma identidade/metodo).
+Por isso os 3 arquivos abaixo nao sao bit-identicos ao gabi_24l.wav historico, mesmo
+usando a mesma referencia e o mesmo texto no Teste A.
+
+=== Resultados ===
+GABI_CONTROLE_A.wav — Teste A (controle, texto identico ao gabi_24l.wav historico)
+  Texto: "Oi! Eu sou a Gabi, sua assistente. Como posso te ajudar hoje?"
+  Duracao: 4.60s | 24000 Hz | mono
+  SHA-256: f77b6a1e175b7312a1b5ea2ed9f35ac9bba32ce1508871ff46d059c1381134ab
+  Tempo de geracao (CPU, inclui carregar o modelo): 64s
+
+GABI_CONTROLE_B.wav — Teste B (texto novo)
+  Texto: "Claro! Eu posso fazer isso para você. Só preciso que me diga por onde
+    gostaria de começar."
+  Duracao: 5.96s | 24000 Hz | mono
+  SHA-256: 7a92d89b083014a4fccc483c98cb17f63e796bbddb2340420aec5f25c2177df6
+  Tempo de geracao: 56s
+
+GABI_CONTROLE_C.wav — Teste C (texto novo)
+  Texto: "Entendi. Então vamos fazer assim: primeiro eu verifico isso para você e
+    depois seguimos para o próximo passo."
+  Duracao: 6.44s | 24000 Hz | mono
+  SHA-256: 60417f33e2942941e48b3e5affa0df21fa3fb513b58e7c70e4a2561346d58719
+  Tempo de geracao: 69s
+
+=== Decisao GO/NO-GO ===
+NAO PREENCHIDO — depende de avaliacao auditiva do usuario (eu nao ouço audio).
+Secao 21 do dossie: "PARAR PARA APROVAÇÃO AUDITIVA DO USUÁRIO. Não otimizar antes
+disso." Nenhuma otimizacao de runtime/ARM/streaming foi iniciada.

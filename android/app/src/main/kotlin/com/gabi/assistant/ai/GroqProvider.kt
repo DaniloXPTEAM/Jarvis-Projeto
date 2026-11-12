@@ -95,6 +95,8 @@ class GroqProvider @Inject constructor() : AiModelProvider {
             val content = response.choices.firstOrNull()?.message?.content
                 ?: return Result.failure(Exception("Empty response from Groq"))
             Result.success(content.trim())
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -124,6 +126,8 @@ class GroqProvider @Inject constructor() : AiModelProvider {
             val message = response.choices.firstOrNull()?.message
                 ?: return Result.failure(Exception("Empty response from Groq"))
             Result.success(message)
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }

@@ -2,189 +2,121 @@ package com.gabi.assistant.voice
 
 import android.content.Context
 import android.media.MediaPlayer
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
-import kotlin.coroutines.resume
-import okhttp3.*
+import kotlinx.coroutines.*
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.File
+import java.io.IOException
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.resume
 
 @Singleton
-class ElevenLabsTts @Inject constructor(
-    @ApplicationContext private val context: Context
-) {
+class ElevenLabsTts @Inject constructor(@ApplicationContext private val context: Context) {
+    private val handler = Handler(Looper.getMainLooper())
+    private var activeSpeech: Job? = null
     private var mediaPlayer: MediaPlayer? = null
-    private var onDoneCallback: (() -> Unit)? = null
-
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(20, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .build()
-
+    private val client = OkHttpClient.Builder().connectTimeout(20, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS).callTimeout(60, TimeUnit.SECONDS).build()
     var apiKey: String = ""
     var voiceId: String = DEFAULT_VOICE_ID
 
-    /**
-     * Retorna Result.failure quando não conseguiu tocar áudio nenhum (chave vazia,
-     * erro HTTP, voz não adicionada à VoiceLab, etc.) — quem chama decide se cai
-     * pro TTS nativo em vez de ficar em silêncio total, que era o comportamento
-     * antigo (erro só ia pro Logcat, nunca aparecia pro usuário nem tinha fallback).
-     */
-    suspend fun speak(text: String, onDone: (() -> Unit)? = null): Result<Unit> = withContext(Dispatchers.IO) {
-        onDoneCallback = onDone
-        stopSpeaking()
-
-        if (apiKey.isBlank()) {
-            return@withContext Result.failure(IllegalStateException("Chave da API ElevenLabs vazia"))
-        }
-
-        try {
-            val body = JSONObject().apply {
-                put("text", text)
-                // eleven_turbo_v2 só "adivinha" o idioma pelo texto (sem travar), e às
-                // vezes confunde português com espanhol em frases curtas — v2_5 aceita
-                // language_code pra travar pt de verdade. Testado ao vivo em 21/08/2026.
-                put("model_id", "eleven_turbo_v2_5")
-                put("language_code", "pt")
-                put("voice_settings", JSONObject().apply {
-                    put("stability", 0.5)
-                    put("similarity_boost", 0.75)
-                    put("style", 0.3)
-                    put("use_speaker_boost", true)
-                })
-            }.toString().toRequestBody("application/json".toMediaType())
-
-            val request = Request.Builder()
-                .url("https://api.elevenlabs.io/v1/text-to-speech/$voiceId")
-                .header("xi-api-key", apiKey)
-                .header("Accept", "audio/mpeg")
-                .post(body)
-                .build()
-
-            val response = client.newCall(request).execute()
-            if (response.isSuccessful) {
-                val audioBytes = response.body?.bytes()
-                Log.d(LATENCY_TAG, "T5 ElevenLabs bytes recebidos t=${SystemClock.elapsedRealtime()} bytes=${audioBytes?.size ?: 0}")
-                if (audioBytes != null && audioBytes.isNotEmpty()) {
-                    val tempFile = File(context.cacheDir, "javis_tts_${System.currentTimeMillis()}.mp3")
-                    tempFile.writeBytes(audioBytes)
-                    // playAudioFile() só INICIA o MediaPlayer e volta na hora — sem esperar
-                    // o áudio terminar de verdade, speak() retornava (e isSpeaking virava
-                    // false) assim que o play começava, não quando acabava. Isso quebrava
-                    // qualquer coisa que dependesse de "ela ainda tá falando" (voltar a
-                    // ouvir cedo demais, o avatar trocar de pose cedo demais). Suspende até
-                    // o onDone real (onCompletion/onError do MediaPlayer) disparar.
-                    //
-                    // withTimeoutOrNull é rede de segurança: se o MediaPlayer for
-                    // derrubado por fora (ex.: stopSpeaking() chamado de outro lugar
-                    // enquanto isso espera) sem passar pelos listeners de completion/erro,
-                    // o app inteiro travava esperando um callback que nunca vinha —
-                    // reportado em 25/08/2026 ("trava a Gabi depois que peço pra tocar ou
-                    // mandar mensagem"). Sem isso, um MediaPlayer travado prendia a
-                    // conversa inteira pra sempre.
-                    //
-                    // Limite FIXO de 20s (valor original) cortava qualquer resposta falada
-                    // que passasse disso NO MEIO da fala — ela simplesmente parava de falar,
-                    // mesmo com tudo funcionando normal, só porque o áudio era longo.
-                    // Reportado pelo diagnóstico de voz (alexa-referencia/, 15/10/2026).
-                    // Agora o limite escala com o tamanho do texto (chute conservador de
-                    // ~12 caracteres/segundo falado, com folga), com piso de 20s (igual
-                    // antes, pra textos curtos) e teto de 3min (ainda protege contra um
-                    // MediaPlayer travado de verdade pra sempre).
-                    withContext(Dispatchers.Main) {
-                        val timeoutMs = (text.length * 85L + 20_000L).coerceAtMost(180_000L)
-                        val completed = withTimeoutOrNull(timeoutMs) {
-                            suspendCancellableCoroutine<Unit> { cont ->
-                                playAudioFile(tempFile) {
-                                    // Só chama onDone/resume se ainda for a corrida ativa — se o
-                                    // timeout abaixo já cancelou, evita chamar onDone duas vezes.
-                                    if (cont.isActive) {
-                                        cont.resume(Unit)
-                                        onDone?.invoke()
-                                    }
-                                }
-                                cont.invokeOnCancellation { stopSpeaking() }
-                            }
-                        }
-                        if (completed == null) {
-                            Log.w(TAG, "Timeout esperando o áudio da ElevenLabs terminar — seguindo em frente")
-                            stopSpeaking()
-                            onDone?.invoke()
-                        }
-                    }
-                    Result.success(Unit)
-                } else {
-                    Result.failure(Exception("ElevenLabs devolveu áudio vazio"))
+    suspend fun speak(text: String, onDone: (() -> Unit)? = null, onStart: (() -> Unit)? = null): Result<Unit> =
+        withContext(Dispatchers.Main.immediate) {
+            coroutineScope {
+                activeSpeech?.cancel()
+                val owner = coroutineContext.job
+                activeSpeech = owner
+                var file: File? = null
+                try {
+                    if (apiKey.isBlank()) return@coroutineScope Result.failure(IllegalStateException("Chave ElevenLabs vazia"))
+                    val body = JSONObject().apply {
+                        put("text", text)
+                        put("model_id", "eleven_turbo_v2_5")
+                        put("language_code", "pt")
+                        put("voice_settings", JSONObject().apply {
+                            put("stability", 0.5); put("similarity_boost", 0.75)
+                            put("style", 0.3); put("use_speaker_boost", true)
+                        })
+                    }.toString().toRequestBody("application/json".toMediaType())
+                    val request = Request.Builder().url("https://api.elevenlabs.io/v1/text-to-speech/$voiceId")
+                        .header("xi-api-key", apiKey).header("Accept", "audio/mpeg").post(body).build()
+                    val bytes = client.newCall(request).awaitAudioBytes()
+                    ensureActive()
+                    Log.d(LATENCY_TAG, "T5 ElevenLabs bytes recebidos t=${SystemClock.elapsedRealtime()} bytes=${bytes.size}")
+                    val audioFile = File.createTempFile("gabi_tts_", ".mp3", context.cacheDir)
+                    file = audioFile
+                    withContext(Dispatchers.IO) { audioFile.writeBytes(bytes) }
+                    ensureActive()
+                    val timeout = (text.length * 85L + 20_000L).coerceAtMost(180_000L)
+                    val result = withTimeoutOrNull(timeout) { playAudioFile(audioFile, onStart) }
+                        ?: Result.failure(IOException("Tempo limite da reprodução ElevenLabs"))
+                    if (result.isSuccess) onDone?.invoke()
+                    result
+                } catch (e: CancellationException) {
+                    // An interruption must never trigger fallback speech.
+                    throw e
+                } catch (e: Exception) {
+                    Log.w(TAG, "TTS falhou: ${e.javaClass.simpleName}")
+                    Result.failure(e)
+                } finally {
+                    file?.delete()
+                    if (activeSpeech === owner) activeSpeech = null
                 }
-            } else {
-                val errorBody = response.body?.string()?.take(300) ?: ""
-                Log.e(TAG, "ElevenLabs error: ${response.code} $errorBody")
-                Result.failure(Exception("ElevenLabs HTTP ${response.code}: $errorBody"))
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "ElevenLabs TTS failed: ${e.message}")
-            Result.failure(e)
         }
-    }
 
-    /**
-     * `prepare()` (síncrono) bloqueia a thread até o MediaPlayer terminar de bufferizar
-     * o áudio — chamado na Main thread (ver `speak()`), isso podia travar a UI inteira
-     * por um instante a cada fala. Trocado pro par assíncrono `prepareAsync()` +
-     * `setOnPreparedListener`, que não bloqueia nada.
-     */
-    private fun playAudioFile(file: File, onDone: (() -> Unit)?) {
+    private suspend fun playAudioFile(file: File, onStart: (() -> Unit)?): Result<Unit> = suspendCancellableCoroutine { cont ->
+        val player = MediaPlayer()
+        mediaPlayer = player
+        var finished = false
+        fun finish(result: Result<Unit>) {
+            if (finished) return
+            finished = true
+            player.setOnPreparedListener(null)
+            player.setOnCompletionListener(null)
+            player.setOnErrorListener(null)
+            runCatching { player.release() }
+            if (mediaPlayer === player) mediaPlayer = null
+            if (cont.isActive) cont.resume(result)
+        }
+        cont.invokeOnCancellation {
+            if (Looper.myLooper() == Looper.getMainLooper()) finish(Result.success(Unit))
+            else handler.post { finish(Result.success(Unit)) }
+        }
         try {
-            mediaPlayer?.release()
-            mediaPlayer = MediaPlayer().apply {
-                setDataSource(file.absolutePath)
-                setOnPreparedListener {
-                    Log.d(LATENCY_TAG, "T6 primeiro som t=${SystemClock.elapsedRealtime()}")
+            player.setDataSource(file.absolutePath)
+            player.setOnPreparedListener {
+                if (!cont.isActive) { finish(Result.success(Unit)); return@setOnPreparedListener }
+                try {
                     it.start()
-                }
-                setOnCompletionListener {
-                    it.release()
-                    file.delete()
-                    onDone?.invoke()
-                }
-                setOnErrorListener { mp, _, _ ->
-                    mp.release()
-                    file.delete()
-                    onDone?.invoke()
-                    true
-                }
-                prepareAsync()
+                    Log.d(LATENCY_TAG, "T6 playback start solicitado t=${SystemClock.elapsedRealtime()}")
+                    onStart?.invoke()
+                } catch (e: Exception) { finish(Result.failure(e)) }
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "MediaPlayer error: ${e.message}")
-            file.delete()
-            onDone?.invoke()
-        }
+            player.setOnCompletionListener { finish(Result.success(Unit)) }
+            player.setOnErrorListener { _, what, extra ->
+                finish(Result.failure(IOException("MediaPlayer error $what/$extra")))
+                true
+            }
+            player.prepareAsync()
+        } catch (e: Exception) { finish(Result.failure(e)) }
     }
 
     fun stopSpeaking() {
-        try {
-            mediaPlayer?.apply {
-                if (isPlaying) stop()
-                release()
-            }
-            mediaPlayer = null
-        } catch (e: Exception) {
-            Log.e(TAG, "Stop error: ${e.message}")
-        }
+        if (Looper.myLooper() == Looper.getMainLooper()) activeSpeech?.cancel()
+        else handler.post { activeSpeech?.cancel() }
     }
-
-    fun isSpeaking(): Boolean = mediaPlayer?.isPlaying == true
+    fun isSpeaking(): Boolean = runCatching { mediaPlayer?.isPlaying == true }.getOrDefault(false)
 
     companion object {
         private const val TAG = "ElevenLabsTts"

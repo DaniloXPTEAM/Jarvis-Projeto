@@ -27,14 +27,15 @@ class JavisVoiceService : Service() {
                 try {
                     startForeground(NOTIFICATION_ID, buildNotification())
                 } catch (e: Exception) {
-                    // Sem a permissão de microfone o startForeground pode lançar
-                    // SecurityException — o reconhecimento segue, só sem o serviço em primeiro plano.
                     Log.w(TAG, "startForeground falhou: ${e.message}")
+                    speechRecognizer.stopListening(notify = true)
+                    stopSelf()
+                    return START_NOT_STICKY
                 }
                 speechRecognizer.startListening()
             }
             ACTION_STOP -> {
-                speechRecognizer.stopListening()
+                speechRecognizer.stopListening(notify = true)
                 stopForeground(STOP_FOREGROUND_REMOVE)
                 stopSelf()
             }
@@ -64,7 +65,7 @@ class JavisVoiceService : Service() {
     }
 
     override fun onDestroy() {
-        speechRecognizer.stopListening()
+        speechRecognizer.stopListening(notify = true)
         super.onDestroy()
     }
 

@@ -1,0 +1,360 @@
+- generic [ref=f28e1]:
+  - generic [ref=f28e2]:
+    - link "Skip to main content" [ref=f28e11] [cursor=pointer]:
+      - /url: "#skipToContent"
+    - generic [ref=f28e13]:
+      - generic [ref=f28e14]:
+        - generic [ref=f28e24]:
+          - generic [ref=f28e29]:
+            - alert [ref=f28e31]:
+              - generic [ref=f28e32]:
+                - img "Warning" [ref=f28e34]
+                - generic [ref=f28e38]:
+                  - heading "Free Tier account" [level=2] [ref=f28e39]
+                  - generic [ref=f28e41]:
+                    - generic [ref=f28e42]:
+                      - text: You are in a Free Trial. When your trial is over, your account is limited to Always Free resources.
+                      - link "Upgrade" [ref=f28e43] [cursor=pointer]:
+                        - /url: /account-management/payment-method
+                      - text: at any time.
+                    - link "Learn more" [ref=f28e45] [cursor=pointer]:
+                      - /url: https://docs.cloud.oracle.com/iaas/Content/FreeTier/freetier.htm
+                - button "Close" [ref=f28e48] [cursor=pointer]
+            - generic [ref=f28e54]: Messages region has new messages. Press F6 to navigate.
+          - generic [ref=f28e56]:
+            - application [ref=f28e57]:
+              - button "Navigation menu." [ref=f28e58] [cursor=pointer]:
+                - img "Navigation menu." [ref=f28e61]
+            - link "Console home page" [ref=f28e63] [cursor=pointer]:
+              - /url: /
+              - heading [level=1] [aria-hidden] [ref=f28e64]
+            - generic "Search" [ref=f28e75]:
+              - generic [ref=f28e76]:
+                - textbox "Search resources, services, documentation, and Marketplace" [ref=f28e77]
+                - generic "Search resources, services, documentation, and Marketplace" [ref=f28e79]
+            - generic [ref=f28e84]:
+              - button "Region menu, active region is Brazil East (Sao Paulo)" [ref=f28e86] [cursor=pointer]:
+                - combobox [ref=f28e88]:
+                  - generic [ref=f28e93]: Brazil East (Sao Paulo)
+              - button "Developer tools" [ref=f28e95] [cursor=pointer]:
+                - button "Developer tools" [ref=f28e98]
+              - button "Unread announcements" [ref=f28e102] [cursor=pointer]:
+                - button [ref=f28e104]:
+                  - img "Unread announcements" [ref=f28e105]
+              - button "Help menu" [ref=f28e109] [cursor=pointer]:
+                - combobox [ref=f28e111]:
+                  - img "Help menu" [ref=f28e112]
+              - button "User menu" [ref=f28e115] [cursor=pointer]:
+                - combobox [ref=f28e117]:
+                  - img "Profile" [ref=f28e118]
+              - button "Console AI" [ref=f28e122] [cursor=pointer]
+        - main [ref=f28e127]:
+          - generic "Main content" [ref=f28e129]:
+            - iframe [active] [ref=f28e131]:
+              - generic [ref=f30e2]:
+                - generic [ref=f30e278]:
+                  - heading [level=4] [ref=f30e284]: Compute
+                  - navigation [ref=f30e289]:
+                    - generic [ref=f30e290]:
+                      - button [ref=f30e291] [cursor=pointer]
+                      - generic [ref=f30e296]: Compute
+                    - list [ref=f30e298]:
+                      - listitem [ref=f30e299]:
+                        - link [ref=f30e302] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute
+                          - text: Overview
+                      - listitem [ref=f30e303]:
+                        - link [ref=f30e306] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instances
+                          - text: Instances
+                      - listitem [ref=f30e307]:
+                        - link [ref=f30e310] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instance-maintenance
+                          - text: Instance Maintenance
+                      - listitem [ref=f30e311]:
+                        - link [ref=f30e314] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/dedicated-vm-hosts
+                          - text: Dedicated Virtual Machine Hosts
+                      - listitem [ref=f30e315]:
+                        - link [ref=f30e318] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instance-configs
+                          - text: Instance Configurations
+                      - listitem [ref=f30e319]:
+                        - link [ref=f30e322] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instance-pools
+                          - text: Instance Pools
+                      - listitem [ref=f30e323]:
+                        - link [ref=f30e326] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/cluster-networks
+                          - text: Cluster Networks
+                      - listitem [ref=f30e327]:
+                        - link [ref=f30e330] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/compute-clusters
+                          - text: Compute Clusters
+                      - listitem [ref=f30e331]:
+                        - link [ref=f30e334] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/auto-scaling
+                          - text: Autoscaling Configurations
+                      - listitem [ref=f30e335]:
+                        - link [ref=f30e338] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/capacity-reservations
+                          - text: Capacity Reservations
+                      - listitem [ref=f30e339]:
+                        - link [ref=f30e342] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/images
+                          - text: Custom Images
+                  - button [ref=f30e345] [cursor=pointer]
+                - dialog "Side Panel" [ref=f30e1393]:
+                  - generic [ref=f30e356]:
+                    - status [ref=f30e2742]:
+                      - progressbar [ref=f30e2744]
+                      - generic [ref=f30e2746]: In Progress
+                    - generic [ref=f30e358]:
+                      - banner [ref=f30e359]:
+                        - heading "Create compute instance" [level=1] [ref=f30e1394]
+                      - generic [ref=f30e375]:
+                        - generic [ref=f30e377]:
+                          - generic [ref=f30e379] [cursor=pointer]:
+                            - generic [ref=f30e380]: Basic information
+                            - button "Basic information" [ref=f30e1395]
+                          - separator [ref=f30e392]
+                        - generic [ref=f30e510]:
+                          - generic [ref=f30e512] [cursor=pointer]:
+                            - generic [ref=f30e513]: Security
+                            - button "Security" [ref=f30e1418]
+                          - separator [ref=f30e525]
+                        - generic [ref=f30e528]:
+                          - generic [ref=f30e530] [cursor=pointer]:
+                            - generic [ref=f30e537]:
+                              - generic [ref=f30e538]: Networking
+                              - generic [ref=f30e540]: Required
+                            - button "Networking Required" [ref=f30e1419]
+                          - separator [ref=f30e544]
+                        - generic [ref=f30e547]:
+                          - generic [ref=f30e549] [cursor=pointer]:
+                            - generic [ref=f30e556]:
+                              - generic [ref=f30e557]: Storage
+                              - generic [ref=f30e559]: Required
+                            - button "Storage Required" [ref=f30e1420]
+                          - separator [ref=f30e563]
+                        - generic [ref=f30e565]:
+                          - generic [ref=f30e566]:
+                            - generic [ref=f30e568] [cursor=pointer]:
+                              - generic [ref=f30e569]: Review
+                              - button "Review" [expanded] [ref=f30e1421]
+                            - separator [ref=f30e583]
+                          - generic [ref=f30e2069]:
+                            - group [ref=f30e2072]:
+                              - heading "Basic information" [level=2] [ref=f30e2074]
+                              - generic [ref=f30e2076]:
+                                - button "Edit" [ref=f30e2078] [cursor=pointer]
+                                - generic [ref=f30e2079]:
+                                  - generic [ref=f30e2081]:
+                                    - strong [ref=f30e2083]: Name
+                                    - generic [ref=f30e2084]: instance-20261014-2228
+                                    - strong [ref=f30e2089]: Create in compartment
+                                    - generic [ref=f30e2090]: rjdrones97 (root)
+                                  - heading "Placement" [level=2] [ref=f30e2096]
+                                  - generic [ref=f30e2098]:
+                                    - strong [ref=f30e2100]: Availability domain
+                                    - generic [ref=f30e2101]: AD-1
+                                    - strong [ref=f30e2106]: Capacity type
+                                    - generic [ref=f30e2107]: on-demand
+                                    - strong [ref=f30e2112]: Fault domain
+                                    - generic [ref=f30e2113]: Let Oracle choose the best fault domain
+                                  - generic [ref=f30e2117]:
+                                    - heading "Image" [level=2] [ref=f30e2120]
+                                    - generic [ref=f30e2122]:
+                                      - strong [ref=f30e2124]: Operating system
+                                      - generic [ref=f30e2125]: Oracle Linux 9
+                                      - strong [ref=f30e2130]: Image build
+                                      - generic [ref=f30e2131]: 2026.09.18-0
+                                      - strong [ref=f30e2135]: Security
+                                      - generic [ref=f30e2136]: "-"
+                                  - heading "Shape" [level=2] [ref=f30e2142]
+                                  - generic [ref=f30e2144]:
+                                    - strong [ref=f30e2146]: Shape
+                                    - generic [ref=f30e2147]: VM.Standard.A1.Flex
+                                    - strong [ref=f30e2152]: Shape build
+                                    - generic [ref=f30e2153]: Virtual machine, 4 core OCPU, 24 GB memory, 4 Gbps network bandwidth
+                                  - heading "Management" [level=2] [ref=f30e2159]
+                                  - generic [ref=f30e2161]:
+                                    - strong [ref=f30e2163]: Authorization header
+                                    - generic [ref=f30e2164]: Enabled
+                                  - heading "Tags" [level=2] [ref=f30e2170]
+                                  - generic [ref=f30e2175]:
+                                    - table "table" [ref=f30e2178]:
+                                      - rowgroup [ref=f30e2179]:
+                                        - row [ref=f30e2180]:
+                                          - columnheader "Namespace" [ref=f30e2181]
+                                          - columnheader "Key" [ref=f30e2184]
+                                          - columnheader "Value" [ref=f30e2187]
+                                      - rowgroup
+                                    - generic [ref=f30e2192]:
+                                      - generic [ref=f30e2193]: No items to display
+                                      - generic [ref=f30e2194]: Create new items or search again using different filters or search terms.
+                                  - heading "Availability configuration" [level=2] [ref=f30e2199]
+                                  - generic [ref=f30e2201]:
+                                    - strong [ref=f30e2203]: Live migration
+                                    - generic [ref=f30e2204]: Let Oracle choose the best migration option
+                                    - strong [ref=f30e2209]: Restart after infrastucture maintenance
+                                    - generic [ref=f30e2210]: Enabled
+                                  - heading "Oracle Cloud Agent" [level=2] [ref=f30e2217]
+                                  - generic [ref=f30e2219]:
+                                    - strong [ref=f30e2221]: WebLogic Management Service
+                                    - generic [ref=f30e2222]: Disabled
+                                  - generic [ref=f30e2227]:
+                                    - strong [ref=f30e2229]: Vulnerability Scanning
+                                    - generic [ref=f30e2230]: Disabled
+                                  - generic [ref=f30e2235]:
+                                    - strong [ref=f30e2237]: Oracle Java Management Service
+                                    - generic [ref=f30e2238]: Disabled
+                                  - generic [ref=f30e2243]:
+                                    - strong [ref=f30e2245]: OS Management Hub Agent
+                                    - generic [ref=f30e2246]: Disabled
+                                  - generic [ref=f30e2251]:
+                                    - strong [ref=f30e2253]: Management Agent
+                                    - generic [ref=f30e2254]: Disabled
+                                  - generic [ref=f30e2259]:
+                                    - strong [ref=f30e2261]: Fleet Application Management Service
+                                    - generic [ref=f30e2262]: Disabled
+                                  - generic [ref=f30e2267]:
+                                    - strong [ref=f30e2269]: Custom Logs Monitoring
+                                    - generic [ref=f30e2270]: Enabled
+                                  - generic [ref=f30e2275]:
+                                    - strong [ref=f30e2277]: Compute RDMA GPU Monitoring
+                                    - generic [ref=f30e2278]: Disabled
+                                  - generic [ref=f30e2283]:
+                                    - strong [ref=f30e2285]: Compute Instance Run Command
+                                    - generic [ref=f30e2286]: Enabled
+                                  - generic [ref=f30e2291]:
+                                    - strong [ref=f30e2293]: Compute Instance Monitoring
+                                    - generic [ref=f30e2294]: Enabled
+                                  - generic [ref=f30e2299]:
+                                    - strong [ref=f30e2301]: Compute HPC RDMA Auto-Configuration
+                                    - generic [ref=f30e2302]: Disabled
+                                  - generic [ref=f30e2307]:
+                                    - strong [ref=f30e2309]: Compute HPC RDMA Authentication
+                                    - generic [ref=f30e2310]: Disabled
+                                  - generic [ref=f30e2315]:
+                                    - strong [ref=f30e2317]: Cloud Guard Workload Protection
+                                    - generic [ref=f30e2318]: Enabled
+                                  - generic [ref=f30e2323]:
+                                    - strong [ref=f30e2325]: Block Volume Management
+                                    - generic [ref=f30e2326]: Disabled
+                                  - generic [ref=f30e2331]:
+                                    - strong [ref=f30e2333]: Bastion
+                                    - generic [ref=f30e2334]: Disabled
+                            - group [ref=f30e2340]:
+                              - heading "Security" [level=2] [ref=f30e2342]
+                              - generic [ref=f30e2344]:
+                                - button "Edit" [ref=f30e2346] [cursor=pointer]
+                                - generic [ref=f30e2347]:
+                                  - generic [ref=f30e2349]:
+                                    - strong [ref=f30e2351]: Secure Boot
+                                    - generic [ref=f30e2352]: Disabled
+                                    - strong [ref=f30e2357]: Measured Boot
+                                    - generic [ref=f30e2358]: Disabled
+                                    - strong [ref=f30e2363]: Trusted Platform Module
+                                    - generic [ref=f30e2364]: Disabled
+                                  - heading "Security attributes" [level=2] [ref=f30e2370]
+                                  - generic [ref=f30e2375]:
+                                    - table "table" [ref=f30e2378]:
+                                      - rowgroup [ref=f30e2379]:
+                                        - row [ref=f30e2380]:
+                                          - columnheader "Namespace" [ref=f30e2381]
+                                          - columnheader "Key" [ref=f30e2384]
+                                          - columnheader "Value" [ref=f30e2387]
+                                      - rowgroup
+                                    - generic [ref=f30e2392]:
+                                      - generic [ref=f30e2393]: No items to display
+                                      - generic [ref=f30e2394]: Create new items or search again using different filters or search terms.
+                            - group [ref=f30e2399]:
+                              - heading "Networking" [level=2] [ref=f30e2401]
+                              - generic [ref=f30e2403]:
+                                - button "Edit" [ref=f30e2405] [cursor=pointer]
+                                - generic [ref=f30e2406]:
+                                  - generic [ref=f30e2408]:
+                                    - strong [ref=f30e2410]: VNIC name
+                                    - generic [ref=f30e2411]: "-"
+                                    - strong [ref=f30e2416]: New virtual cloud network name
+                                    - generic [ref=f30e2417]: vcn-20261014-2229
+                                    - strong [ref=f30e2422]: Create in compartment
+                                    - generic [ref=f30e2423]: rjdrones97 (root)
+                                    - strong [ref=f30e2428]: New subnet name
+                                    - generic [ref=f30e2429]: subnet-20261014-2229
+                                    - strong [ref=f30e2434]: Create in compartment
+                                    - generic [ref=f30e2435]: rjdrones97 (root)
+                                    - strong [ref=f30e2440]: CIDR block
+                                    - generic [ref=f30e2441]: 10.0.0.0/24
+                                    - strong [ref=f30e2446]: Launch options
+                                    - generic [ref=f30e2447]: "-"
+                                    - strong [ref=f30e2452]: DNS record
+                                    - generic [ref=f30e2453]: "Yes"
+                                    - strong [ref=f30e2458]: Use network security groups to control traffic
+                                    - generic [ref=f30e2459]: "No"
+                                    - strong [ref=f30e2464]: Public IPv4 address
+                                    - generic [ref=f30e2465]: "No"
+                                    - strong [ref=f30e2470]: Private IPv4 address
+                                    - generic [ref=f30e2471]: Automatically assigned on creation
+                                    - strong [ref=f30e2476]: Private IPv4 Ocid
+                                    - generic [ref=f30e2477]: "-"
+                                  - generic [ref=f30e2482]:
+                                    - strong [ref=f30e2484]: IPv6 address
+                                    - generic [ref=f30e2485]: undefined
+                                  - strong [ref=f30e2492]: IPv6 address OCID
+                                  - heading "SSH keys" [level=2] [ref=f30e2502]
+                                  - generic [ref=f30e2504]:
+                                    - strong [ref=f30e2506]: SSH keys
+                                    - generic [ref=f30e2508]:
+                                      - generic [ref=f30e2509]: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCwOUjM2k84fSUbBRvA1DM1vMeucfe1IbRmy0ksDH80b3FBvnIhyTZhYn9FUILJ6DrO98WKYqPX+hHSatw5quZA20vyghPPZ7RgQoOVISgDnxxhZ4uBSoOA/QZugWb3fq01XePYRHF+rFiSWSEi2OVdD971JP9FH7t5pWBcYA+c3EC/k4qwt0h/+EpPjviANKV4CKPhwJRJv9Kx75kId9vdpxqiSY5RGgxvWuf+KynlNHhkHETyx0Nt5Fa49vuSyC4w4nUDbz86Y0vHbPgf2kNPqbkS6lpw7UJI5X6vzX7yxoqt/RvrwF7+6NTYmB4pW7G2qntSea1LaeHie6SARqX1 ssh-key-2026-10-15
+                                      - generic [aria-hidden] [ref=f30e2510]: ssh-rsa AA...
+                            - group [ref=f30e2513]:
+                              - heading "Storage" [level=2] [ref=f30e2515]
+                              - generic [ref=f30e2517]:
+                                - button "Edit" [ref=f30e2519] [cursor=pointer]
+                                - generic [ref=f30e2520]:
+                                  - heading "Boot volume" [level=2] [ref=f30e2523]
+                                  - generic [ref=f30e2525]:
+                                    - strong [ref=f30e2527]: Specify a custom boot volume size and performance setting
+                                    - generic [ref=f30e2528]: "-"
+                                    - strong [ref=f30e2533]: Boot volume performance (VPU)
+                                    - generic [ref=f30e2534]: "-"
+                                    - strong [ref=f30e2539]: Use in-transit encryption
+                                    - generic [ref=f30e2540]: Enabled
+                                    - strong [ref=f30e2545]: Master encryption key
+                                    - generic [ref=f30e2546]: "-"
+                                  - heading "Block volume" [level=5] [ref=f30e2549]
+                                  - generic [ref=f30e2554]:
+                                    - table "table" [ref=f30e2557]:
+                                      - rowgroup [ref=f30e2558]:
+                                        - row [ref=f30e2559]:
+                                          - columnheader "Name" [ref=f30e2560]
+                                          - columnheader "Attachment type" [ref=f30e2563]
+                                          - columnheader "Create type" [ref=f30e2566]
+                                          - columnheader "Reservations" [ref=f30e2569]
+                                          - columnheader "Access" [ref=f30e2572]
+                                      - rowgroup
+                                    - generic [ref=f30e2577]:
+                                      - generic [ref=f30e2578]: No items to display
+                                      - generic [ref=f30e2579]: Create new items or search again using different filters or search terms.
+                      - generic [ref=f30e588]:
+                        - generic [ref=f30e590]:
+                          - generic [ref=f30e591]:
+                            - generic [ref=f30e592]: Tasks Completed
+                            - generic [ref=f30e593]: 4 of 4
+                          - progressbar "Progress 100%" [ref=f30e2582]
+                        - generic [ref=f30e595]:
+                          - button "Cancel" [ref=f30e1423] [cursor=pointer]
+                          - button "Save as stack" [ref=f30e2583] [cursor=pointer]
+                          - button "View estimated cost" [ref=f30e2584] [cursor=pointer]
+                          - button "Previous" [ref=f30e1425] [cursor=pointer]
+                          - button "Create" [active] [ref=f30e2585] [cursor=pointer]
+      - generic [ref=f28e133]:
+        - generic [ref=f28e134]:
+          - link "Terms of Use and Privacy" [ref=f28e136] [cursor=pointer]:
+            - /url: http://www.oracle.com/legal/privacy/index.html
+          - complementary "Open Cookie Preferences Modal" [ref=f28e137]:
+            - link "Cookie Preferences, opens a dedicated popup modal window" [ref=f28e138] [cursor=pointer]: Cookie Preferences
+        - generic [ref=f28e139]: Copyright © 2026, Oracle and/or its affiliates. All rights reserved.
+  - status

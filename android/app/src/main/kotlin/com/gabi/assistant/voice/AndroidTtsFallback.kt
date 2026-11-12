@@ -13,6 +13,9 @@ import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import android.os.Handler
+import android.os.Looper
 
 @Singleton
 class AndroidTtsFallback @Inject constructor(
@@ -87,11 +90,11 @@ class AndroidTtsFallback @Inject constructor(
         best?.let { tts?.voice = it }
     }
 
-    suspend fun speak(text: String) {
+    suspend fun speak(text: String, onStart: (() -> Unit)? = null) {
         // Espera até 5s a inicialização assíncrona do motor terminar, em vez de checar
         // um boolean e desistir na hora — evita o silêncio total na primeira fala.
         val ready = withTimeoutOrNull(5000) { readyState.await() } ?: false
-        if (!ready || tts == null) return
+        if (!ready || tts == null) throw IllegalStateException("TTS Android não inicializou")
         // Rede de segurança (13/10/2026, mesmo padrão já usado no ElevenLabsTts): se a
         // fala for interrompida de um jeito que nenhum callback do motor trate, isso
         // evita prender a conversa inteira esperando um callback que nunca chega.
@@ -100,29 +103,32 @@ class AndroidTtsFallback @Inject constructor(
         // normal — mesmo bug do ElevenLabsTts.kt, ver comentário lá (15/10/2026). Escala
         // com o tamanho do texto, piso de 20s, teto de 3min.
         val timeoutMs = (text.length * 85L + 20_000L).coerceAtMost(180_000L)
-        val completed = withTimeoutOrNull(timeoutMs) { speakInternal(text) }
+        val completed = withTimeoutOrNull(timeoutMs) { speakInternal(text, onStart) }
         if (completed == null) {
             Log.w(TAG, "Timeout esperando o TTS nativo terminar — seguindo em frente")
             tts?.stop()
         }
     }
 
-    private suspend fun speakInternal(text: String): Unit = suspendCancellableCoroutine { cont ->
+    private suspend fun speakInternal(text: String, onStart: (() -> Unit)?): Unit = suspendCancellableCoroutine { cont ->
         tts?.setSpeechRate(speechRate)
         tts?.setPitch(pitch)
 
         val utteranceId = "javis_${System.currentTimeMillis()}"
         tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-            override fun onStart(u: String?) {}
+            override fun onStart(u: String?) {
+                if (u == utteranceId) Handler(Looper.getMainLooper()).post { if (cont.isActive) onStart?.invoke() }
+            }
             override fun onDone(u: String?) { if (u == utteranceId && cont.isActive) cont.resume(Unit) }
-            override fun onError(u: String?) { if (u == utteranceId && cont.isActive) cont.resume(Unit) }
+            override fun onError(u: String?) { if (u == utteranceId && cont.isActive) cont.resumeWithException(IllegalStateException("Falha na reprodução do TTS Android")) }
             // Faltava este callback: QUEUE_FLUSH (uma fala nova interrompendo a
             // anterior) ou stop() chamam onStop, não onDone/onError — sem tratar isso,
             // a coroutine ficava pendurada pra sempre esperando um callback que não
             // vinha, travando o resto da conversa.
             override fun onStop(u: String?, interrupted: Boolean) { if (u == utteranceId && cont.isActive) cont.resume(Unit) }
         })
-        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
+        val status = tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
+        if (status == TextToSpeech.ERROR && cont.isActive) cont.resumeWithException(IllegalStateException("TTS Android recusou a fala"))
         cont.invokeOnCancellation { tts?.stop() }
     }
 

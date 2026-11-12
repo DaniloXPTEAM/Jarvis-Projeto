@@ -1,0 +1,42 @@
+[
+  {
+    "label": "B3",
+    "eos_threshold": -4.0,
+    "max_tokens": 260,
+    "texto": "Claro. Eu posso fazer isso para você. Só preciso que me diga por onde gostaria de começar.",
+    "duracao_s": 6.72,
+    "palavras": 17,
+    "wpm": 151.8,
+    "tempo_geracao_s": 18.5
+  },
+  {
+    "label": "B4",
+    "eos_threshold": -4.0,
+    "max_tokens": 260,
+    "texto": "Claro, eu posso fazer isso para você. Só preciso que me diga por onde gostaria de começar.",
+    "duracao_s": 5.52,
+    "palavras": 17,
+    "wpm": 184.8,
+    "tempo_geracao_s": 13.1
+  },
+  {
+    "label": "C3",
+    "eos_threshold": -4.0,
+    "max_tokens": 260,
+    "texto": "Entendi. Então vamos fazer assim. Primeiro, eu verifico isso para você. Depois, seguimos para o próximo passo.",
+    "duracao_s": 6.72,
+    "palavras": 17,
+    "wpm": 151.8,
+    "tempo_geracao_s": 16.8
+  },
+  {
+    "label": "C4",
+    "eos_threshold": -4.0,
+    "max_tokens": 260,
+    "texto": "Entendi. Então vamos fazer assim: primeiro, eu verifico isso para você e depois seguimos para o próximo passo.",
+    "duracao_s": 6.64,
+    "palavras": 18,
+    "wpm": 162.7,
+    "tempo_geracao_s": 33.4
+  }
+]

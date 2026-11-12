@@ -1,0 +1,48 @@
+Baseline provisorio principal — B3 e C3 (13/10/2026)
+Decisao do usuario apos ouvir B2/C2/B3/B4/C3/C4: B3 e C3 = baseline principal.
+B2 e C4 = reserva. B4 (rapido demais), C2 (pausado demais) e A (baixa fidelidade)
+descartados.
+
+=== Ambiente ===
+Python: 3.13.15
+Pacote pocket-tts: 3.3.0
+torch: 2.14.1+cpu
+Maquina: Windows, Intel i7-8550U, CPU apenas (sem GPU)
+Modelo: Pocket TTS, variante "portuguese_24l" (24 layers)
+  weights_path: hf://kyutai/pocket-tts/languages/portuguese_24l/model.safetensors
+    @2dd944b099d06bb9edbd221fef138685711d9bf0
+  tokenizer: hf://kyutai/pocket-tts-without-voice-cloning/languages/portuguese_24l/
+    tokenizer.json@4e1e0a3e611c51c0b4ed8174fc10f32a54644303
+
+=== Referencia de voz ===
+Fonte: Gabi Voz isolada.mp3
+SHA-256 (fonte): dde199211292cc2629d75a33c747a0d053f6b0f9d783a0e3d5501641f6cbf9d3
+Extracao: primeiros 20.000000s, mono, 24000 Hz
+Arquivo: ref20.wav (../ref20.wav, dentro de fase-A-reproducao/)
+SHA-256 (ref20.wav): 1070f07faf354acb9ac7761c55138218f87e4d50ee0f55bad31ea9e328bdf128
+
+=== B3 ===
+Texto: "Claro. Eu posso fazer isso para você. Só preciso que me diga por onde
+  gostaria de começar."
+Parametros: eos_threshold=-4.0 (default), max_tokens=260, sem seed exposto pela
+  lib (estocastico)
+Duracao: 6.72s | Palavras: 17 | Palavras/min: 152
+SHA-256 (B3.wav): f6c3140d89532da2e168ae870ac26a916f4960d6fb35faa0e954fb045a1511f9
+
+=== C3 ===
+Texto: "Entendi. Então vamos fazer assim. Primeiro, eu verifico isso para você.
+  Depois, seguimos para o próximo passo."
+Parametros: eos_threshold=-4.0 (default), max_tokens=260
+Duracao: 6.72s | Palavras: 17 | Palavras/min: 152
+SHA-256 (C3.wav): 8290789d8c7e7d0e82a096a6abd4dd139d1468924d568827b089b012c411b9fd
+
+=== Reservas ===
+B2.wav: texto com reticencias/virgula de pausa | eos=-4.0 | dur=6.48s | 157 wpm
+  SHA-256: 238426350822e25e072e64f274cc5a9590d53fe15577aba680c2a0a63d7c2c6e
+C4.wav: so a virgula depois de "primeiro", resto como C original | eos=-4.0 |
+  dur=6.64s | 18 palavras | 163 wpm
+  SHA-256: dff7671ff961c15c7238cdad7cc5104d05663ee584c2c6ba08ac79966fb1f54f
+
+Estes dois arquivos (B3.wav, C3.wav) NAO devem ser regerados nem alterados —
+sao o baseline de identidade/prosodia contra o qual o runtime otimizado (ARM/
+mixed-precision) sera comparado no proximo passo.

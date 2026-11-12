@@ -43,7 +43,9 @@ import com.gabi.assistant.util.ShareHelper
 import com.gabi.assistant.voice.AndroidTtsFallback
 import com.gabi.assistant.voice.ElevenLabsTts
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -90,6 +92,8 @@ class JavisRepository @Inject constructor(
     private val spotifyClient: SpotifyClient
 ) {
     val currentSessionId: String = UUID.randomUUID().toString()
+    private val speechMutex = Mutex()
+    private var speechJob: Job? = null
 
     // Estado do aviso proativo pendente ("Quer que eu leia ou é segredo?") — enquanto o
     // app está aberto, guarda a última pergunta feita sozinha pra interpretar a próxima
@@ -129,7 +133,11 @@ class JavisRepository @Inject constructor(
             pendingProactiveAt = System.currentTimeMillis()
             val announcement = "Você recebeu um $label de ${item.title}. Quer que eu leia ou é segredo?"
             messageDao.insert(Message(sessionId = sessionId, role = MessageRole.ASSISTANT, content = announcement))
-            speak(announcement)
+            try {
+                speak(announcement)
+            } catch (e: CancellationException) {
+                currentCoroutineContext().ensureActive()
+            }
         }
     }
 
@@ -205,6 +213,7 @@ class JavisRepository @Inject constructor(
         val route = routeWithAi(aiMessages, systemPrompt, providerChain)
         Log.d(LATENCY_TAG, "T3 routeWithAi end t=${SystemClock.elapsedRealtime()} route=${route?.javaClass?.simpleName}")
 
+        currentCoroutineContext().ensureActive()
         val result: Result<SendMessageOutcome> = if (route is RouteResult.DirectReply) {
             Result.success(SendMessageOutcome(route.text))
         } else {
@@ -233,6 +242,7 @@ class JavisRepository @Inject constructor(
             }
         }
 
+        currentCoroutineContext().ensureActive()
         result.onSuccess { outcome ->
             messageDao.insert(
                 Message(sessionId = sessionId, role = MessageRole.ASSISTANT, content = outcome.reply)
@@ -271,7 +281,9 @@ class JavisRepository @Inject constructor(
     ): RouteResult? {
         val routingPrompt = "$systemPrompt\n\n${AiToolRouter.currentDateTimeContext()}"
         providerChain.forEachIndexed { index, provider ->
+            currentCoroutineContext().ensureActive()
             val toolResult = provider.chatWithTools(aiMessages, routingPrompt)
+            currentCoroutineContext().ensureActive()
             val route = AiToolRouter.route(toolResult)
             if (route != RouteResult.Failed) return route
             val isLast = index == providerChain.lastIndex
@@ -293,7 +305,9 @@ class JavisRepository @Inject constructor(
     ): Result<String> {
         var last: Result<String> = Result.failure(Exception("Nenhum provedor de IA configurado"))
         providerChain.forEachIndexed { index, provider ->
+            currentCoroutineContext().ensureActive()
             val r = provider.chat(aiMessages, systemPrompt)
+            currentCoroutineContext().ensureActive()
             if (r.isSuccess) return r
             last = r
             val isLast = index == providerChain.lastIndex
@@ -324,7 +338,9 @@ class JavisRepository @Inject constructor(
                 try {
                     claudeProvider.apiKey = key
                     "O Claude respondeu: ${claudeProvider.ask(parsed.target)}"
-                } catch (e: Exception) {
+                } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
                     "Não consegui falar com o Claude agora. Tenta de novo."
                 }
             }
@@ -351,8 +367,12 @@ class JavisRepository @Inject constructor(
                 // Já tem algo pareado — caminho rápido de sempre, sem gastar ~15s
                 // escaneando à toa.
                 bluetoothController.bondedDeviceNames().isNotEmpty() -> {
-                    bluetoothController.routeAudioToBluetooth(am)
-                    "Pronto! Bluetooth conectado. O som da Gabi vai sair no seu fone ou caixa agora."
+                    if (am != null && bluetoothController.routeAudioToBluetooth(am)) {
+                        "Solicitei a saída de áudio pelo Bluetooth. Confira se o som chegou ao seu fone."
+                    } else {
+                        bluetoothController.openBluetoothSettings()
+                        "Há aparelhos pareados, mas não consegui ativar a saída de áudio Bluetooth. Abri as configurações para você conferir a conexão."
+                    }
                 }
                 // Nada pareado ainda — antes disso a Gabi só sabia rotear pro que já
                 // estava pareado, nunca procurava aparelho novo de verdade (limitação
@@ -453,6 +473,8 @@ class JavisRepository @Inject constructor(
         audioFocusRequest?.let {
             try {
                 audioManager.abandonAudioFocusRequest(it)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.w("JavisRepository", "Falha ao soltar foco de áudio: ${e.message}")
             }
@@ -463,38 +485,45 @@ class JavisRepository @Inject constructor(
     private suspend fun speakWithAndroidTts(text: String) {
         androidTts.speechRate = prefs.speechRate.first()
         androidTts.pitch = prefs.ttsPitch.first()
-        androidTts.speak(text)
+        androidTts.speak(text, onStart = { _isSpeaking.value = true })
     }
 
-    suspend fun speak(text: String) {
-        _isSpeaking.value = true
-        requestSpeakingAudioFocus()
-        try {
-            val useElevenLabs = prefs.useElevenLabs.first()
-            val elKey = prefs.elevenLabsApiKey.first()
-
-            if (useElevenLabs && elKey.isNotBlank()) {
-                elevenLabsTts.apiKey = elKey
-                elevenLabsTts.voiceId = prefs.elevenLabsVoiceId.first()
-                    .ifBlank { ElevenLabsTts.DEFAULT_VOICE_ID }
-                // Se a ElevenLabs falhar (voz não adicionada à VoiceLab da conta,
-                // créditos zerados, rede), cai pro TTS nativo em vez de ficar em
-                // silêncio total — antes o erro só ia pro Logcat, nunca virava som
-                // nenhum nem avisava o usuário.
-                elevenLabsTts.speak(text).onFailure { e ->
-                    Log.w("JavisRepository", "ElevenLabs falhou (\"$e\"), caindo pro TTS nativo")
-                    speakWithAndroidTts(text)
+    suspend fun speak(text: String) = withContext(Dispatchers.Main.immediate) {
+        coroutineScope {
+            val owner = coroutineContext.job
+            speechJob?.cancel()
+            speechJob = owner
+            try {
+                // Let the previous player's cancellation finish before taking audio focus.
+                speechMutex.withLock {
+                    ensureActive()
+                    requestSpeakingAudioFocus()
+                    try {
+                        val useElevenLabs = prefs.useElevenLabs.first()
+                        val key = prefs.elevenLabsApiKey.first()
+                        if (useElevenLabs && key.isNotBlank()) {
+                            elevenLabsTts.apiKey = key
+                            elevenLabsTts.voiceId = prefs.elevenLabsVoiceId.first().ifBlank { ElevenLabsTts.DEFAULT_VOICE_ID }
+                            val result = elevenLabsTts.speak(text, onStart = { _isSpeaking.value = true })
+                            ensureActive()
+                            if (result.isFailure) {
+                                Log.w("JavisRepository", "ElevenLabs indisponível; tentando TTS Android")
+                                speakWithAndroidTts(text)
+                            }
+                        } else speakWithAndroidTts(text)
+                    } finally {
+                        abandonSpeakingAudioFocus()
+                        _isSpeaking.value = false
+                    }
                 }
-            } else {
-                speakWithAndroidTts(text)
+            } finally {
+                if (speechJob === owner) speechJob = null
             }
-        } finally {
-            abandonSpeakingAudioFocus()
-            _isSpeaking.value = false
         }
     }
 
     fun stopSpeaking() {
+        speechJob?.cancel()
         elevenLabsTts.stopSpeaking()
         androidTts.stop()
     }
@@ -608,6 +637,8 @@ class JavisRepository @Inject constructor(
             spotifyClient.clientSecret = clientSecret
             val trackUri = try {
                 spotifyClient.resolveTrackUri(query)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e("JavisRepository", "searchSpotify: exceção resolvendo track URI: ${e.message}", e)
                 null
@@ -618,7 +649,9 @@ class JavisRepository @Inject constructor(
                 try {
                     context.startActivity(playIntent)
                     return
-                } catch (e: Exception) {
+                } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
                     Log.e("JavisRepository", "searchSpotify: falha abrindo $trackUri: ${e.message}", e)
                 }
             }

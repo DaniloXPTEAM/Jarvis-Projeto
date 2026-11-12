@@ -1,0 +1,102 @@
+[
+  {
+    "label": "B2_base",
+    "eos_threshold": -4.0,
+    "max_tokens": 200,
+    "texto": "Claro! Eu posso fazer isso para você. Só preciso que me diga por onde gostaria de começar.",
+    "duracao_s": 5.68,
+    "palavras": 17,
+    "wpm": 179.6,
+    "tempo_geracao_s": 12.7
+  },
+  {
+    "label": "B2_eos6",
+    "eos_threshold": -6.0,
+    "max_tokens": 260,
+    "texto": "Claro! Eu posso fazer isso para você. Só preciso que me diga por onde gostaria de começar.",
+    "duracao_s": 5.28,
+    "palavras": 17,
+    "wpm": 193.2,
+    "tempo_geracao_s": 11.8
+  },
+  {
+    "label": "B2_eos8",
+    "eos_threshold": -8.0,
+    "max_tokens": 300,
+    "texto": "Claro! Eu posso fazer isso para você. Só preciso que me diga por onde gostaria de começar.",
+    "duracao_s": 5.52,
+    "palavras": 17,
+    "wpm": 184.8,
+    "tempo_geracao_s": 11.6
+  },
+  {
+    "label": "B2_pausas",
+    "eos_threshold": -4.0,
+    "max_tokens": 220,
+    "texto": "Claro... Eu posso fazer isso para você. Só preciso que me diga, por onde gostaria de começar.",
+    "duracao_s": 6.48,
+    "palavras": 17,
+    "wpm": 157.4,
+    "tempo_geracao_s": 14.4
+  },
+  {
+    "label": "B2_pausas_eos6",
+    "eos_threshold": -6.0,
+    "max_tokens": 260,
+    "texto": "Claro... Eu posso fazer isso para você. Só preciso que me diga, por onde gostaria de começar.",
+    "duracao_s": 6.08,
+    "palavras": 17,
+    "wpm": 167.8,
+    "tempo_geracao_s": 13.7
+  },
+  {
+    "label": "C2_base",
+    "eos_threshold": -4.0,
+    "max_tokens": 220,
+    "texto": "Entendi. Então vamos fazer assim: primeiro eu verifico isso para você e depois seguimos para o próximo passo.",
+    "duracao_s": 6.32,
+    "palavras": 18,
+    "wpm": 170.9,
+    "tempo_geracao_s": 14.2
+  },
+  {
+    "label": "C2_eos6",
+    "eos_threshold": -6.0,
+    "max_tokens": 280,
+    "texto": "Entendi. Então vamos fazer assim: primeiro eu verifico isso para você e depois seguimos para o próximo passo.",
+    "duracao_s": 6.48,
+    "palavras": 18,
+    "wpm": 166.7,
+    "tempo_geracao_s": 14.8
+  },
+  {
+    "label": "C2_eos8",
+    "eos_threshold": -8.0,
+    "max_tokens": 320,
+    "texto": "Entendi. Então vamos fazer assim: primeiro eu verifico isso para você e depois seguimos para o próximo passo.",
+    "duracao_s": 5.68,
+    "palavras": 18,
+    "wpm": 190.1,
+    "tempo_geracao_s": 12.1
+  },
+  {
+    "label": "C2_pausas",
+    "eos_threshold": -4.0,
+    "max_tokens": 240,
+    "texto": "Entendi... Então, vamos fazer assim: primeiro, eu verifico isso para você, e depois, seguimos para o próximo passo.",
+    "duracao_s": 9.44,
+    "palavras": 18,
+    "wpm": 114.4,
+    "tempo_geracao_s": 20.1
+  },
+  {
+    "label": "C2_pausas_eos6",
+    "eos_threshold": -6.0,
+    "max_tokens": 300,
+    "texto": "Entendi... Então, vamos fazer assim: primeiro, eu verifico isso para você, e depois, seguimos para o próximo passo.",
+    "duracao_s": 6.96,
+    "palavras": 18,
+    "wpm": 155.2,
+    "tempo_geracao_s": 15.1
+  }
+]

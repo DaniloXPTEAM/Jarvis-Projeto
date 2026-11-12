@@ -1,0 +1,213 @@
+- generic [ref=f23e1]:
+  - generic [ref=f23e2]:
+    - link "Skip to main content" [ref=f23e3] [cursor=pointer]:
+      - /url: "#skipToContent"
+    - generic [ref=f23e5]:
+      - generic [ref=f23e6]:
+        - generic [ref=f23e16]:
+          - generic [ref=f23e21]:
+            - alert [ref=f23e23]:
+              - generic [ref=f23e24]:
+                - img "Warning" [ref=f23e26]
+                - generic [ref=f23e30]:
+                  - heading "Free Tier account" [level=2] [ref=f23e31]
+                  - generic [ref=f23e33]:
+                    - generic [ref=f23e34]:
+                      - text: You are in a Free Trial. When your trial is over, your account is limited to Always Free resources.
+                      - link "Upgrade" [ref=f23e35] [cursor=pointer]:
+                        - /url: /account-management/payment-method
+                      - text: at any time.
+                    - link "Learn more" [ref=f23e37] [cursor=pointer]:
+                      - /url: https://docs.cloud.oracle.com/iaas/Content/FreeTier/freetier.htm
+                - button "Close" [ref=f23e40] [cursor=pointer]
+            - generic [ref=f23e46]: Messages region has new messages. Press F6 to navigate.
+          - generic [ref=f23e48]:
+            - application [ref=f23e49]:
+              - button "Navigation menu." [ref=f23e50] [cursor=pointer]:
+                - img "Navigation menu." [ref=f23e53]
+            - link "Console home page" [ref=f23e55] [cursor=pointer]:
+              - /url: /
+              - heading [level=1] [aria-hidden] [ref=f23e56]
+            - generic "Search" [ref=f23e67]:
+              - generic [ref=f23e68]:
+                - textbox "Search resources, services, documentation, and Marketplace" [ref=f23e69]
+                - generic "Search resources, services, documentation, and Marketplace" [ref=f23e71]
+            - generic [ref=f23e76]:
+              - button "Region menu, active region is Brazil East (Sao Paulo)" [ref=f23e78] [cursor=pointer]:
+                - combobox [ref=f23e80]:
+                  - generic [ref=f23e85]: Brazil East (Sao Paulo)
+              - button "Developer tools" [ref=f23e87] [cursor=pointer]:
+                - button "Developer tools" [ref=f23e90]
+              - button "Unread announcements" [ref=f23e94] [cursor=pointer]:
+                - button [ref=f23e96]:
+                  - img "Unread announcements" [ref=f23e97]
+              - button "Help menu" [ref=f23e101] [cursor=pointer]:
+                - combobox [ref=f23e103]:
+                  - img "Help menu" [ref=f23e104]
+              - button "User menu" [ref=f23e107] [cursor=pointer]:
+                - combobox [ref=f23e109]:
+                  - img "Profile" [ref=f23e110]
+              - button "Console AI" [ref=f23e114] [cursor=pointer]
+        - main [ref=f23e119]:
+          - generic "Main content" [ref=f23e814]:
+            - iframe [active] [ref=f23e816]:
+              - generic [ref=f26e2]:
+                - generic [ref=f26e6]:
+                  - heading [level=4] [ref=f26e102]: Compute
+                  - navigation [ref=f26e103]:
+                    - generic [ref=f26e18]:
+                      - button [ref=f26e104] [cursor=pointer]
+                      - generic [ref=f26e24]: Compute
+                    - list [ref=f26e26]:
+                      - listitem [ref=f26e27]:
+                        - link [ref=f26e105] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute
+                          - text: Overview
+                      - listitem [ref=f26e31]:
+                        - link [ref=f26e106] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instances
+                          - text: Instances
+                      - listitem [ref=f26e35]:
+                        - link [ref=f26e107] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instance-maintenance
+                          - text: Instance Maintenance
+                      - listitem [ref=f26e39]:
+                        - link [ref=f26e108] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/dedicated-vm-hosts
+                          - text: Dedicated Virtual Machine Hosts
+                      - listitem [ref=f26e43]:
+                        - link [ref=f26e109] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instance-configs
+                          - text: Instance Configurations
+                      - listitem [ref=f26e47]:
+                        - link [ref=f26e110] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instance-pools
+                          - text: Instance Pools
+                      - listitem [ref=f26e51]:
+                        - link [ref=f26e111] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/cluster-networks
+                          - text: Cluster Networks
+                      - listitem [ref=f26e55]:
+                        - link [ref=f26e112] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/compute-clusters
+                          - text: Compute Clusters
+                      - listitem [ref=f26e59]:
+                        - link [ref=f26e113] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/auto-scaling
+                          - text: Autoscaling Configurations
+                      - listitem [ref=f26e63]:
+                        - link [ref=f26e114] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/capacity-reservations
+                          - text: Capacity Reservations
+                      - listitem [ref=f26e67]:
+                        - link [ref=f26e115] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/images
+                          - text: Custom Images
+                  - button [ref=f26e116] [cursor=pointer]
+                - dialog "Side Panel" [ref=f26e2068]:
+                  - generic [ref=f26e123]:
+                    - banner [ref=f26e124]:
+                      - heading "Create compute instance" [level=1] [ref=f26e2069]
+                    - generic [ref=f26e140]:
+                      - generic [ref=f26e142]:
+                        - generic [ref=f26e144] [cursor=pointer]:
+                          - generic [ref=f26e145]: Basic information
+                          - button "Basic information" [ref=f26e2070]
+                        - separator [ref=f26e157]
+                      - generic [ref=f26e287]:
+                        - generic [ref=f26e289] [cursor=pointer]:
+                          - generic [ref=f26e290]: Security
+                          - button "Security" [ref=f26e2091]
+                        - separator [ref=f26e302]
+                      - generic [ref=f26e305]:
+                        - generic [ref=f26e307] [cursor=pointer]:
+                          - generic [ref=f26e314]:
+                            - generic [ref=f26e315]: Networking
+                            - generic [ref=f26e317]: Required
+                          - button "Networking Required" [ref=f26e2092]
+                        - separator [ref=f26e321]
+                      - generic [ref=f26e323]:
+                        - generic [ref=f26e324]:
+                          - generic [ref=f26e326] [cursor=pointer]:
+                            - generic [ref=f26e328]:
+                              - generic [aria-hidden] [ref=f26e332]: "4"
+                              - generic [ref=f26e333]:
+                                - generic [ref=f26e334]: Storage
+                                - generic [ref=f26e336]: Required
+                            - button "Storage Required" [expanded] [ref=f26e2093]
+                          - separator [ref=f26e340]
+                        - generic [ref=f26e2626]:
+                          - group [ref=f26e2629]:
+                            - heading "Boot volume" [level=2] [ref=f26e2631]
+                            - generic [ref=f26e2634]:
+                              - paragraph [ref=f26e2635]:
+                                - generic [ref=f26e2636]:
+                                  - text: A
+                                  - link "boot volume" [ref=f26e2637] [cursor=pointer]:
+                                    - /url: https://docs.cloud.oracle.com/iaas/Content/Block/Concepts/bootvolumes.htm
+                                  - text: is a detachable device that contains the image used to boot the compute instance.
+                              - generic [ref=f26e2641]:
+                                - generic [ref=f26e2642]: Specify a custom boot volume size and performance setting
+                                - switch "Specify a custom boot volume size and performance setting" [ref=f26e2645]
+                                - generic [ref=f26e2648]:
+                                  - link "Volume performance" [ref=f26e2649] [cursor=pointer]:
+                                    - /url: https://docs.cloud.oracle.com/iaas/Content/Block/Concepts/bootvolumes.htm#BootVolumePerformance
+                                  - text: "varies with volume size. Default boot volume size: 46.6 GB. When you specify a custom boot volume size, service limits apply."
+                              - generic [ref=f26e2652]:
+                                - generic [ref=f26e2653]: Use in-transit encryption
+                                - switch "Use in-transit encryption" [checked] [ref=f26e2656]
+                                - generic [ref=f26e2659]:
+                                  - link "Encrypts data" [ref=f26e2660] [cursor=pointer]:
+                                    - /url: https://docs.cloud.oracle.com/iaas/Content/Block/Concepts/overview.htm#BlockVolumeEncryption
+                                  - text: in transit between the instance, the boot volume, and the block volumes.
+                              - generic [ref=f26e2664]:
+                                - generic [ref=f26e2665]: Encrypt this volume with a key that you manage
+                                - switch "Encrypt this volume with a key that you manage" [ref=f26e2668]
+                                - generic [ref=f26e2671]:
+                                  - text: By default, Oracle manages the keys that encrypt this volume, but you can choose a key from a vault that you have access to if you want greater control over the key's lifecycle and how it's used.
+                                  - link "How do I manage my own encryption keys?" [ref=f26e2672] [cursor=pointer]:
+                                    - /url: https://docs.cloud.oracle.com/iaas/Content/KeyManagement/Concepts/keyoverview.htm
+                          - group [ref=f26e2675]:
+                            - heading "Block volumes" [level=2] [ref=f26e2677]
+                            - generic [ref=f26e2683]:
+                              - button "Attach block volume" [disabled] [ref=f26e2691]
+                              - generic [ref=f26e2693]:
+                                - table "table" [ref=f26e2696]:
+                                  - rowgroup [ref=f26e2697]:
+                                    - row [ref=f26e2698]:
+                                      - columnheader "Name" [ref=f26e2699]
+                                      - columnheader "Attachment type" [ref=f26e2702]
+                                      - columnheader [ref=f26e2705]:
+                                        - generic [ref=f26e2707]:
+                                          - text: Create type
+                                          - button "More information" [ref=f26e2709] [cursor=pointer]
+                                      - columnheader "Reservations" [ref=f26e2714]
+                                      - columnheader "Access" [ref=f26e2717]
+                                  - rowgroup
+                                - generic [ref=f26e2722]:
+                                  - generic [ref=f26e2723]: No items to display
+                                  - generic [ref=f26e2724]: Create new items or search again using different filters or search terms.
+                      - generic [ref=f26e343]:
+                        - generic [ref=f26e345]:
+                          - generic [ref=f26e346]: Review
+                          - button "Review" [ref=f26e2094]
+                        - separator [ref=f26e360]
+                    - generic [ref=f26e365]:
+                      - generic [ref=f26e367]:
+                        - generic [ref=f26e368]:
+                          - generic [ref=f26e369]: Tasks Completed
+                          - generic [ref=f26e370]: 3 of 4
+                        - progressbar "Progress 75%" [ref=f26e2727]
+                      - generic [ref=f26e372]:
+                        - button "Cancel" [ref=f26e2096] [cursor=pointer]
+                        - button "View estimated cost" [ref=f26e2728] [cursor=pointer]
+                        - button "Previous" [ref=f26e2097] [cursor=pointer]
+                        - button "Next" [active] [ref=f26e2098] [cursor=pointer]
+      - generic [ref=f23e804]:
+        - generic [ref=f23e805]:
+          - link "Terms of Use and Privacy" [ref=f23e807] [cursor=pointer]:
+            - /url: http://www.oracle.com/legal/privacy/index.html
+          - complementary "Open Cookie Preferences Modal" [ref=f23e808]:
+            - link "Cookie Preferences, opens a dedicated popup modal window" [ref=f23e809] [cursor=pointer]: Cookie Preferences
+        - generic [ref=f23e810]: Copyright © 2026, Oracle and/or its affiliates. All rights reserved.
+  - status

@@ -1,0 +1,124 @@
+- generic [ref=f1e2]:
+  - banner [ref=f1e3]:
+    - list [ref=f1e5]:
+      - listitem [ref=f1e6]:
+        - link "Skip to content" [ref=f1e7] [cursor=pointer]:
+          - /url: "#maincontent"
+      - listitem [ref=f1e8]:
+        - link "Accessibility Policy" [ref=f1e9] [cursor=pointer]:
+          - /url: https://www.oracle.com/corporate/accessibility/
+    - generic [ref=f1e10]:
+      - generic [ref=f1e11]:
+        - navigation "Main Menu" [ref=f1e12]:
+          - button "Menu" [ref=f1e13] [cursor=pointer]
+        - link "Oracle Home" [ref=f1e16] [cursor=pointer]:
+          - /url: https://www.oracle.com/
+      - search [ref=f1e20]:
+        - combobox "Search Oracle.com" [ref=f1e22]
+      - generic [ref=f1e24]:
+        - generic [ref=f1e25]:
+          - button "Select country" [expanded] [ref=f1e26] [cursor=pointer]:
+            - img "United States selected" [ref=f1e112]
+          - dialog "Country selector" [ref=f1e114]:
+            - button "close country selector" [ref=f1e115] [cursor=pointer]:
+              - text: 
+              - generic [ref=f1e116]: Close
+            - generic [ref=f1e117]:
+              - paragraph [ref=f1e118]: Quer visitar o site de um país perto de você onde a Oracle opera?
+              - paragraph [ref=f1e119]: Would you like to visit an Oracle country site closer to you?
+              - generic [ref=f1e121]:
+                - link "visit Oracle Brasil" [ref=f1e122] [cursor=pointer]:
+                  - /url: https://www.oracle.com/br/cloud/sign-in.html
+                  - generic [aria-hidden] [ref=f1e124]: Visite a Oracle Brasil
+                - link "No thanks, I'll stay here" [ref=f1e125] [cursor=pointer]:
+                  - /url: ""
+              - button "Procure um país/região diferente nesta página" [ref=f1e126] [cursor=pointer]
+        - button "Sign in" [ref=f1e29] [cursor=pointer]
+        - link "Contact us" [ref=f1e32] [cursor=pointer]:
+          - /url: /corporate/contact/
+  - main [ref=f1e36]:
+    - generic [ref=f1e40]:
+      - generic [ref=f1e43]:
+        - generic [ref=f1e44]: 
+        - generic [ref=f1e45]: Cloud
+        - generic [ref=f1e46]:
+          - generic [ref=f1e47]:
+            - text: Cloud Account Name
+            - generic [ref=f1e48]: 
+          - textbox [active] [ref=f1e49]: rjdrones97
+          - text:   
+          - generic:
+            - generic:
+              - link "Next":
+                - /url: javascript:void(0);
+        - paragraph [ref=f1e50]:
+          - text: Forgot your cloud account name?
+          - link "Open a live chat" [ref=f1e51] [cursor=pointer]:
+            - /url: https://www.oracle.com/corporate/contact/
+        - separator [ref=f1e52]
+        - strong [ref=f1e53]: Not an Oracle Cloud customer yet?
+        - generic [ref=f1e54]:
+          - generic [ref=f1e55]: Sign Up
+          - text: 
+      - generic [ref=f1e59]:
+        - generic [ref=f1e61]:
+          - heading "Leverage sovereign AI for critical workloads" [level=4] [ref=f1e62]
+          - paragraph [ref=f1e63]: Achieve data governance, residency, and regulatory compliance with the help of Oracle’s sovereign AI solutions. Leverage robust, end-to-end security and advanced controls for developing, deploying, and managing AI models in sensitive and regulated environments.
+          - link "Learn more about sovereign AI" [ref=f1e66] [cursor=pointer]:
+            - /url: /artificial-intelligence/sovereign-ai/?source=CSIpage-26jun2025&intcmp=CSIpage-26jun2025
+        - generic [ref=f1e67]:
+          - heading "Run Oracle AI Database in the cloud of your choice" [level=4] [ref=f1e68]
+          - paragraph [ref=f1e69]: Connect with experts from Oracle and our hyperscaler partners at info sessions where you can learn more and get your questions answered about starting your Oracle database migration to AWS, Google Cloud, Microsoft Azure, and Oracle Cloud Infrastructure.
+          - link "Register today for Oracle AI Database migration webinar" [ref=f1e72] [cursor=pointer]:
+            - /url: https://go.oracle.com/LP=154018?elqCampaignId=674202&src1=:ow:o:s:po:::Cloud_SignIn&intcmp=WWMK260722P00025:ow:o:s:po:::Cloud_SignIn
+            - text: Register today
+            - generic [ref=f1e73]: for Oracle AI Database migration webinar
+  - contentinfo [ref=f1e74]:
+    - generic [ref=f1e76]:
+      - list [ref=f1e77]:
+        - listitem [ref=f1e78]:
+          - link "© 2026 Oracle" [ref=f1e79] [cursor=pointer]:
+            - /url: /legal/copyright.html
+        - listitem [ref=f1e80]:
+          - link "Privacy" [ref=f1e81] [cursor=pointer]:
+            - /url: /legal/privacy/
+          - text: /
+          - link "Do Not Sell My Info" [ref=f1e82] [cursor=pointer]:
+            - /url: /legal/privacy/privacy-choices.html
+        - listitem [ref=f1e83]:
+          - complementary "Open Cookie Preferences Modal" [ref=f1e84]:
+            - link "Cookie Preferences, opens a dedicated popup modal window" [ref=f1e85] [cursor=pointer]: Preferências de Cookies
+        - listitem [ref=f1e86]:
+          - link "Ad Choices" [ref=f1e87] [cursor=pointer]:
+            - /url: /legal/privacy/privacy-policy/#adchoices
+        - listitem [ref=f1e88]:
+          - link "Careers" [ref=f1e89] [cursor=pointer]:
+            - /url: /corporate/careers/
+        - listitem [ref=f1e90]:
+          - link "Subscribe to emails" [ref=f1e91] [cursor=pointer]:
+            - /url: https://go.oracle.com/subscribe/?l_code=en&src1=OW:O:FO
+        - listitem [ref=f1e92]:
+          - link "Integrity Helpline" [ref=f1e93] [cursor=pointer]:
+            - /url: https://secure.ethicspoint.com/domain/media/en/gui/31053/index.html
+        - listitem [ref=f1e94]:
+          - link "Resources" [ref=f1e95] [cursor=pointer]:
+            - /url: /corporate/resources/
+        - listitem [ref=f1e96]:
+          - link "Contact Us" [ref=f1e97] [cursor=pointer]:
+            - /url: /corporate/contact/
+      - list [ref=f1e98]:
+        - listitem [ref=f1e99]:
+          - link "Facebook" [ref=f1e100] [cursor=pointer]:
+            - /url: https://www.facebook.com/Oracle/
+        - listitem [ref=f1e102]:
+          - link "Follow Oracle on X" [ref=f1e103] [cursor=pointer]:
+            - /url: https://x.com/oracle
+            - generic [ref=f1e104]: X
+        - listitem [ref=f1e105]:
+          - link "Oracle on LinkedIn" [ref=f1e106] [cursor=pointer]:
+            - /url: https://www.linkedin.com/company/oracle/
+            - generic [ref=f1e107]: LinkedIn
+        - listitem [ref=f1e108]:
+          - link "Watch Oracle on YouTube" [ref=f1e109] [cursor=pointer]:
+            - /url: https://www.youtube.com/oracle/
+            - generic [ref=f1e110]: YouTube

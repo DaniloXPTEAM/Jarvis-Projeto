@@ -1,0 +1,212 @@
+- generic [ref=f28e1]:
+  - generic [ref=f28e2]:
+    - link "Skip to main content" [ref=f28e11] [cursor=pointer]:
+      - /url: "#skipToContent"
+    - generic [ref=f28e13]:
+      - generic [ref=f28e14]:
+        - generic [ref=f28e24]:
+          - generic [ref=f28e29]:
+            - alert [ref=f28e31]:
+              - generic [ref=f28e32]:
+                - img "Warning" [ref=f28e34]
+                - generic [ref=f28e38]:
+                  - heading "Free Tier account" [level=2] [ref=f28e39]
+                  - generic [ref=f28e41]:
+                    - generic [ref=f28e42]:
+                      - text: You are in a Free Trial. When your trial is over, your account is limited to Always Free resources.
+                      - link "Upgrade" [ref=f28e43] [cursor=pointer]:
+                        - /url: /account-management/payment-method
+                      - text: at any time.
+                    - link "Learn more" [ref=f28e45] [cursor=pointer]:
+                      - /url: https://docs.cloud.oracle.com/iaas/Content/FreeTier/freetier.htm
+                - button "Close" [ref=f28e48] [cursor=pointer]
+            - generic [ref=f28e54]: Messages region has new messages. Press F6 to navigate.
+          - generic [ref=f28e56]:
+            - application [ref=f28e57]:
+              - button "Navigation menu." [ref=f28e58] [cursor=pointer]:
+                - img "Navigation menu." [ref=f28e61]
+            - link "Console home page" [ref=f28e63] [cursor=pointer]:
+              - /url: /
+              - heading [level=1] [aria-hidden] [ref=f28e64]
+            - generic "Search" [ref=f28e75]:
+              - generic [ref=f28e76]:
+                - textbox "Search resources, services, documentation, and Marketplace" [ref=f28e77]
+                - generic "Search resources, services, documentation, and Marketplace" [ref=f28e79]
+            - generic [ref=f28e84]:
+              - button "Region menu, active region is Brazil East (Sao Paulo)" [ref=f28e86] [cursor=pointer]:
+                - combobox [ref=f28e88]:
+                  - generic [ref=f28e93]: Brazil East (Sao Paulo)
+              - button "Developer tools" [ref=f28e95] [cursor=pointer]:
+                - button "Developer tools" [ref=f28e98]
+              - button "Unread announcements" [ref=f28e102] [cursor=pointer]:
+                - button [ref=f28e104]:
+                  - img "Unread announcements" [ref=f28e105]
+              - button "Help menu" [ref=f28e109] [cursor=pointer]:
+                - combobox [ref=f28e111]:
+                  - img "Help menu" [ref=f28e112]
+              - button "User menu" [ref=f28e115] [cursor=pointer]:
+                - combobox [ref=f28e117]:
+                  - img "Profile" [ref=f28e118]
+              - button "Console AI" [ref=f28e122] [cursor=pointer]
+        - main [ref=f28e127]:
+          - generic "Main content" [ref=f28e129]:
+            - iframe [active] [ref=f28e131]:
+              - generic [ref=f30e2]:
+                - generic [ref=f30e278]:
+                  - heading [level=4] [ref=f30e284]: Compute
+                  - navigation [ref=f30e289]:
+                    - generic [ref=f30e290]:
+                      - button [ref=f30e291] [cursor=pointer]
+                      - generic [ref=f30e296]: Compute
+                    - list [ref=f30e298]:
+                      - listitem [ref=f30e299]:
+                        - link [ref=f30e302] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute
+                          - text: Overview
+                      - listitem [ref=f30e303]:
+                        - link [ref=f30e306] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instances
+                          - text: Instances
+                      - listitem [ref=f30e307]:
+                        - link [ref=f30e310] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instance-maintenance
+                          - text: Instance Maintenance
+                      - listitem [ref=f30e311]:
+                        - link [ref=f30e314] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/dedicated-vm-hosts
+                          - text: Dedicated Virtual Machine Hosts
+                      - listitem [ref=f30e315]:
+                        - link [ref=f30e318] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instance-configs
+                          - text: Instance Configurations
+                      - listitem [ref=f30e319]:
+                        - link [ref=f30e322] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instance-pools
+                          - text: Instance Pools
+                      - listitem [ref=f30e323]:
+                        - link [ref=f30e326] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/cluster-networks
+                          - text: Cluster Networks
+                      - listitem [ref=f30e327]:
+                        - link [ref=f30e330] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/compute-clusters
+                          - text: Compute Clusters
+                      - listitem [ref=f30e331]:
+                        - link [ref=f30e334] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/auto-scaling
+                          - text: Autoscaling Configurations
+                      - listitem [ref=f30e335]:
+                        - link [ref=f30e338] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/capacity-reservations
+                          - text: Capacity Reservations
+                      - listitem [ref=f30e339]:
+                        - link [ref=f30e342] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/images
+                          - text: Custom Images
+                  - button [ref=f30e345] [cursor=pointer]
+                - dialog "Side Panel" [ref=f30e355]:
+                  - generic [ref=f30e358]:
+                    - banner [ref=f30e359]:
+                      - heading "Create compute instance" [level=1] [ref=f30e367]
+                    - generic [ref=f30e375]:
+                      - generic [ref=f30e376]:
+                        - generic [ref=f30e377]:
+                          - generic [ref=f30e379] [cursor=pointer]:
+                            - generic [ref=f30e381]:
+                              - generic [aria-hidden] [ref=f30e385]: "1"
+                              - generic [ref=f30e386]: Basic information
+                            - button "Basic information" [expanded] [active] [ref=f30e389]
+                          - separator [ref=f30e392]
+                        - generic [ref=f30e399]:
+                          - status [ref=f30e401]:
+                            - progressbar [ref=f30e403]
+                            - generic [ref=f30e405]: In Progress
+                          - paragraph [ref=f30e406]: Create an instance to deploy and run applications, or save as a reusable Terraform stack for creating an instance with Resource Manager.
+                          - generic [ref=f30e410]:
+                            - generic [ref=f30e411]: Name
+                            - textbox "Name" [ref=f30e412]: instance-20261014-2228
+                          - generic [ref=f30e416]:
+                            - generic [ref=f30e417]:
+                              - generic [ref=f30e418]: Create in compartment
+                              - combobox "Create in compartment" [ref=f30e419]: rjdrones97 (root)
+                            - generic [aria-hidden] [ref=f30e423] [cursor=pointer]
+                          - heading "Placement" [level=1] [ref=f30e429]
+                          - paragraph [ref=f30e430]: The availability domain helps determine which shapes are available.
+                          - generic [ref=f30e431]: Availability domain
+                          - generic [ref=f30e442] [cursor=pointer]:
+                            - button "Advanced options" [ref=f30e443]
+                            - heading "Advanced options" [level=2] [ref=f30e447]
+                          - heading "Image and shape" [level=1] [ref=f30e448]
+                          - paragraph [ref=f30e449]:
+                            - generic [ref=f30e450]:
+                              - text: A
+                              - link "shape" [ref=f30e451] [cursor=pointer]:
+                                - /url: https://docs.cloud.oracle.com/iaas/Content/Compute/References/computeshapes.htm
+                              - text: is a template that determines the number of CPUs, amount of memory, and other resources allocated to an instance. The image is the operating system that runs on top of the shape.
+                          - group [ref=f30e454]:
+                            - heading "Image" [level=2] [ref=f30e456]
+                            - generic [ref=f30e459]:
+                              - button "Change image" [ref=f30e460] [cursor=pointer]
+                              - generic [ref=f30e467]:
+                                - strong [ref=f30e469]: Operating system
+                                - generic [ref=f30e470]: Oracle Linux 9
+                                - strong [ref=f30e475]: Image build
+                                - generic [ref=f30e476]: 2025.05.19-0
+                                - strong [ref=f30e480]: Security
+                                - generic [ref=f30e481]: "-"
+                          - group [ref=f30e488]:
+                            - heading "Shape" [level=2] [ref=f30e490]
+                            - status [ref=f30e495]:
+                              - progressbar [ref=f30e497]
+                              - generic [ref=f30e499]: In Progress
+                          - generic [ref=f30e503] [cursor=pointer]:
+                            - button "Advanced options" [ref=f30e504]
+                            - heading "Advanced options" [level=2] [ref=f30e508]
+                      - generic [ref=f30e510]:
+                        - generic [ref=f30e512]:
+                          - generic [ref=f30e514]:
+                            - generic [aria-hidden] [ref=f30e518]: "2"
+                            - generic [ref=f30e519]: Security
+                          - button "Security" [ref=f30e522]
+                        - separator [ref=f30e525]
+                      - generic [ref=f30e528]:
+                        - generic [ref=f30e530]:
+                          - generic [ref=f30e532]:
+                            - generic [aria-hidden] [ref=f30e536]: "3"
+                            - generic [ref=f30e537]:
+                              - generic [ref=f30e538]: Networking
+                              - generic [ref=f30e540]: Required
+                          - button "Networking Required" [ref=f30e541]
+                        - separator [ref=f30e544]
+                      - generic [ref=f30e547]:
+                        - generic [ref=f30e549]:
+                          - generic [ref=f30e551]:
+                            - generic [aria-hidden] [ref=f30e555]: "4"
+                            - generic [ref=f30e556]:
+                              - generic [ref=f30e557]: Storage
+                              - generic [ref=f30e559]: Required
+                          - button "Storage Required" [ref=f30e560]
+                        - separator [ref=f30e563]
+                      - generic [ref=f30e566]:
+                        - generic [ref=f30e568]:
+                          - generic [ref=f30e569]: Review
+                          - button "Review" [ref=f30e580]
+                        - separator [ref=f30e583]
+                    - generic [ref=f30e588]:
+                      - generic [ref=f30e590]:
+                        - generic [ref=f30e591]:
+                          - generic [ref=f30e592]: Tasks Completed
+                          - generic [ref=f30e593]: 0 of 4
+                        - progressbar "Progress 0%" [ref=f30e594]
+                      - generic [ref=f30e595]:
+                        - button "Cancel" [ref=f30e596] [cursor=pointer]
+                        - button "Previous" [disabled] [ref=f30e597]
+                        - button "Next" [ref=f30e598] [cursor=pointer]
+      - generic [ref=f28e133]:
+        - generic [ref=f28e134]:
+          - link "Terms of Use and Privacy" [ref=f28e136] [cursor=pointer]:
+            - /url: http://www.oracle.com/legal/privacy/index.html
+          - complementary "Open Cookie Preferences Modal" [ref=f28e137]:
+            - link "Cookie Preferences, opens a dedicated popup modal window" [ref=f28e138] [cursor=pointer]: Cookie Preferences
+        - generic [ref=f28e139]: Copyright © 2026, Oracle and/or its affiliates. All rights reserved.
+  - status

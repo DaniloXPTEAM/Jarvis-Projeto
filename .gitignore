@@ -15,9 +15,14 @@ dist/
 .env.*.local
 *.keystore
 *.jks
+*.pem
+*.key
+*.key.pub
+oracle-tts-vm/ssh-keys/
 
 # Android (gerenciado pelo .gitignore interno de android/)
 android/.gradle/
+android/.kotlin/
 android/build/
 android/app/build/
 android/local.properties
@@ -25,7 +30,7 @@ android/captures/
 android/*.iml
 
 # Banco de dados local (SQLite)
-data/
+/data/
 *.db
 *.db-journal
 *.db-wal
@@ -37,5 +42,3 @@ data/
 .tsbuildinfo
 tsconfig.tsbuildinfo
 next-env.d.ts
-# lockfile do app web (template raiz não o rastreava; foco no Android)
-package-lock.json

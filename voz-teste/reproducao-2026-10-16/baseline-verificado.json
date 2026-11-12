@@ -1,0 +1,23 @@
+[
+  {
+    "file": "fase-prosodia/B3.wav",
+    "sha256": "f6c3140d89532da2e168ae870ac26a916f4960d6fb35faa0e954fb045a1511f9",
+    "duration_s": 6.72,
+    "sample_rate": 24000,
+    "channels": 1
+  },
+  {
+    "file": "fase-prosodia/C3.wav",
+    "sha256": "8290789d8c7e7d0e82a096a6abd4dd139d1468924d568827b089b012c411b9fd",
+    "duration_s": 6.72,
+    "sample_rate": 24000,
+    "channels": 1
+  },
+  {
+    "file": "fase-A-reproducao/ref20.wav",
+    "sha256": "1070f07faf354acb9ac7761c55138218f87e4d50ee0f55bad31ea9e328bdf128",
+    "duration_s": 20.0,
+    "sample_rate": 24000,
+    "channels": 1
+  }
+]

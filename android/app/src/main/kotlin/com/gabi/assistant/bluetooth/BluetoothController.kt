@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
+import android.media.AudioDeviceInfo
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
@@ -40,7 +41,7 @@ class BluetoothController @Inject constructor(
     val adapter: BluetoothAdapter? get() = bluetoothManager?.adapter
 
     fun isSupported(): Boolean = adapter != null
-    fun isEnabled(): Boolean = adapter?.isEnabled == true
+    fun isEnabled(): Boolean = runCatching { adapter?.isEnabled == true }.getOrDefault(false)
 
     /**
      * Liga o Bluetooth. Em Android <12 liga programaticamente; em 12+ a Google
@@ -77,6 +78,9 @@ class BluetoothController @Inject constructor(
      */
     fun routeAudioToBluetooth(audioManager: AudioManager): Boolean {
         return runCatching {
+            val connected = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+                .any { it.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO }
+            if (!connected) return@runCatching false
             audioManager.startBluetoothSco()
             audioManager.isBluetoothScoOn = true
             true

@@ -1,0 +1,102 @@
+- generic [ref=f23e1]:
+  - generic [ref=f23e2]:
+    - link "Skip to main content" [ref=f23e3] [cursor=pointer]:
+      - /url: "#skipToContent"
+    - generic [ref=f23e5]:
+      - generic [ref=f23e6]:
+        - generic [ref=f23e16]:
+          - generic [ref=f23e21]:
+            - alert [ref=f23e23]:
+              - generic [ref=f23e24]:
+                - img "Warning" [ref=f23e26]
+                - generic [ref=f23e30]:
+                  - heading "Free Tier account" [level=2] [ref=f23e31]
+                  - generic [ref=f23e33]:
+                    - generic [ref=f23e34]:
+                      - text: You are in a Free Trial. When your trial is over, your account is limited to Always Free resources.
+                      - link "Upgrade" [ref=f23e35] [cursor=pointer]:
+                        - /url: /account-management/payment-method
+                      - text: at any time.
+                    - link "Learn more" [ref=f23e37] [cursor=pointer]:
+                      - /url: https://docs.cloud.oracle.com/iaas/Content/FreeTier/freetier.htm
+                - button "Close" [ref=f23e40] [cursor=pointer]
+            - generic [ref=f23e46]: Messages region has new messages. Press F6 to navigate.
+          - generic [ref=f23e48]:
+            - application [ref=f23e49]:
+              - button "Navigation menu." [ref=f23e50] [cursor=pointer]:
+                - img "Navigation menu." [ref=f23e53]
+            - link "Console home page" [ref=f23e55] [cursor=pointer]:
+              - /url: /
+              - heading [level=1] [aria-hidden] [ref=f23e56]
+            - generic "Search" [ref=f23e67]:
+              - generic [ref=f23e68]:
+                - textbox "Search resources, services, documentation, and Marketplace" [ref=f23e69]
+                - generic "Search resources, services, documentation, and Marketplace" [ref=f23e71]
+            - generic [ref=f23e76]:
+              - button "Region menu, active region is Brazil East (Sao Paulo)" [ref=f23e78] [cursor=pointer]:
+                - combobox [ref=f23e80]:
+                  - generic [ref=f23e85]: Brazil East (Sao Paulo)
+              - button "Developer tools" [ref=f23e87] [cursor=pointer]:
+                - button "Developer tools" [ref=f23e90]
+              - button "Unread announcements" [ref=f23e94] [cursor=pointer]:
+                - button [ref=f23e96]:
+                  - img "Unread announcements" [ref=f23e97]
+              - button "Help menu" [ref=f23e101] [cursor=pointer]:
+                - combobox [ref=f23e103]:
+                  - img "Help menu" [ref=f23e104]
+              - button "User menu" [ref=f23e107] [cursor=pointer]:
+                - combobox [ref=f23e109]:
+                  - img "Profile" [ref=f23e110]
+              - button "Console AI" [ref=f23e114] [cursor=pointer]
+        - main [ref=f23e119]:
+          - generic "Main content" [ref=f23e814]:
+            - iframe [ref=f23e816]:
+              - generic [ref=f26e6]:
+                - heading "Compute" [level=4] [ref=f26e12]
+                - navigation "Compute" [ref=f26e17]:
+                  - generic [ref=f26e18]:
+                    - button "Previous" [ref=f26e19] [cursor=pointer]
+                    - generic [ref=f26e24]: Compute
+                  - list [ref=f26e26]:
+                    - listitem [ref=f26e27]:
+                      - link "Overview" [ref=f26e30] [cursor=pointer]:
+                        - /url: https://cloud.oracle.com/compute
+                    - listitem [ref=f26e31]:
+                      - link "Instances" [ref=f26e34] [cursor=pointer]:
+                        - /url: https://cloud.oracle.com/compute/instances
+                    - listitem [ref=f26e35]:
+                      - link "Instance Maintenance" [ref=f26e38] [cursor=pointer]:
+                        - /url: https://cloud.oracle.com/compute/instance-maintenance
+                    - listitem [ref=f26e39]:
+                      - link "Dedicated Virtual Machine Hosts" [ref=f26e42] [cursor=pointer]:
+                        - /url: https://cloud.oracle.com/compute/dedicated-vm-hosts
+                    - listitem [ref=f26e43]:
+                      - link "Instance Configurations" [ref=f26e46] [cursor=pointer]:
+                        - /url: https://cloud.oracle.com/compute/instance-configs
+                    - listitem [ref=f26e47]:
+                      - link "Instance Pools" [ref=f26e50] [cursor=pointer]:
+                        - /url: https://cloud.oracle.com/compute/instance-pools
+                    - listitem [ref=f26e51]:
+                      - link "Cluster Networks" [ref=f26e54] [cursor=pointer]:
+                        - /url: https://cloud.oracle.com/compute/cluster-networks
+                    - listitem [ref=f26e55]:
+                      - link "Compute Clusters" [ref=f26e58] [cursor=pointer]:
+                        - /url: https://cloud.oracle.com/compute/compute-clusters
+                    - listitem [ref=f26e59]:
+                      - link "Autoscaling Configurations" [ref=f26e62] [cursor=pointer]:
+                        - /url: https://cloud.oracle.com/compute/auto-scaling
+                    - listitem [ref=f26e63]:
+                      - link "Capacity Reservations" [ref=f26e66] [cursor=pointer]:
+                        - /url: https://cloud.oracle.com/compute/capacity-reservations
+                    - listitem [ref=f26e67]:
+                      - link "Custom Images" [ref=f26e70] [cursor=pointer]:
+                        - /url: https://cloud.oracle.com/compute/images
+                - button "Collapse" [ref=f26e73] [cursor=pointer]
+      - generic [ref=f23e804]:
+        - generic [ref=f23e805]:
+          - link "Terms of Use and Privacy" [ref=f23e807] [cursor=pointer]:
+            - /url: http://www.oracle.com/legal/privacy/index.html
+          - complementary "Open Cookie Preferences Modal" [ref=f23e808]:
+            - link "Cookie Preferences, opens a dedicated popup modal window" [ref=f23e809] [cursor=pointer]: Cookie Preferences
+        - generic [ref=f23e810]: Copyright © 2026, Oracle and/or its affiliates. All rights reserved.
+  - status

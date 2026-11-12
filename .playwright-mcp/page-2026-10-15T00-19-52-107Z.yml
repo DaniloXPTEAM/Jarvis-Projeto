@@ -1,0 +1,452 @@
+- generic [ref=f23e1]:
+  - generic [ref=f23e2]:
+    - link "Skip to main content" [ref=f23e3] [cursor=pointer]:
+      - /url: "#skipToContent"
+    - generic [ref=f23e5]:
+      - generic [ref=f23e6]:
+        - generic [ref=f23e16]:
+          - generic [ref=f23e21]:
+            - alert [ref=f23e23]:
+              - generic [ref=f23e24]:
+                - img "Warning" [ref=f23e26]
+                - generic [ref=f23e30]:
+                  - heading "Free Tier account" [level=2] [ref=f23e31]
+                  - generic [ref=f23e33]:
+                    - generic [ref=f23e34]:
+                      - text: You are in a Free Trial. When your trial is over, your account is limited to Always Free resources.
+                      - link "Upgrade" [ref=f23e35] [cursor=pointer]:
+                        - /url: /account-management/payment-method
+                      - text: at any time.
+                    - link "Learn more" [ref=f23e37] [cursor=pointer]:
+                      - /url: https://docs.cloud.oracle.com/iaas/Content/FreeTier/freetier.htm
+                - button "Close" [ref=f23e40] [cursor=pointer]
+            - generic [ref=f23e46]: Messages region has new messages. Press F6 to navigate.
+          - generic [ref=f23e48]:
+            - application [ref=f23e49]:
+              - button "Navigation menu." [ref=f23e50] [cursor=pointer]:
+                - img "Navigation menu." [ref=f23e53]
+            - link "Console home page" [ref=f23e55] [cursor=pointer]:
+              - /url: /
+              - heading [level=1] [aria-hidden] [ref=f23e56]
+            - generic "Search" [ref=f23e67]:
+              - generic [ref=f23e68]:
+                - textbox "Search resources, services, documentation, and Marketplace" [ref=f23e69]
+                - generic "Search resources, services, documentation, and Marketplace" [ref=f23e71]
+            - generic [ref=f23e76]:
+              - button "Region menu, active region is Brazil East (Sao Paulo)" [ref=f23e78] [cursor=pointer]:
+                - combobox [ref=f23e80]:
+                  - generic [ref=f23e85]: Brazil East (Sao Paulo)
+              - button "Developer tools" [ref=f23e87] [cursor=pointer]:
+                - button "Developer tools" [ref=f23e90]
+              - button "Unread announcements" [ref=f23e94] [cursor=pointer]:
+                - button [ref=f23e96]:
+                  - img "Unread announcements" [ref=f23e97]
+              - button "Help menu" [ref=f23e101] [cursor=pointer]:
+                - combobox [ref=f23e103]:
+                  - img "Help menu" [ref=f23e104]
+              - button "User menu" [ref=f23e107] [cursor=pointer]:
+                - combobox [ref=f23e109]:
+                  - img "Profile" [ref=f23e110]
+              - button "Console AI" [ref=f23e114] [cursor=pointer]
+        - main [ref=f23e119]:
+          - generic "Main content" [ref=f23e814]:
+            - iframe [active] [ref=f23e816]:
+              - generic [ref=f26e2]:
+                - generic [ref=f26e6]:
+                  - heading [level=4] [ref=f26e102]: Compute
+                  - navigation [ref=f26e103]:
+                    - generic [ref=f26e18]:
+                      - button [ref=f26e104] [cursor=pointer]
+                      - generic [ref=f26e24]: Compute
+                    - list [ref=f26e26]:
+                      - listitem [ref=f26e27]:
+                        - link [ref=f26e105] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute
+                          - text: Overview
+                      - listitem [ref=f26e31]:
+                        - link [ref=f26e106] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instances
+                          - text: Instances
+                      - listitem [ref=f26e35]:
+                        - link [ref=f26e107] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instance-maintenance
+                          - text: Instance Maintenance
+                      - listitem [ref=f26e39]:
+                        - link [ref=f26e108] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/dedicated-vm-hosts
+                          - text: Dedicated Virtual Machine Hosts
+                      - listitem [ref=f26e43]:
+                        - link [ref=f26e109] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instance-configs
+                          - text: Instance Configurations
+                      - listitem [ref=f26e47]:
+                        - link [ref=f26e110] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/instance-pools
+                          - text: Instance Pools
+                      - listitem [ref=f26e51]:
+                        - link [ref=f26e111] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/cluster-networks
+                          - text: Cluster Networks
+                      - listitem [ref=f26e55]:
+                        - link [ref=f26e112] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/compute-clusters
+                          - text: Compute Clusters
+                      - listitem [ref=f26e59]:
+                        - link [ref=f26e113] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/auto-scaling
+                          - text: Autoscaling Configurations
+                      - listitem [ref=f26e63]:
+                        - link [ref=f26e114] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/capacity-reservations
+                          - text: Capacity Reservations
+                      - listitem [ref=f26e67]:
+                        - link [ref=f26e115] [cursor=pointer]:
+                          - /url: https://cloud.oracle.com/compute/images
+                          - text: Custom Images
+                  - button [ref=f26e116] [cursor=pointer]
+                - generic:
+                  - dialog [ref=f26e976]:
+                    - generic [ref=f26e123]:
+                      - banner [ref=f26e124]:
+                        - heading [level=1] [ref=f26e977]: Create compute instance
+                      - generic [ref=f26e140]:
+                        - generic [ref=f26e141]:
+                          - generic [ref=f26e142]:
+                            - generic [ref=f26e144] [cursor=pointer]:
+                              - generic [ref=f26e146]:
+                                - generic [aria-hidden] [ref=f26e150]: "1"
+                                - generic [ref=f26e151]: Basic information
+                              - button [expanded] [ref=f26e978]
+                            - separator [ref=f26e157]
+                          - generic [ref=f26e164]:
+                            - paragraph [ref=f26e171]: Create an instance to deploy and run applications, or save as a reusable Terraform stack for creating an instance with Resource Manager.
+                            - generic [ref=f26e175]:
+                              - generic [ref=f26e176]: Name
+                              - textbox [ref=f26e979]: instance-20261014-2119
+                            - generic [ref=f26e181]:
+                              - generic [ref=f26e182]:
+                                - generic [ref=f26e183]: Create in compartment
+                                - combobox [ref=f26e980]: rjdrones97 (root)
+                              - generic [aria-hidden] [ref=f26e188] [cursor=pointer]
+                            - heading [level=1] [ref=f26e981]: Placement
+                            - paragraph [ref=f26e195]: The availability domain helps determine which shapes are available.
+                            - generic [ref=f26e198]:
+                              - generic [ref=f26e199]: Availability domain
+                              - generic [ref=f26e385] [cursor=pointer]:
+                                - generic [ref=f26e386]: AD 1
+                                - generic [ref=f26e390]: OkZp:SA-SAOPAULO-1-AD-1
+                                - radio [checked] [ref=f26e982]
+                            - generic [ref=f26e207] [cursor=pointer]:
+                              - button [ref=f26e983]
+                              - heading [level=2] [ref=f26e984]: Advanced options
+                            - heading [level=1] [ref=f26e985]: Image and shape
+                            - paragraph [ref=f26e214]:
+                              - generic [ref=f26e215]:
+                                - text: A
+                                - link [ref=f26e986] [cursor=pointer]:
+                                  - /url: https://docs.cloud.oracle.com/iaas/Content/Compute/References/computeshapes.htm
+                                  - text: shape
+                                - text: is a template that determines the number of CPUs, amount of memory, and other resources allocated to an instance. The image is the operating system that runs on top of the shape.
+                            - group [ref=f26e987]:
+                              - heading [level=2] [ref=f26e988]: Image
+                              - generic [ref=f26e224]:
+                                - button [ref=f26e989] [cursor=pointer]: Change image
+                                - generic [ref=f26e232]:
+                                  - strong [ref=f26e234]: Operating system
+                                  - generic [ref=f26e235]: Oracle Linux 9
+                                  - strong [ref=f26e240]: Image build
+                                  - generic [ref=f26e241]: 2026.09.18-0
+                                  - strong [ref=f26e245]: Security
+                                  - generic [ref=f26e246]: Shielded instance
+                            - group [ref=f26e990]:
+                              - heading [level=2] [ref=f26e991]: Shape
+                              - generic [ref=f26e404]:
+                                - button [ref=f26e992] [cursor=pointer]: Change shape
+                                - generic [ref=f26e414]:
+                                  - strong [ref=f26e416]: Shape
+                                  - generic [ref=f26e418]:
+                                    - generic [ref=f26e419]: VM.Standard.E2.1.Micro
+                                    - generic [ref=f26e420]: Always Free-eligible
+                                  - strong [ref=f26e423]: Shape build
+                                  - generic [ref=f26e424]: Virtual machine, 1 core OCPU, 1 GB memory, 0.48 Gbps network bandwidth
+                            - generic [ref=f26e280] [cursor=pointer]:
+                              - button [ref=f26e993]
+                              - heading [level=2] [ref=f26e994]: Advanced options
+                        - generic [ref=f26e287]:
+                          - generic [ref=f26e289]:
+                            - generic [ref=f26e291]:
+                              - generic [aria-hidden] [ref=f26e295]: "2"
+                              - generic [ref=f26e296]: Security
+                            - button [ref=f26e995]
+                          - separator [ref=f26e302]
+                        - generic [ref=f26e305]:
+                          - generic [ref=f26e307]:
+                            - generic [ref=f26e309]:
+                              - generic [aria-hidden] [ref=f26e313]: "3"
+                              - generic [ref=f26e314]:
+                                - generic [ref=f26e315]: Networking
+                                - generic [ref=f26e317]: Required
+                            - button [ref=f26e996]
+                          - separator [ref=f26e321]
+                        - generic [ref=f26e324]:
+                          - generic [ref=f26e326]:
+                            - generic [ref=f26e328]:
+                              - generic [aria-hidden] [ref=f26e332]: "4"
+                              - generic [ref=f26e333]:
+                                - generic [ref=f26e334]: Storage
+                                - generic [ref=f26e336]: Required
+                            - button [ref=f26e997]
+                          - separator [ref=f26e340]
+                        - generic [ref=f26e343]:
+                          - generic [ref=f26e345]:
+                            - generic [ref=f26e346]: Review
+                            - button [ref=f26e998]
+                          - separator [ref=f26e360]
+                      - generic [ref=f26e365]:
+                        - generic [ref=f26e367]:
+                          - generic [ref=f26e368]:
+                            - generic [ref=f26e369]: Tasks Completed
+                            - generic [ref=f26e370]: 0 of 4
+                          - progressbar [ref=f26e999]
+                        - generic [ref=f26e372]:
+                          - button [ref=f26e1000] [cursor=pointer]: Cancel
+                          - button [ref=f26e1001] [cursor=pointer]: View estimated cost
+                          - button [disabled] [ref=f26e1002]: Previous
+                          - button [ref=f26e1003] [cursor=pointer]: Next
+                  - dialog "Side Panel" [ref=f26e1007]:
+                    - generic [ref=f26e1010]:
+                      - banner [ref=f26e1011]:
+                        - heading "Browse all shapes" [level=1] [ref=f26e1019]
+                      - generic [ref=f26e1026]:
+                        - generic [ref=f26e1027]:
+                          - text: A
+                          - link "shape" [active] [ref=f26e1028] [cursor=pointer]:
+                            - /url: https://docs.cloud.oracle.com/iaas/Content/Compute/References/computeshapes.htm
+                          - text: is a template that determines the number of CPUs, amount of memory, and other resources allocated to a newly created instance.
+                        - generic [ref=f26e1031]:
+                          - alert [ref=f26e1033]:
+                            - generic [ref=f26e1034]:
+                              - img "Warning" [ref=f26e1036]
+                              - generic [ref=f26e1040]:
+                                - heading "Don't see the shape you want?" [level=2] [ref=f26e1041]
+                                - generic [ref=f26e1043]:
+                                  - generic [ref=f26e1044]:
+                                    - text: To access all shapes,
+                                    - link "upgrade" [ref=f26e1045] [cursor=pointer]:
+                                      - /url: https://cloud.oracle.com/account-management/payment-method
+                                    - text: . You'll pay only for what you use, no minimum terms and no prepayments.
+                                  - button "Upgrade" [ref=f26e1047] [cursor=pointer]
+                          - generic [ref=f26e1048]: Messages region has new messages. Press F6 to navigate.
+                        - generic [ref=f26e1051]:
+                          - generic [ref=f26e1052]: Instance type
+                          - generic [ref=f26e1056]:
+                            - generic [ref=f26e1058] [cursor=pointer]:
+                              - generic [ref=f26e1059]: Virtual machine
+                              - generic [ref=f26e1063]: A virtual machine is an independent computing environment that runs on top of physical bare metal hardware.
+                              - radio "Virtual machine" [checked] [ref=f26e1065]
+                            - generic [ref=f26e1067] [cursor=pointer]:
+                              - generic [ref=f26e1068]: Bare metal machine
+                              - generic [ref=f26e1072]: A bare metal compute instance gives you dedicated physical server access for highest performance and strong isolation.
+                              - radio "Bare metal machine" [ref=f26e1074]
+                        - generic [ref=f26e1079]:
+                          - generic [ref=f26e1080]: Shape series
+                          - generic [ref=f26e1084]:
+                            - generic [ref=f26e1086] [cursor=pointer]:
+                              - generic [ref=f26e1087]: AMD
+                              - generic [ref=f26e1091]: Flexible OCPU count. Current generation AMD processors.
+                              - radio "AMD" [ref=f26e1093]
+                            - generic [ref=f26e1095] [cursor=pointer]:
+                              - generic [ref=f26e1096]: Intel
+                              - generic [ref=f26e1100]: Flexible OCPU count. Current generation Intel processors.
+                              - radio "Intel" [ref=f26e1102]
+                            - generic [ref=f26e1104] [cursor=pointer]:
+                              - generic [ref=f26e1105]: Ampere
+                              - generic [ref=f26e1109]: Arm-based processor.
+                              - radio "Ampere" [ref=f26e1111]
+                            - generic [ref=f26e1113] [cursor=pointer]:
+                              - generic [ref=f26e1114]: Specialty and previous generation
+                              - generic [ref=f26e1118]: Always Free, Dense I/O, GPU, HPC, Generic, and earlier generation AMD and Intel standard shapes.
+                              - radio "Specialty and previous generation" [checked] [ref=f26e1120]
+                        - generic [ref=f26e1124]:
+                          - strong [ref=f26e1126]: Image
+                          - generic [ref=f26e1127]: Oracle Linux 9
+                        - group [ref=f26e1133]:
+                          - generic [ref=f26e1141]:
+                            - table "table" [ref=f26e1144]:
+                              - rowgroup [ref=f26e1145]:
+                                - row [ref=f26e1146]:
+                                  - cell [ref=f26e1147]
+                                  - columnheader "Shape name" [ref=f26e1148]
+                                  - columnheader "Shape description" [ref=f26e1151]
+                                  - columnheader "OCPU" [ref=f26e1154]
+                                  - columnheader "Memory (GB)" [ref=f26e1157]
+                                  - columnheader "Security" [ref=f26e1160]
+                              - rowgroup [ref=f26e1163]:
+                                - row [ref=f26e1164]:
+                                  - cell [ref=f26e1165]:
+                                    - radio "Select VM.Standard.E2.1.Micro" [checked] [ref=f26e1167]
+                                  - rowheader "Expand VM.Standard.E2.1.Micro Always Free-eligible" [ref=f26e1173]:
+                                    - generic [ref=f26e1176]:
+                                      - button "Expand" [ref=f26e1178] [cursor=pointer]:
+                                        - img "Expand" [ref=f26e1179]
+                                      - generic [ref=f26e1183]:
+                                        - generic [ref=f26e1184]: VM.Standard.E2.1.Micro
+                                        - generic [ref=f26e1185]: Always Free-eligible
+                                  - cell [ref=f26e1187]
+                                  - cell "1" [ref=f26e1189]
+                                  - cell "1" [ref=f26e1192]
+                                  - cell [ref=f26e1195]
+                                - row [ref=f26e1197]:
+                                  - cell [ref=f26e1198]:
+                                    - radio "Select VM.Standard.E3.Flex" [ref=f26e1200]
+                                  - rowheader "Expand VM.Standard.E3.Flex" [ref=f26e1204]:
+                                    - generic [ref=f26e1207]:
+                                      - button "Expand" [ref=f26e1209] [cursor=pointer]:
+                                        - img "Expand" [ref=f26e1210]
+                                      - generic [ref=f26e1214]: VM.Standard.E3.Flex
+                                  - cell [ref=f26e1216]
+                                  - cell "1 (114 max)" [ref=f26e1218]
+                                  - cell "16 (1,776 max)" [ref=f26e1221]
+                                  - cell "Shielded instance" [ref=f26e1224]
+                                - row [ref=f26e1227]:
+                                  - cell [ref=f26e1228]:
+                                    - radio "Select VM.Standard.E2.1" [ref=f26e1230]
+                                  - rowheader "Expand VM.Standard.E2.1" [ref=f26e1234]:
+                                    - generic [ref=f26e1237]:
+                                      - button "Expand" [ref=f26e1239] [cursor=pointer]:
+                                        - img "Expand" [ref=f26e1240]
+                                      - generic [ref=f26e1244]: VM.Standard.E2.1
+                                  - cell [ref=f26e1246]
+                                  - cell "1" [ref=f26e1248]
+                                  - cell "8" [ref=f26e1251]
+                                  - cell [ref=f26e1254]
+                                - row [ref=f26e1256]:
+                                  - cell [ref=f26e1257]:
+                                    - radio "Select VM.Standard.E2.2" [ref=f26e1259]
+                                  - rowheader "Expand VM.Standard.E2.2" [ref=f26e1263]:
+                                    - generic [ref=f26e1266]:
+                                      - button "Expand" [ref=f26e1268] [cursor=pointer]:
+                                        - img "Expand" [ref=f26e1269]
+                                      - generic [ref=f26e1273]: VM.Standard.E2.2
+                                  - cell [ref=f26e1275]
+                                  - cell "2" [ref=f26e1277]
+                                  - cell "16" [ref=f26e1280]
+                                  - cell [ref=f26e1283]
+                                - row [ref=f26e1285]:
+                                  - cell [ref=f26e1286]:
+                                    - radio "Select VM.Standard.E2.4" [ref=f26e1288]
+                                  - rowheader "Expand VM.Standard.E2.4" [ref=f26e1292]:
+                                    - generic [ref=f26e1295]:
+                                      - button "Expand" [ref=f26e1297] [cursor=pointer]:
+                                        - img "Expand" [ref=f26e1298]
+                                      - generic [ref=f26e1302]: VM.Standard.E2.4
+                                  - cell [ref=f26e1304]
+                                  - cell "4" [ref=f26e1306]
+                                  - cell "32" [ref=f26e1309]
+                                  - cell [ref=f26e1312]
+                                - row [ref=f26e1314]:
+                                  - cell [ref=f26e1315]:
+                                    - radio "Select VM.Standard.E2.8" [ref=f26e1317]
+                                  - rowheader "Expand VM.Standard.E2.8" [ref=f26e1321]:
+                                    - generic [ref=f26e1324]:
+                                      - button "Expand" [ref=f26e1326] [cursor=pointer]:
+                                        - img "Expand" [ref=f26e1327]
+                                      - generic [ref=f26e1331]: VM.Standard.E2.8
+                                  - cell [ref=f26e1333]
+                                  - cell "8" [ref=f26e1335]
+                                  - cell "64" [ref=f26e1338]
+                                  - cell [ref=f26e1341]
+                                - row [ref=f26e1343]:
+                                  - cell [ref=f26e1344]:
+                                    - radio "Select VM.Standard2.1" [ref=f26e1346]
+                                  - rowheader "Expand VM.Standard2.1" [ref=f26e1350]:
+                                    - generic [ref=f26e1353]:
+                                      - button "Expand" [ref=f26e1355] [cursor=pointer]:
+                                        - img "Expand" [ref=f26e1356]
+                                      - generic [ref=f26e1360]: VM.Standard2.1
+                                  - cell [ref=f26e1362]
+                                  - cell "1" [ref=f26e1364]
+                                  - cell "15" [ref=f26e1367]
+                                  - cell "Shielded instance" [ref=f26e1370]
+                                - row [ref=f26e1373]:
+                                  - cell [ref=f26e1374]:
+                                    - radio "Select VM.Standard2.2" [ref=f26e1376]
+                                  - rowheader "Expand VM.Standard2.2" [ref=f26e1380]:
+                                    - generic [ref=f26e1383]:
+                                      - button "Expand" [ref=f26e1385] [cursor=pointer]:
+                                        - img "Expand" [ref=f26e1386]
+                                      - generic [ref=f26e1390]: VM.Standard2.2
+                                  - cell [ref=f26e1392]
+                                  - cell "2" [ref=f26e1394]
+                                  - cell "30" [ref=f26e1397]
+                                  - cell "Shielded instance" [ref=f26e1400]
+                                - row [ref=f26e1403]:
+                                  - cell [ref=f26e1404]:
+                                    - radio "Select VM.Standard2.4" [ref=f26e1406]
+                                  - rowheader "Expand VM.Standard2.4" [ref=f26e1410]:
+                                    - generic [ref=f26e1413]:
+                                      - button "Expand" [ref=f26e1415] [cursor=pointer]:
+                                        - img "Expand" [ref=f26e1416]
+                                      - generic [ref=f26e1420]: VM.Standard2.4
+                                  - cell [ref=f26e1422]
+                                  - cell "4" [ref=f26e1424]
+                                  - cell "60" [ref=f26e1427]
+                                  - cell "Shielded instance" [ref=f26e1430]
+                                - row [ref=f26e1433]:
+                                  - cell [ref=f26e1434]:
+                                    - radio "Select VM.Standard2.8" [ref=f26e1436]
+                                  - rowheader "Expand VM.Standard2.8" [ref=f26e1440]:
+                                    - generic [ref=f26e1443]:
+                                      - button "Expand" [ref=f26e1445] [cursor=pointer]:
+                                        - img "Expand" [ref=f26e1446]
+                                      - generic [ref=f26e1450]: VM.Standard2.8
+                                  - cell [ref=f26e1452]
+                                  - cell "8" [ref=f26e1454]
+                                  - cell "120" [ref=f26e1457]
+                                  - cell "Shielded instance" [ref=f26e1460]
+                                - row [ref=f26e1463]:
+                                  - cell [ref=f26e1464]:
+                                    - radio "Select VM.Standard2.16" [ref=f26e1466]
+                                  - rowheader "Expand VM.Standard2.16" [ref=f26e1470]:
+                                    - generic [ref=f26e1473]:
+                                      - button "Expand" [ref=f26e1475] [cursor=pointer]:
+                                        - img "Expand" [ref=f26e1476]
+                                      - generic [ref=f26e1480]: VM.Standard2.16
+                                  - cell [ref=f26e1482]
+                                  - cell "16" [ref=f26e1484]
+                                  - cell "240" [ref=f26e1487]
+                                  - cell "Shielded instance" [ref=f26e1490]
+                                - row [ref=f26e1493]:
+                                  - cell [ref=f26e1494]:
+                                    - radio "Select VM.Standard2.24" [ref=f26e1496]
+                                  - rowheader "Expand VM.Standard2.24" [ref=f26e1500]:
+                                    - generic [ref=f26e1503]:
+                                      - button "Expand" [ref=f26e1505] [cursor=pointer]:
+                                        - img "Expand" [ref=f26e1506]
+                                      - generic [ref=f26e1510]: VM.Standard2.24
+                                  - cell [ref=f26e1512]
+                                  - cell "24" [ref=f26e1514]
+                                  - cell "320" [ref=f26e1517]
+                                  - cell "Shielded instance" [ref=f26e1520]
+                            - generic [ref=f26e1524]:
+                              - generic [ref=f26e1525]:
+                                - generic [ref=f26e1526]:
+                                  - button "Previous" [disabled] [ref=f26e1527]
+                                  - button "Next" [disabled] [ref=f26e1533]
+                                - generic [ref=f26e1539]: Page 1 of 1 (1 - 12 of 12 total items)
+                              - generic [ref=f26e1540]:
+                                - generic [ref=f26e1541]: Items per page
+                                - generic [ref=f26e1543]:
+                                  - combobox "Items per page" [ref=f26e1545]: "25"
+                                  - generic [aria-hidden] [ref=f26e1549] [cursor=pointer]
+                      - generic [ref=f26e1558]:
+                        - button "Cancel" [ref=f26e1559] [cursor=pointer]
+                        - button "Select shape" [ref=f26e1560] [cursor=pointer]
+      - generic [ref=f23e804]:
+        - generic [ref=f23e805]:
+          - link "Terms of Use and Privacy" [ref=f23e807] [cursor=pointer]:
+            - /url: http://www.oracle.com/legal/privacy/index.html
+          - complementary "Open Cookie Preferences Modal" [ref=f23e808]:
+            - link "Cookie Preferences, opens a dedicated popup modal window" [ref=f23e809] [cursor=pointer]: Cookie Preferences
+        - generic [ref=f23e810]: Copyright © 2026, Oracle and/or its affiliates. All rights reserved.
+  - status

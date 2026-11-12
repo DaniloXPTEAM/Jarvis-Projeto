@@ -21,16 +21,29 @@ Documentos de referência já existentes (não duplicar aqui, só consultar):
 
 ## Backlog / começar a próxima sessão por aqui
 
-> **➡️ Sessão de 15/10/2026 (a mais recente): plano de latência de voz (inspirado no
-> Alexa, via REA) — Fase 0 e Fase 1 feitas, branch `voz-latencia`, NÃO mergeada na
-> main.** Usuário trouxe um pacote de 6 MDs (`alexa-referencia/`, feito por outra sessão
-> que fez engenharia reversa no APK do Alexa) com um plano de 5 fases pra latência/
-> "não ouve enquanto fala". Detalhes completos, achado mais importante (provedor de IA
-> primário falhando em quase 100% dos turnos) e tudo que falta na seção **"Sessão
-> 15/10/2026 — Plano de latência de voz (branch voz-latencia)"** no FIM deste arquivo —
-> leia-a antes de continuar as próximas fases (2, 3, 4) ou mexer em voz/latência de
-> novo. **Build e install confirmados no aparelho real, mas as correções específicas
-> (pausar música, corte de 20s) ainda NÃO foram confirmadas pelo usuário testando.**
+> **⚠️ Sessão de 15/10/2026 (a mais recente, 2ª metade do dia): plano de latência de
+> voz — testado ao vivo por HORAS no aparelho real, resultado misto/pior na percepção
+> do usuário ("3hs tentando melhorar e estamos pior que no começo"). Branch
+> `voz-latencia`, NÃO mergeada na main. Usuário pediu explicitamente, ao encerrar, que
+> a próxima sessão (possivelmente outra IA, ex. Codex) retome por aqui em vez de tentar
+> mais ajustes às cegas.** Leia a seção **"Sessão 15/10/2026 — Plano de latência de voz
+> (branch voz-latencia)"** completa no FIM deste arquivo, especialmente a subseção
+> **"Balanço final da sessão (honesto, não só o que funcionou)"** no finalzinho dela —
+> é o resumo mais atualizado e mais importante de tudo. Resumo rápido:
+> - ✅ **2 bugs reais confirmados e corrigidos** (um deles só por raciocínio de código,
+>   não testado ao vivo ainda): chave Groq morta salva em Ajustes sobrepondo a chave
+>   nativa funcionando (confirmado por log — IA caiu de 20-40s pra ~1,5-2s depois do
+>   usuário limpar o campo); e um travamento de até 3 minutos no `ElevenLabsTts` sempre
+>   que a fala dela é interrompida de fora (`stopSpeaking()` não disparava o callback
+>   que o resto do app espera) — **esse fix está só no working tree, NÃO commitado**.
+> - ❌ **Pelo menos 2 problemas que PIORARAM ou ficaram mais visíveis** com as mudanças
+>   desta sessão (Fase 4, barge-in): ela demora perceptivelmente mais pra voltar a
+>   escutar depois de cada resposta (hipótese forte, não implementada — ver seção),
+>   e quando a janela de 60s de conversa expira ela ignora fala em SILÊNCIO TOTAL sem
+>   repetir "Gabi" (confirmado em log, sem nenhum feedback pro usuário).
+> - **Comparação feita pelo usuário com o celular dele**: Google (voz) e ChatGPT (voz)
+>   respondem instantaneamente no MESMO aparelho — descarta hardware/microfone,
+>   confirma que o problema é de como a Gabi configura o reconhecimento de voz.
 
 > **➡️ Sessão de 14-15/10/2026: tentando criar o servidor Oracle Cloud
 > para hospedar a voz da Gabi (Pocket TTS) — BLOQUEADO por falta de capacidade ARM
@@ -2620,14 +2633,211 @@ testava ao vivo.** Achados reais (não teoria):
 - **Branch `voz-latencia` não foi mergeada na `main`** — fazer isso só depois que o
   usuário confirmar as correções da Fase 1 funcionando de verdade no aparelho.
 
+### Continuação no mesmo dia (15/10/2026, mais tarde) — Fase 4 + 3 provedores de IA
+
+Tudo abaixo aconteceu na MESMA sessão/dia, depois do usuário testar a Fase 1 ao vivo e
+pedir "faça todas as fases" — não é uma sessão nova. Testado ao vivo no aparelho real a
+cada passo (ADB conectado o tempo todo, com quedas de conexão USB frequentes — ver nota
+de metodologia no fim).
+
+**Fase 4 implementada (ouvir enquanto fala + não pausar música à toa)**: novo
+`voice/ContinuousMicMonitor.kt` — `AudioRecord` próprio (16kHz mono PCM16, AEC
+opcional), detector de voz por energia (RMS sustentado), **sem pedir foco de áudio**
+— roda em paralelo a qualquer mídia tocando sem pausar nada. Só quando detecta voz de
+verdade é que liga o reconhecedor pesado do sistema (que aí sim pede foco,
+momentaneamente). `JavisRepository.speak()` ganhou `AUDIOFOCUS_GAIN_TRANSIENT`
+explícito (pedido ao começar a falar, solto ao terminar) — antes a Gabi nunca tratava
+foco de áudio nenhum. `ChatViewModel` ganhou `observeSpeakingForBargeIn()`: assim que
+ela começa a falar, se o modo contínuo estiver ligado, liga o monitor leve — se o
+usuário falar alto o suficiente por cima dela, interrompe a fala e abre a escuta de
+verdade. **Limiar de detecção de voz é um chute inicial (RMS 1200), documentado no
+próprio arquivo como precisando de calibração real** — não testado a fundo ainda se
+está sensível demais ou de menos.
+
+**A chave nativa do Groq estava morta — causa raiz confirmada do achado da Fase 0**:
+testado por `curl` direto (sem precisar do celular) → `HTTP 401 Invalid API Key`.
+Usuário forneceu uma chave nova, testada e funcionando, colocada em
+`android/local.properties` (gitignored).
+
+**Duas reviravoltas em sequência na escolha de provedor "principal" (documentadas pra
+não repetir o erro)**:
+1. Primeiro troquei o padrão pra DEEPSEEK (já que tinha chave própria do usuário
+   funcionando, confirmada no log). **Só que, testando ao vivo logo depois, o DeepSeek
+   passou a devolver HTTP 402 "Payment Required" em toda chamada** — conta/chave do
+   usuário sem crédito. Voltado pra GROQ como padrão.
+2. **Achado que invalidou a lógica de "padrão no código" inteira**: puxado o arquivo
+   real de preferências do celular via ADB (`adb shell run-as com.gabi.assistant cat
+   .../javis_prefs.preferences_pb`, precisa `MSYS_NO_PATHCONV=1` no Git Bash pro
+   caminho `/data/data/...` não ser mangled) — tinha **"DEEPSEEK" salvo explicitamente
+   desde 17/09/2026**, um mês antes, por alguém (usuário ou outra sessão de IA) mexendo
+   em Ajustes uma vez. Um valor salvo no `DataStore` SEMPRE vence qualquer `?:
+   AiProvider.GROQ.name` no código — explica por que a correção "não mudou nada" na
+   hora, mesmo com o APK certo instalado.
+
+**Solução estrutural pros dois problemas acima juntos**: em vez de continuar com
+primário+1-fallback fixo, virou uma **cadeia de até 3 provedores**
+(`JavisRepository.buildProviderChain()`): o preferido primeiro, depois os outros dois
+numa ordem fixa (GROQ → DEEPSEEK → OPENROUTER), até um responder de verdade. Terceiro
+provedor novo: **OpenRouter** (`ai/OpenRouterProvider.kt`), pedido explícito do usuário
+("nunca mais parar de ter crédito") — agrega vários modelos numa chave só. Modelo
+escolhido (`nvidia/nemotron-3-super-120b-a12b:free`) confirmado NA HORA via `GET
+openrouter.ai/api/v1/models` (não chutado) — gratuito, suporta `tools`/function-calling
+(checado no campo `supported_parameters`), contexto grande. Mesma pegadinha do
+`gpt-oss-120b` do Groq: "pensa" antes de responder e isso consome `max_tokens` — testado
+por curl com budget pequeno (50 tokens, `content: null`) vs maior (400 tokens, respondeu
+certo) antes de fixar `maxTokens = 1536` pro `chatWithTools`. Chave nativa do usuário
+embutida em `local.properties` (o campo `OPENROUTER_API_KEY` já existia em
+`build.gradle.kts`, preparado antes nesta mesma sessão mas nunca usado até agora).
+`AiModelProvider` (interface) ganhou `chatWithTools` formalizado, pra poder iterar os 3
+provedores genericamente em vez de `if`s por par.
+
+**Bug real encontrado ao vivo, não relacionado a provedor de IA nenhum**: usuário
+reportou "continua sem responder", com a tela travada em "Escutando...". Causa:
+`JavisSpeechRecognizer.onResults()` não fazia NADA quando o reconhecedor devolvia a
+lista de resultados vazia (comportamento real do serviço de voz do Xiaomi/HyperOS do
+usuário, já visto antes em 20-21/09/2026) — sem nenhum evento emitido, o modo contínuo
+ficava preso pra sempre, só saindo se o usuário tocasse manualmente de novo. Corrigido:
+agora emite o mesmo erro -1 que o resto do app já trata como "transiente, só ouve de
+novo" — reabre o monitor de microfone sozinho.
+
+**Achado novo, NÃO relacionado a este dia**: durante a busca por "OmniRoute" (pedido do
+usuário, era na verdade OpenRouter), descoberto que `android/app/src/main/java/com/javis/`
+(a pasta legada que não compila, documentada no topo deste arquivo) já tinha uma
+integração COMPLETA de OpenRouter de uma versão antiga do fork original — nunca foi
+portada pro código ativo (`kotlin/com/gabi/assistant/`). Confirma mais uma vez: nada na
+pasta `java/` legada reflete o app de verdade.
+
+**Nota de metodologia importante pra sessões futuras com ADB nesta máquina**: a conexão
+USB do celular do usuário caiu e voltou VÁRIAS vezes ao longo desta sessão (sem padrão
+óbvio). Sempre confirmar `adb devices` antes de instalar/depurar, e **depois de instalar
+um APK novo, sempre `adb shell am force-stop com.gabi.assistant` antes de pedir pro
+usuário testar** — `adb install -r` não reinicia o processo já em execução, então o app
+continua rodando o código ANTIGO até ser fechado de verdade. Isso causou uma falsa
+alarme real nesta sessão ("continua exatamente com o mesmo erro, não mudou nada" — o
+código novo estava certo, só não tinha sido carregado ainda).
+
+### Continuação da mesma sessão (15/10/2026, à noite) — teste ao vivo de HORAS, resultado ruim
+
+Depois da Fase 4 + 3 provedores (seção acima), o usuário testou ao vivo por várias horas
+seguidas, com log capturado o tempo todo (`adb logcat`, filtrado nas tags
+`GabiLatency`/`ContinuousMicMonitor`/`JavisRepository`/`JavisSpeechRecognizer`/
+`ChatViewModel`/`ElevenLabsTts`). **Resultado: a experiência ficou PIOR, não melhor** —
+palavras do próprio usuário: *"3hs tentando melhorar e estamos pior que no começo"*. Dois
+bugs reais foram achados e corrigidos no meio do caminho, mas pelo menos um problema
+arquitetural sério (provavelmente introduzido pela própria Fase 4) ficou sem solução, e eu
+cheguei a documentar uma explicação ERRADA antes de ter certeza — corrigida abaixo com o
+que o log realmente mostra.
+
+**1) ✅ Chave do Groq morta salva em Ajustes sobrepondo a chave nativa funcionando — causa
+raiz real, corrigida, confirmada em log.** `JavisRepository` sempre fez
+`prefs.groqApiKey.first().ifBlank { BuildConfig.GROQ_API_KEY }` — ou seja, QUALQUER valor
+não-vazio salvo em Ajustes (mesmo uma chave antiga morta de meses atrás) sempre vence a
+chave nativa embutida, não importa se a nativa está certa. Confirmado por `curl` direto
+que a chave nova no `local.properties` funcionava (HTTP 200), mas o app devolvia
+`HTTP 401` do Groq em TODA chamada — só podia ser uma chave diferente salva em Ajustes.
+Pedi pro usuário abrir Ajustes → "Chave da API Groq" → apagar o campo → salvar. **Depois
+disso, confirmado no log**: a IA que estava levando 20-40s (DeepSeek 402 sem crédito +
+Groq 401 morto, caindo pro terceiro provedor OpenRouter, que é de graça mas lento) passou
+a responder em ~1,5-2s por um bom tempo (ver log entre 19:26:23 e 19:27:08 no trecho
+salvo). **Isso é o mesmo padrão de bug já visto nesta sessão com `ai_provider`** (um valor
+salvo no DataStore/SecureKeyStore meses atrás sobrepondo o default do código sem ninguém
+perceber) — já é a SEGUNDA vez no mesmo dia. Vale considerar, numa sessão futura, mostrar
+na UI de Ajustes qual chave está REALMENTE em uso (nativa vs. a que o usuário configurou),
+porque isso é fácil de ficar invisível e já causou duas rodadas de confusão.
+
+**2) ✅ Travamento de até 3 minutos no `ElevenLabsTts` ao interromper a fala de fora —
+corrigido só por raciocínio de código, AINDA NÃO COMMITADO, não confirmado ao vivo
+isoladamente.** `MediaPlayer.stop()` não dispara `onCompletionListener`/`onErrorListener`
+— então toda vez que algo de fora chamava `JavisRepository.stopSpeaking()` (o barge-in da
+Fase 4, o comando "Gabi, vai dormir", ou o próprio `speak()` interrompendo uma fala
+anterior), a coroutine suspensa dentro de `ElevenLabsTts.speak()` ficava esperando pra
+sempre um callback que nunca vinha, só sendo liberada pelo timeout (mínimo 20s, até 3min
+pra textos longos) — travando a conversa inteira até lá. Corrigido guardando o callback
+pendente num campo (`onDoneCallback`) e disparando ele manualmente dentro de
+`stopSpeaking()`. **Mudança está só no working tree de `android/app/src/main/kotlin/
+com/gabi/assistant/voice/ElevenLabsTts.kt`, NÃO commitada** (`git status` confirma —
+ninguém pediu commit ainda). A lógica bate com o bug (`MediaPlayer.stop()` realmente não
+dispara completion, isso é documentado no próprio Android), mas não teve uma rodada de
+teste isolada confirmando que resolveu o travamento na prática — o teste ao vivo que
+veio depois já estava contaminado pelo problema #3 abaixo.
+
+**3) ❌ NÃO RESOLVIDO — o problema real e dominante, achado tarde demais nesta sessão: o
+laço de escuta contínua para de reagir por completo depois de um tempo, sem erro nenhum
+no log.** Isso é o que o usuário descreveu como "ela aparece ouvindo (texto amarelo/
+parcial na tela), mas nunca responde" — e é diferente do que eu documentei errado
+primeiro (uma teoria sobre a janela de 60s de conversa expirando, que eu escrevi sem ter
+certeza e tive que corrigir depois que o usuário apontou que não batia). **Evidência real,
+do log**: entre 19:28:56.760 (o último evento `T1 onResults` registrado) e pelo menos
+19:34 (mais de 5 minutos depois, com o usuário testando ativamente o tempo todo nesse
+intervalo, confirmado pelas mensagens dele), **não aparece mais NENHUM log da Gabi** — nem
+`T0` (fim da fala), nem erro, nem `ContinuousMicMonitor`, nada — enquanto o processo do
+app (mesmo PID) continuava vivo e a captura de log continuava escrevendo normalmente (só
+ruído de sistema do MIUI, sem relação com o app). Ou seja: o reconhecedor (ou o monitor
+leve que liga ele) simplesmente parou de progredir — nem erro, nem resultado, nem reinício
+automático. **Hipóteses não confirmadas, pra investigar na próxima sessão**:
+  - O `ContinuousMicMonitor`/`SpeechRecognizer` são criados e destruídos a cada turno (o
+    padrão "monitor leve detecta voz → para → liga o reconhecedor pesado → turno termina →
+    volta pro monitor leve"). Reiniciar esse ciclo com tanta frequência pode estar deixando
+    o SERVIÇO de reconhecimento do sistema (não o app) num estado travado depois de várias
+    repetições rápidas — um `onPartialResults` tardio continuaria atualizando o texto na
+    tela (explicando o "amarelinho" visível) sem nunca disparar `onEndOfSpeech`/`onResults`
+    de verdade. Não tem proteção nenhuma hoje contra esse cenário (sem timeout de
+    segurança no lado do app pra esse caso específico).
+  - Essa arquitetura de reiniciar o reconhecedor a cada turno é NOVA desta sessão (Fase 4)
+    — antes dela, `continueListeningIfContinuous()` chamava o reconhecedor pesado
+    DIRETO, sem o estágio intermediário do monitor leve. É plausível que a troca tenha
+    piorado a estabilidade justamente pra ganhar a vantagem menor de não pausar música —
+    troca que pode não ter valido a pena. Eu tinha começado a desenhar um meio-termo
+    (usar o reconhecedor pesado direto logo depois de um turno ativo — resposta rápida — e
+    só cair pro monitor leve depois de um tempo sem interação — evita pausar música só
+    quando realmente ocioso) mas **não cheguei a implementar nem testar isso** — o usuário
+    pediu pra eu parar e documentar em vez de continuar mexendo às cegas.
+  - **Comparação feita pelo usuário, real e relevante**: no MESMO aparelho, tanto o
+    reconhecimento de voz do Google quanto o modo de voz do ChatGPT respondem
+    instantaneamente — isso descarta de vez qualquer teoria de "o microfone/hardware desse
+    Xiaomi é ruim". O problema é mesmo de como a Gabi usa a API `SpeechRecognizer` (o
+    padrão de reiniciar o reconhecedor com tanta frequência é um bom suspeito, mas não é
+    prova — ChatGPT/Google podem usar uma API de reconhecimento totalmente diferente, ex.
+    streaming próprio em vez do `SpeechRecognizer` do sistema).
+  - ⚠️ **Retratação explícita**: a frase que eu tinha escrito antes nesta mesma seção
+    ("ela ignora em silêncio por causa da janela de 60s expirada") NÃO é a explicação —
+    era uma leitura apressada de um ÚNICO caso isolado no log, generalizada sem
+    confirmação. O padrão real e repetido é o travamento completo descrito acima. Não
+    descartar a janela de 60s como fator SECUNDÁRIO (ela existe e tem esse efeito quando
+    acontece), mas não é a causa do "ela não responde" relatado nesta sessão.
+
+**4) Ainda sem solução/ação**: DeepSeek continua com HTTP 402 (sem crédito) — precisa o
+usuário colocar saldo em platform.deepseek.com, não é algo que o código resolve sozinho.
+
+### Balanço final da sessão (honesto, não só o que funcionou)
+
+Entrada: app com latência alta mas USÁVEL. Saída: dois bugs reais corrigidos (chave Groq
+morta, travamento do `ElevenLabsTts`), mas a sensação geral do usuário, testando ao vivo
+por horas, é de regressão — o laço de escuta contínua trava por completo depois de um
+tempo (achado #3, não resolvido) de um jeito que parece não ter acontecido antes da Fase
+4 desta sessão. **Recomendação forte pra quem pegar isso a seguir (seja outra sessão
+Claude, seja Codex como o usuário mencionou)**: considerar REVERTER a Fase 4 (o commit
+`3fa666a feat(android): Fase 4 do plano de latencia - barge-in + foco de audio real`) ou
+pelo menos a parte que troca `continueListeningIfContinuous()` de "liga o reconhecedor
+pesado direto" pra "liga o monitor leve primeiro", como primeiro experimento — é a
+suspeita mais forte pro travamento do achado #3, e o ganho que a Fase 4 trazia (não
+pausar música enquanto espera) é secundário comparado a "ela simplesmente para de
+responder". Qualquer sessão que mexer nisso de novo: **peça pro usuário testar em
+blocos curtos (poucos minutos) com log rodando, e cheque o log a cada bloco** — testar
+por horas seguidas sem checagem intermediária (o que aconteceu aqui) deixa difícil
+separar qual mudança causou qual sintoma.
+
 ### Para retomar na próxima sessão
-1. `git checkout voz-latencia` (não `main`).
-2. Pedir pro usuário testar "Gabi, pausa a música" e uma resposta bem longa (pra validar
-   os dois itens da Fase 1).
-3. Capturar log de novo (`adb logcat -c` seguido de `adb logcat -v time GabiLatency:D AndroidRuntime:E *:S`)
-   e **ler o motivo real da falha do provedor primário** (log já existe, só falta
-   capturar com ele ativo) — é o fio mais importante a puxar.
-4. Só depois disso decidir se segue pra Fase 2/3 (menos impacto isolado, mas afeta todo
-   turno) ou direto pra Fase 4 (resolve "não ouve enquanto fala" e "pausa música", os
-   dois mais reclamados ao vivo pelo usuário).
+1. `git checkout voz-latencia` (não `main`). Rodar `git status` primeiro — tem 1 arquivo
+   modificado não commitado (`ElevenLabsTts.kt`, o fix do achado #2 acima) que precisa de
+   decisão: commitar, descartar, ou revisar de novo antes.
+2. Ler a seção "Balanço final da sessão" acima ANTES de mexer em qualquer coisa — é o
+   resumo mais honesto e atualizado.
+3. Decidir sobre a recomendação de reverter/ajustar a Fase 4 (achado #3) — é o maior
+   problema em aberto, e a causa mais provável da sensação de "piorou".
+4. Testar em blocos curtos com log ativo, não em sessões de horas sem checar no meio.
+5. Se o DeepSeek continuar com 402, pedir pro usuário checar o saldo em
+   platform.deepseek.com — não é algo que dá pra resolver só no código.
+6. Fase 2 (streaming) e Fase 5 (palavra de ativação) continuam não iniciadas — mas não
+   faz sentido avançar nelas antes do achado #3 estar resolvido.
 

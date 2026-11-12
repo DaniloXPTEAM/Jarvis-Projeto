@@ -10,6 +10,8 @@ import android.media.audiofx.AcousticEchoCanceler
 import android.util.Log
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -114,7 +116,8 @@ class ContinuousMicMonitor @Inject constructor(
             try {
                 while (isActive) {
                     val read = record.read(buffer, 0, buffer.size)
-                    if (read <= 0) continue
+                    if (read < 0) throw IllegalStateException("AudioRecord read error $read")
+                    if (read == 0) continue
                     val rms = rmsOf(buffer, read)
                     if (rms > VOICE_RMS_THRESHOLD) {
                         sustainedFrames++
@@ -126,8 +129,14 @@ class ContinuousMicMonitor @Inject constructor(
                         sustainedFrames = 0
                     }
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.w(TAG, "Monitor parou com erro: ${e.message}")
+            } finally {
+                withContext(NonCancellable + Dispatchers.Main) {
+                    if (audioRecord === record) releaseAudio()
+                }
             }
         }
     }

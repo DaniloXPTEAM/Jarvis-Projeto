@@ -85,6 +85,8 @@ class OpenRouterProvider @Inject constructor() : AiModelProvider {
             } else {
                 Result.success(content.trim())
             }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -119,6 +121,8 @@ class OpenRouterProvider @Inject constructor() : AiModelProvider {
             } else {
                 Result.success(message)
             }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }

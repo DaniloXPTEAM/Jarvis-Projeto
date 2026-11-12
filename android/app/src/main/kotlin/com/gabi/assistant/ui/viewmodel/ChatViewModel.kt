@@ -18,7 +18,7 @@ import com.gabi.assistant.voice.SpeechEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.text.Normalizer
 import javax.inject.Inject
 
@@ -61,6 +61,9 @@ class ChatViewModel @Inject constructor(
     // Controla a "janela de conversa ativa" do filtro de palavra de ativação — ver
     // uso em sendMessage(). 0 = nunca conversou ainda nesta sessão, sempre exige o nome.
     private var lastActiveConversationAt = 0L
+    private var turnJob: Job? = null
+    private var turnSerial = 0L
+    private var listenJob: Job? = null
 
     val sessionId: String = repository.currentSessionId
 
@@ -97,9 +100,8 @@ class ChatViewModel @Inject constructor(
         if (micMonitor.isRunning) return
         micMonitor.start {
             micMonitor.stop()
-            if (repository.isSpeaking.value) {
-                repository.stopSpeaking()
-            }
+            if (!_uiState.value.continuousMode) return@start
+            cancelActiveTurn()
             startVoiceService()
         }
     }
@@ -147,7 +149,7 @@ class ChatViewModel @Inject constructor(
                         // vivo em log que o serviço de voz do aparelho (Xiaomi/AGSA) devolve
                         // esse código o tempo todo, mesmo com o usuário falando normalmente —
                         // tratar como erro grave desligava o modo contínuo sem motivo real.
-                        val expected = event.code == 7 || event.code == 6 || event.code == -1
+                        val expected = event.code == 7 || event.code == 6 || event.code == -1 || event.code == JavisSpeechRecognizer.WATCHDOG_TIMEOUT
                         _uiState.update {
                             it.copy(
                                 voiceState = it.voiceState.copy(isListening = false, partialText = ""),
@@ -156,22 +158,31 @@ class ChatViewModel @Inject constructor(
                             )
                         }
                         if (expected && _uiState.value.continuousMode) {
-                            startMicMonitor()
+                            continueListeningIfContinuous(500L)
+                        } else if (!expected) {
+                            micMonitor.stop()
+                            listenJob?.cancel()
+                            stopVoiceService()
                         }
                     }
                     is SpeechEvent.Ended -> {
                         _uiState.update { it.copy(voiceState = it.voiceState.copy(isListening = false)) }
                     }
-                    null -> {}
+                    is SpeechEvent.Stopped -> {
+                        // A stop requested by this UI already cleared continuousMode.
+                        // Do not cancel a later farewell or typed turn because of it.
+                        if (!_uiState.value.continuousMode) return@collect
+                        _uiState.update { it.copy(continuousMode = false, voiceState = it.voiceState.copy(isListening = false, partialText = "")) }
+                        micMonitor.stop()
+                        cancelActiveTurn()
+                    }
                 }
             }
         }
     }
 
     private fun sendGreeting() {
-        viewModelScope.launch {
-            repository.greet(sessionId)
-        }
+        launchTurn { repository.greet(sessionId) }
     }
 
     /**
@@ -210,7 +221,7 @@ class ChatViewModel @Inject constructor(
         // confiável, em vez de depender do modelo interpretar certo.
         if (_uiState.value.continuousMode && matchesSleepCommand(text)) {
             toggleContinuousMode()
-            viewModelScope.launch {
+            launchTurn {
                 repository.sayAsAssistant("Tá bom, parei de ouvir. Toca em mim de novo quando precisar.", sessionId)
             }
             return
@@ -238,40 +249,56 @@ class ChatViewModel @Inject constructor(
         lastActiveConversationAt = now
         val cleanedText = if (fromVoice) stripWakeWord(text) else text
 
-        viewModelScope.launch {
+        launchTurn {
             _uiState.update { it.copy(isLoading = true, inputText = "", error = null) }
-            try {
-                repository.sendMessage(cleanedText, sessionId)
-                    .onSuccess { outcome ->
-                        _uiState.update { it.copy(pendingCommand = outcome.pendingCommand) }
-                    }
-                    .onFailure { e ->
-                        _uiState.update { it.copy(error = "A Gabi não conseguiu responder: ${e.message ?: "erro desconhecido"}") }
-                    }
-            } catch (e: kotlinx.coroutines.CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                // Rede de segurança: se algo além do sendMessage() estourar sem passar por
-                // Result (ex.: exceção não tratada em algum ponto novo do pipeline), isso
-                // garante que a UI nunca fica travada em "Pensando…" pra sempre.
-                _uiState.update { it.copy(error = "Erro inesperado: ${e.message ?: e::class.simpleName}") }
-            } finally {
-                _uiState.update { it.copy(isLoading = false) }
-                // repository.sendMessage() já espera a fala da Gabi terminar de tocar
-                // (speak() é suspend até o áudio acabar) antes de devolver — chegando aqui,
-                // é seguro voltar a ouvir sem captar a própria voz dela pelo microfone.
-                Log.d(LATENCY_TAG, "T7 fim da fala, religando escuta t=${SystemClock.elapsedRealtime()}")
-                continueListeningIfContinuous()
-            }
+            repository.sendMessage(cleanedText, sessionId)
+                .onSuccess { outcome -> _uiState.update { it.copy(pendingCommand = outcome.pendingCommand) } }
+                .onFailure { e -> _uiState.update { it.copy(error = "A Gabi não conseguiu responder: ${e.message ?: "erro desconhecido"}") } }
         }
     }
 
-    /** Volta a ouvir sozinha se o modo contínuo (toque-pra-ativar) estiver ligado.
-     *  Usa o monitor LEVE (sem foco de áudio) em vez do reconhecedor pesado direto —
-     *  antes disso, voltar a "ouvir" depois de cada resposta pausava qualquer música
-     *  tocando mesmo sem o usuário ter pedido nada (Fase 4 do plano de latência). */
-    private fun continueListeningIfContinuous() {
-        if (_uiState.value.continuousMode) startMicMonitor()
+    private fun cancelActiveTurn() {
+        turnSerial++
+        listenJob?.cancel()
+        listenJob = null
+        turnJob?.cancel()
+        turnJob = null
+        repository.stopSpeaking()
+        _uiState.update { it.copy(isLoading = false, voiceState = it.voiceState.copy(isListening = false, partialText = "")) }
+    }
+
+    /** Only the current turn can update UI and reopen the microphone. */
+    private fun launchTurn(block: suspend () -> Unit) {
+        cancelActiveTurn()
+        micMonitor.stop()
+        speechRecognizer.stopListening()
+        val serial = turnSerial
+        turnJob = viewModelScope.launch(start = CoroutineStart.LAZY) {
+            try {
+                block()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                if (serial == turnSerial) _uiState.update { it.copy(error = "Não consegui concluir: ${e.message ?: e::class.simpleName}") }
+            } finally {
+                if (serial == turnSerial) {
+                    _uiState.update { it.copy(isLoading = false) }
+                    Log.d(LATENCY_TAG, "T7 fim do turno, religando escuta t=${SystemClock.elapsedRealtime()}")
+                    continueListeningIfContinuous()
+                }
+            }
+        }.also { it.start() }
+    }
+
+    /** During a conversation, listen directly; RMS monitoring is only for barge-in. */
+    private fun continueListeningIfContinuous(delayMs: Long = 200L) {
+        listenJob?.cancel()
+        micMonitor.stop()
+        if (!_uiState.value.continuousMode) return
+        listenJob = viewModelScope.launch {
+            delay(delayMs)
+            if (_uiState.value.continuousMode) startVoiceService()
+        }
     }
 
     /**
@@ -289,57 +316,46 @@ class ChatViewModel @Inject constructor(
     fun toggleContinuousMode() {
         val turningOn = !_uiState.value.continuousMode
         _uiState.update { it.copy(continuousMode = turningOn) }
-        if (turningOn) {
-            repository.stopSpeaking()
-            startVoiceService()
-        } else {
-            micMonitor.stop()
-            stopVoiceService()
-        }
+        cancelActiveTurn()
+        micMonitor.stop()
+        if (turningOn) startVoiceService() else stopVoiceService()
     }
 
     private fun startVoiceService() {
         val intent = Intent(context, JavisVoiceService::class.java).apply {
             action = JavisVoiceService.ACTION_START_LISTENING
         }
-        context.startForegroundService(intent)
+        micMonitor.stop()
+        try {
+            context.startForegroundService(intent)
+        } catch (e: Exception) {
+            _uiState.update { it.copy(continuousMode = false, error = "Não consegui iniciar o microfone: ${e.message}") }
+        }
     }
 
     private fun stopVoiceService() {
-        val intent = Intent(context, JavisVoiceService::class.java).apply {
-            action = JavisVoiceService.ACTION_STOP
-        }
-        context.startService(intent)
+        speechRecognizer.stopListening()
+        context.stopService(Intent(context, JavisVoiceService::class.java))
     }
 
     fun confirmPendingCommand(confirmed: Boolean) {
         val cmd = _uiState.value.pendingCommand ?: return
         _uiState.update { it.copy(pendingCommand = null) }
 
-        if (!confirmed) {
-            viewModelScope.launch {
+        launchTurn {
+            if (!confirmed) {
                 repository.sayAsAssistant("Beleza, não vou fazer isso.", sessionId)
-                continueListeningIfContinuous()
+            } else {
+                _uiState.update { it.copy(isLoading = true) }
+                val override = repository.executeConfirmedCommand(cmd)
+                currentCoroutineContext().ensureActive()
+                val reply = override ?: when (cmd.type) {
+                    CommandType.CALL_CONTACT -> "Ligando para ${cmd.target}…"
+                    CommandType.SET_ALARM -> "Configurando alarme…"
+                    else -> "Pronto."
+                }
+                repository.sayAsAssistant(reply, sessionId)
             }
-            return
-        }
-
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            // executeConfirmedCommand devolve uma frase pronta quando o resultado real
-            // importa (ex.: WhatsApp — "consegui" vs "não achei o contato" vs "não
-            // consegui escrever" pedem reação diferente do usuário); nos outros casos
-            // devolve null e usa a genérica de sempre.
-            val override = repository.executeConfirmedCommand(cmd)
-
-            val reply = override ?: when (cmd.type) {
-                CommandType.CALL_CONTACT -> "Ligando para ${cmd.target}…"
-                CommandType.SET_ALARM -> "Configurando alarme…"
-                else -> "Pronto."
-            }
-            repository.sayAsAssistant(reply, sessionId)
-            _uiState.update { it.copy(isLoading = false) }
-            continueListeningIfContinuous()
         }
     }
 
@@ -400,7 +416,9 @@ class ChatViewModel @Inject constructor(
     }
 
     override fun onCleared() {
+        cancelActiveTurn()
         micMonitor.stop()
+        stopVoiceService()
         speechRecognizer.destroy()
         super.onCleared()
     }
