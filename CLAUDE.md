@@ -3044,3 +3044,27 @@ em 5,27s. Resposta coerente em português ("Oi! Tudo ótimo por aqui..."). **Ain
 testado**: microfone real (só texto nesta rodada), interrupção falando por cima, chamada
 de ferramenta (function calling). Chave usada era de teste, formato novo do Google
 (`AQ.xxx`, não mais `AIzaSy...` — ver correção no CLAUDE.md global do usuário).
+
+**Validação completa do Gemini Live, com microfone real (17/11/2026)**: depois do teste
+inicial só com texto, fiz os 3 testes que faltavam, todos no script isolado
+(`scratchpad/gemini_live_test/`, nunca tocou no app):
+- **Microfone real**: funcionou — transcreveu fala real do usuário corretamente.
+- **Interrupção (barge-in)**: funcionou 3 de 3 vezes — `serverContent.interrupted` dispara
+  quando o usuário fala por cima, e a resposta antiga para de verdade (bug achado e
+  corrigido no script: o buffer de áudio ainda não tocado precisa ser descartado no
+  momento da interrupção, senão ela "continua falando" o resto antigo por cima).
+- **Chamada de ferramenta**: confirmada com uma tool no formato real da Gabi (`open_app`),
+  disparou certo em 0,7s a partir de "Gabi, abre o WhatsApp pra mim".
+- **Limite de uso**: 30 turnos seguidos numa sessão só, sem nenhuma recusa nem lentidão
+  progressiva; 6 sessões simultâneas abriram sem problema (relatório anterior só tinha
+  testado 3). Não prova limite diário/mensal (precisaria rodar por horas), mas não achou
+  nenhum sinal de bloqueio pra uso conversacional normal.
+- **Bug real achado no processo**: minha primeira tentativa de tocar o áudio em tempo
+  real (não só salvar em arquivo) saiu como ruído puro — causa: pedaço de áudio não
+  consumido inteiro por um callback de som ia pro FIM de uma fila em vez de continuar na
+  FRENTE, embaralhando a ordem. Corrigido trocando por um buffer contíguo (`bytearray`)
+  em vez de fila de pedaços soltos.
+
+**Conclusão**: tecnologia validada de ponta a ponta no nível de protocolo/script isolado.
+Ainda NÃO integrada no app Android real — isso seria o próximo passo, se o usuário decidir
+seguir com essa arquitetura em vez de (ou além de) ElevenLabs.
