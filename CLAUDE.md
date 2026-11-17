@@ -3017,3 +3017,30 @@ voz (item 3); decidir `RENDER-GUIA.md`/`ANALISE_REPOS.md` (item 4); comparar os 
 por mim). Repo continua público até o checkpoint estar completo (decisão do usuário).
 Branch `voz-latencia` segue não mergeada na `main`.
 
+
+**Checkpoint confirmado**: commit `52a4026` pushado com sucesso pra `origin/voz-latencia`
+em 17/11/2026 (`7c7e1ab..52a4026`). GitHub está com o material consolidado.
+
+**Achado 17/11/2026 — voz "Cora" era a voz `coral` da API Realtime da OpenAI**:
+pesquisado a pedido do usuário no CRM dele (`WhatsApp-DeskcommCRM`, em `C:\w\`) — não é
+asset pra copiar, é um nome de voz nativo passado como parâmetro (`voice: "coral"`) na
+API Realtime (`gpt-realtime`, fala-a-fala numa conexão só, com barge-in nativo). O CRM usa
+isso pra atender ligações reais via Asterisk/AudioSocket
+(`lib/ai/guardrails-schema.ts` tem a lista completa de vozes: marin, cedar, alloy, ash,
+ballad, coral, echo, sage, shimmer, verse). **Opção estratégica registrada, não
+implementada**: trocar a arquitetura de voz da Gabi (hoje: SpeechRecognizer + Groq/
+DeepSeek/OpenRouter em texto + ElevenLabs separados) pela API Realtime da OpenAI
+resolveria várias das dores crônicas de latência/barge-in de uma vez — mas é paga por
+uso (diferente do Groq grátis) e exige reescrever o pipeline de áudio pra streaming via
+WebSocket. Decisão de arquitetura pra tomar com calma, não decidida ainda.
+
+**Teste do Gemini Live confirmado funcionando (17/11/2026)**: script isolado
+(`scratchpad/gemini_live_test/test_gemini_live.py`, fora do projeto) conectou de
+verdade na API (`wss://generativelanguage.googleapis.com/...BidiGenerateContent`),
+mandou uma frase em português e recebeu voz de volta. Números medidos (desta máquina,
+rede local, pode variar no celular/rede móvel): conexão 1,03s, sessão pronta 1,48s,
+**1,37s pra começar a responder** depois da pergunta, resposta completa (3,98s de fala)
+em 5,27s. Resposta coerente em português ("Oi! Tudo ótimo por aqui..."). **Ainda não
+testado**: microfone real (só texto nesta rodada), interrupção falando por cima, chamada
+de ferramenta (function calling). Chave usada era de teste, formato novo do Google
+(`AQ.xxx`, não mais `AIzaSy...` — ver correção no CLAUDE.md global do usuário).
