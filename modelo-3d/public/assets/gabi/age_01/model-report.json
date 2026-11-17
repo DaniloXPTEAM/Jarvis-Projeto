@@ -1,0 +1,90 @@
+{
+  "bytes": 4344500,
+  "bones": [
+    "Hips",
+    "Spine",
+    "Chest",
+    "Neck",
+    "Head",
+    "EyeSurface",
+    "UpperArm_L",
+    "Forearm_L",
+    "Hand_L",
+    "Hand_L_Attach",
+    "Thigh_L",
+    "Shin_L",
+    "Foot_L",
+    "Lid_L",
+    "UpperArm_R",
+    "Forearm_R",
+    "Hand_R",
+    "Hand_R_Attach",
+    "Thigh_R",
+    "Shin_R",
+    "Foot_R",
+    "Lid_R"
+  ],
+  "clips": [
+    {
+      "name": "idle_breathe",
+      "duration": 4
+    },
+    {
+      "name": "walk",
+      "duration": 0.9
+    },
+    {
+      "name": "turn_left",
+      "duration": 0.55
+    },
+    {
+      "name": "turn_right",
+      "duration": 0.55
+    },
+    {
+      "name": "listen",
+      "duration": 3
+    },
+    {
+      "name": "present_talk",
+      "duration": 2.5
+    },
+    {
+      "name": "sit_down",
+      "duration": 0.9
+    },
+    {
+      "name": "stand_up",
+      "duration": 0.9
+    },
+    {
+      "name": "read",
+      "duration": 3
+    },
+    {
+      "name": "study",
+      "duration": 3
+    },
+    {
+      "name": "eat",
+      "duration": 3
+    },
+    {
+      "name": "yawn",
+      "duration": 2.4
+    },
+    {
+      "name": "lie_down",
+      "duration": 1.6
+    },
+    {
+      "name": "sleep_breathe",
+      "duration": 4
+    },
+    {
+      "name": "wake_up",
+      "duration": 2.5
+    }
+  ],
+  "status": "FIRST_AUTHORED_VERSION_REQUIRES_VISUAL_REVIEW"
+}

@@ -20,9 +20,12 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
+      # android-actions/setup-android@v3 passou a falhar na imagem atual do
+      # runner ubuntu-latest (step "Setup Android SDK", ~7s, sem log acessível
+      # sem login mesmo em repo público — confirmado em 12/11/2026, run 11).
+      # ubuntu-latest já vem com Android SDK pré-instalado (ANDROID_HOME/
+      # ANDROID_SDK_ROOT definidos, platform-tools e API 34 presentes) —
+      # o Gradle acha o SDK sozinho sem precisar dessa action.
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:

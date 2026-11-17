@@ -21,7 +21,36 @@ Documentos de referência já existentes (não duplicar aqui, só consultar):
 
 ## Backlog / começar a próxima sessão por aqui
 
-> **⚠️ Sessão de 15/10/2026 (a mais recente, 2ª metade do dia): plano de latência de
+> **➡️ Sessão de 17/11/2026 (a mais recente): auditoria de 1 mês parado + consolidação
+> de material espalhado + checkpoint no GitHub.** Leia a seção **"Sessão 17/11/2026 —
+> Auditoria, consolidação e checkpoint no GitHub"** no FIM deste arquivo. Resumo rápido:
+> - 🔴 Achado crítico (já tratado): o repositório `DaniloXPTEAM/Jarvis-Projeto` é
+>   **público** no GitHub, e um commit externo (`7c7e1ab "Gabi Up"`, 12/11, fora de
+>   qualquer sessão Claude Code) subiu a voz da afilhada do usuário (`Gabi Voz
+>   isolada.mp3` + `voz-teste/`). Usuário confirmou que o conteúdo já foi sobrescrito
+>   (não é mais a gravação original) e decidiu **não tratar como urgente por ora** —
+>   repo só vai ficar privado depois do checkpoint 100% completo (decisão dele).
+> - Material da Gabi estava espalhado em ~6 pastas do PC fora de `Projeto Gabi`
+>   (minigames, um modelo 3D separado, planos de voz concorrentes). Tudo foi
+>   **copiado (sem apagar os originais)** pra dentro desta pasta, em `modelo-3d/`,
+>   `minigame-prototipos/`, `voz-downloads/`, `arquivo-historico/`. Índice completo:
+>   `docs/claude/MAPA-MATERIAIS-GABI.md`.
+> - **Achado importante pra não repetir investigação**: existem **3 estratégias de voz
+>   concorrentes nunca reconciliadas** — ElevenLabs na nuvem (implementado, branch
+>   `voz-latencia`), Pocket TTS local no Android (só planejado, por outra sessão de IA,
+>   ver `KIRANA_GABI_DOSSIE_COMPLETO.md` + `voz-downloads/GABI_PLANO_CODEX_POCKET_TTS.md`),
+>   e servidor próprio Oracle Cloud (tentado, bloqueado por falta de capacidade ARM).
+> - Trabalho real e BOM aconteceu fora de sessões Claude Code entre 15/10 e 12/11
+>   (provavelmente Codex): reescrita da camada de voz com `RecognitionSession.kt` +
+>   `CancellableAudioRequest.kt` — resolve de verdade o achado #3 (mais grave) da
+>   sessão de 15/10 (laço de escuta travando sem erro). Testes automatizados novos.
+>   **Compilei e rodei os testes nesta sessão: tudo passa (17/17), `assembleDebug`
+>   `BUILD SUCCESSFUL`** — mas nada disso foi testado no aparelho real ainda.
+> - CI do GitHub Actions estava quebrada (`Setup Android SDK` falhando antes de
+>   compilar qualquer coisa) — corrigido removendo a action problemática, o
+>   `ubuntu-latest` já vem com SDK suficiente pré-instalado.
+
+> **⚠️ Sessão de 15/10/2026 (2ª metade do dia): plano de latência de
 > voz — testado ao vivo por HORAS no aparelho real, resultado misto/pior na percepção
 > do usuário ("3hs tentando melhorar e estamos pior que no começo"). Branch
 > `voz-latencia`, NÃO mergeada na main. Usuário pediu explicitamente, ao encerrar, que
@@ -2840,4 +2869,151 @@ separar qual mudança causou qual sintoma.
    platform.deepseek.com — não é algo que dá pra resolver só no código.
 6. Fase 2 (streaming) e Fase 5 (palavra de ativação) continuam não iniciadas — mas não
    faz sentido avançar nelas antes do achado #3 estar resolvido.
+
+## Sessão 17/11/2026 — Auditoria, consolidação e checkpoint no GitHub
+
+Primeira sessão depois de ~1 mês parado (última sessão registrada: 15/10/2026). Usuário
+pediu uma auditoria completa, depois pediu pra consolidar material espalhado e fazer um
+checkpoint no GitHub antes de fundir este projeto com outro ("outro motor") dele.
+
+### 1. Achado crítico — repositório público com voz de criança (tratado, não resolvido de vez)
+
+`git log --all` revelou um commit (`7c7e1ab`, mensagem "Gabi Up", 12/11/2026, pela conta
+`DaniloXPTEAM` mas por fora de qualquer sessão Claude Code — mensagem genérica típica de
+upload manual) pushado direto pra `origin/voz-latencia`. Esse commit trouxe
+`Gabi Voz isolada.mp3` e a pasta inteira `voz-teste/` — exatamente o que o próprio
+CLAUDE.md já documentava como "NÃO subir ao GitHub" (voz real da afilhada do usuário,
+~10 anos). Confirmado via API pública do GitHub (`"private": false`) que o repositório
+`DaniloXPTEAM/Jarvis-Projeto` é **público** — ou seja, esse áudio ficou acessível pra
+qualquer um por 5 dias (12/11 a 17/11) antes desta auditoria notar.
+
+Nenhuma chave de API real foi encontrada commitada (só `.example`/`.template`); o
+`.gitignore` inclusive foi melhorado no mesmo commit (`*.pem`, `*.key`, pasta de chaves
+SSH do Oracle).
+
+**Resposta do usuário, depois de eu avisar duas vezes**: o conteúdo de `voz-teste/` e
+`Gabi Voz isolada.mp3` já foi sobrescrito por ele e NÃO é mais a gravação original da
+criança — "não se importe com isso". Decisão explícita dele: **não tratar como
+bloqueante agora**; o repositório só vai virar privado depois que o checkpoint estiver
+100% completo no GitHub (ele quer o histórico inteiro público um pouco mais, por algum
+motivo ligado à fusão com o outro projeto). **Isso é uma decisão informada do usuário,
+registrada aqui pra não ser re-litigada sem necessidade** — mas vale notar que os
+próprios documentos `KIRANA_GABI_DOSSIE_COMPLETO.md` e `GABI_PLANO_CODEX_POCKET_TTS.md`
+(ver item 3) ainda tratam esse arquivo como voz real/sensível, uma contradição que nunca
+foi resolvida entre os dois lados.
+
+Descoberta lateral: o remoto `origin` agora é um repositório GitHub real
+(`github.com/DaniloXPTEAM/Jarvis-Projeto`), com um colaborador extra (`SamarXpteam`,
+commit antigo de 16/08, só `package-lock.json`) — isso **revoga** a decisão antiga
+documentada ("git só local, sem push"). Também existe um clone esquecido e
+desatualizado do mesmo remoto em `C:\Users\Dannilo\Documents\GitHub\Jarvis Projeto\`
+(travado em setembro, antes do app Android existir) — usuário confirmou que esse é na
+verdade o clone do projeto **Jarvis original** (de onde a Gabi nasceu) e pediu pra
+**deixar como está**, sem mexer. As 5 fotos do WhatsApp não commitadas que estavam soltas
+lá foram copiadas pra `arquivo-historico/whatsapp-fotos-ago2026/` por segurança.
+
+**Pendência real do usuário**: renomear o repositório no GitHub (tirar "Jarvis" do nome,
+já que agora há um projeto Jarvis-base de verdade separado) — ele vai fazer manualmente
+(Settings → Repository name), eu não tenho `gh` CLI autenticado aqui pra fazer via API.
+
+### 2. Consolidação — material da Gabi estava espalhado em ~6 pastas do PC
+
+Usuário suspeitava (corretamente) que nem tudo estava em `Projeto Gabi`. Busca por
+`*gabi*` em `C:\CRiando coisa nova\`, `Downloads\` e `Documents\` encontrou:
+
+- `Gabi\Projetos\Projeto Gabi - Copia` (20M, 15/09) — cópia antiga, só o app web, sem
+  `android/` — copiada (sem o `.git` interno) pra `arquivo-historico/projeto-gabi-copia-set2026/`.
+- `Gabi\Projetos\Mini Game Gabi` (17M) — 5 zips de protótipos de minigame (virtual pet /
+  "Quarto da Gabi") nunca integrados ao app real — copiados pra `minigame-prototipos/`
+  (nomeados `v1`/`v2`/`v3` pela ordem cronológica dos nomes originais). Usuário: "não
+  pegam espaço, pode manter" — zips NÃO extraídos (conteúdo não confiável, ver regra de
+  ambiente sobre arquivos baixados).
+- `Gabi-V1-Modelo-3D-Incluido` (+ `.zip`, 22M, **29/10** — recente) — projeto separado,
+  próprio `docs/GABI-V1.md`/scripts/testes. Usuário: "não está dando certo", mantido
+  como protótipo em `modelo-3d/`, sem mexer por ora.
+- `implement-gabi-playable-minigame.zip` solto na raiz de `C:\CRiando coisa nova\` —
+  **confirmado por hash que NÃO é duplicata** do homônimo em `Mini Game Gabi` (tamanhos e
+  timestamps diferentes, 49 min de diferença, mesmo dia) — são duas exportações
+  distintas do mesmo protótipo v1. Não copiado, não apagado, deixado como está.
+- `Downloads\` — mais testes de voz (`GABI_01-04.wav`, `GABI_CONVERSA_*.wav`,
+  `GABI_LONGA.wav`) e **`GABI_PLANO_CODEX_POCKET_TTS.md`** (ver item 3) — tudo copiado
+  pra `voz-downloads/`. Um `.crdownload` incompleto (`GABI_AUDITORIA_NANOMUSE_OPENMUSE...`)
+  foi deixado pra trás — download nunca terminou, conteúdo ilegível, nome sugere relação
+  com algo chamado "nanomuse/openmuse" nunca visto antes; vale o usuário re-baixar se
+  quiser que eu analise.
+- `Arquivos Compactados\Gabi\` — pasta vazia, **apagada** (confirmado vazia antes).
+- `C:\CRiando coisa nova\Projeto Gabi.zip` (119M, 29/09) — backup antigo. Usuário decidiu
+  **não apagar ainda** — só depois que um zip novo do projeto atual for gerado.
+
+Índice completo e atualizável: **`docs/claude/MAPA-MATERIAIS-GABI.md`** (novo, dentro do
+projeto) — ler esse arquivo primeiro pra achar qualquer coisa específica da Gabi, em vez
+de grepar este CLAUDE.md inteiro.
+
+### 3. Achado importante — 3 estratégias de voz concorrentes, nunca reconciliadas
+
+Dois documentos nunca vistos antes (`KIRANA_GABI_DOSSIE_COMPLETO.md`, 1276 linhas, raiz,
+13/10; e `voz-downloads/GABI_PLANO_CODEX_POCKET_TTS.md`, 694 linhas) descrevem um plano
+DETALHADO e viável, de outra sessão de IA (ChatGPT Work / Codex, pelo texto), pra rodar a
+voz da Gabi **100% local no Android via Pocket TTS** — substituindo a ElevenLabs por
+completo. Isso é uma estratégia diferente e incompatível com o que foi de fato
+implementado na branch `voz-latencia` (ElevenLabs na nuvem). Nenhuma das duas sessões
+parece saber da outra. Juntando com a tentativa de servidor próprio (Oracle Cloud,
+bloqueada por falta de capacidade — ver sessão 14-15/10), **são 3 caminhos diferentes
+pro mesmo problema (voz da Gabi), nenhum comparado com os outros dois**. Antes de
+investir mais em qualquer um, vale decidir qual é o caminho de verdade.
+
+### 4. MDs da raiz — triagem
+
+- ❌ `AUDITORIA.md` (05/08, Android) — **apagado**, usuário confirmou que estava
+  desatualizado (o próprio texto dizia isso).
+- ✅ `SPEC.md`, `VERIFICACAO.md` — usuário decidiu manter, apesar de antigos.
+- ❓ `RENDER-GUIA.md` (deploy do app web no Render) e `ANALISE_REPOS.md` (análise do
+  repo-fonte `agmanly597/javis` usado como base do fork) — usuário não entendeu do que
+  se tratava e não decidiu; expliquei o que cada um é, ficaram sem decisão, não apagados.
+
+### 5. Trabalho feito fora de sessões Claude Code (15/10 → 12/11) — confirmado bom
+
+O commit "Gabi Up" não trouxe só os arquivos de voz — trouxe uma reescrita séria da
+camada de voz, aparentemente do Codex (consistente com o que o usuário disse que ia
+tentar no fim da sessão de 15/10):
+
+- **`voice/RecognitionSession.kt`** (novo): rastreador de sessão com watchdog de
+  deadline auto-renovável (10s inicial → 30s depois de pronto → 15s por parcial → 8s
+  depois do fim da fala, com teto absoluto de 90s). **Resolve de verdade o achado #3 da
+  sessão de 15/10** (laço de escuta travando pra sempre, sem erro, sem log) — mesmo que
+  o reconhecedor do sistema pare de responder, o watchdog força uma recuperação dentro
+  de um tempo limitado.
+- **`voice/CancellableAudioRequest.kt`** (novo): torna a chamada HTTP da ElevenLabs
+  cancelável de verdade (`enqueue` em vez de `execute()` bloqueante).
+- **`voice/ElevenLabsTts.kt`** reescrito com `Job`-based cancellation — resolve o mesmo
+  bug que eu tinha corrigido na sessão de 15/10 (nunca commitado), só que de um jeito
+  mais limpo: `stopSpeaking()` só chama `activeSpeech?.cancel()`, e a estrutura de
+  coroutines já cuida de liberar o `MediaPlayer` e destravar quem está esperando.
+- Testes automatizados novos: `CancellableAudioRequestTest.kt`, `RecognitionSessionTest.kt`,
+  `WeatherAgentTest.kt` — **rodei nesta sessão, 17/17 passam, 0 falhas**.
+- Trabalho também em banco de dados (`Converters.kt`, DAOs, modelos) e CI
+  (`testDebugUnitTest` antes do `assembleDebug`, build também na branch `voz-latencia`).
+
+**Nada disso foi testado no celular real ainda** (nem por mim, nem documentado que o
+usuário testou) — só validado por compilação + testes unitários. CLAUDE.md não tinha
+sido atualizado com nada disso até agora — **é a mesma lacuna já vista em 13/10 (trabalho
+do Codex não documentado)**, acontecendo de novo.
+
+### 6. CI do GitHub Actions corrigida
+
+A run mais recente (`run 11`, mesmo commit "Gabi Up") falhava no passo **"Setup Android
+SDK"** (`android-actions/setup-android@v3`), antes de chegar a compilar qualquer coisa —
+confirmado via API pública do GitHub (`jobs` do run, step 4 com `conclusion: failure`,
+os passos seguintes todos `skipped`). Não tinha relação com o código. Corrigido removendo
+essa action: o runner `ubuntu-latest` do GitHub já vem com Android SDK pré-instalado
+(`ANDROID_HOME`/`ANDROID_SDK_ROOT` definidos, platform-tools e API 34 presentes) —
+não precisa de setup extra pra esse `compileSdk`/`targetSdk` (34).
+
+### Estado ao fim desta sessão
+
+Pendente: usuário vai renomear o repo manualmente; decidir entre as 3 estratégias de
+voz (item 3); decidir `RENDER-GUIA.md`/`ANALISE_REPOS.md` (item 4); comparar os zips de
+`minigame-prototipos/` e avaliar `modelo-3d/` tecnicamente (nenhum dos dois foi aberto
+por mim). Repo continua público até o checkpoint estar completo (decisão do usuário).
+Branch `voz-latencia` segue não mergeada na `main`.
 
