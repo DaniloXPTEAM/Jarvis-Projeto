@@ -24,6 +24,9 @@ class ElevenLabsTts @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     private var mediaPlayer: MediaPlayer? = null
+    // Callback da reprodução em andamento que ainda não disparou (onCompletion/onError
+    // do MediaPlayer). stopSpeaking() precisa chamar isso explicitamente — ver comentário
+    // no próprio stopSpeaking() pra entender por quê.
     private var onDoneCallback: (() -> Unit)? = null
 
     private val client = OkHttpClient.Builder()
@@ -41,7 +44,6 @@ class ElevenLabsTts @Inject constructor(
      * antigo (erro só ia pro Logcat, nunca aparecia pro usuário nem tinha fallback).
      */
     suspend fun speak(text: String, onDone: (() -> Unit)? = null): Result<Unit> = withContext(Dispatchers.IO) {
-        onDoneCallback = onDone
         stopSpeaking()
 
         if (apiKey.isBlank()) {
@@ -105,14 +107,23 @@ class ElevenLabsTts @Inject constructor(
                         val timeoutMs = (text.length * 85L + 20_000L).coerceAtMost(180_000L)
                         val completed = withTimeoutOrNull(timeoutMs) {
                             suspendCancellableCoroutine<Unit> { cont ->
-                                playAudioFile(tempFile) {
+                                val resumeOnce: () -> Unit = {
                                     // Só chama onDone/resume se ainda for a corrida ativa — se o
-                                    // timeout abaixo já cancelou, evita chamar onDone duas vezes.
+                                    // timeout acima já cancelou, evita chamar onDone duas vezes.
                                     if (cont.isActive) {
+                                        onDoneCallback = null
                                         cont.resume(Unit)
                                         onDone?.invoke()
                                     }
                                 }
+                                // stopSpeaking() (chamado de fora, ex.: barge-in da Fase 4 ou
+                                // "Gabi, vai dormir") só faz mediaPlayer.stop()+release() — isso
+                                // NÃO dispara onCompletion/onError, então sem guardar este
+                                // callback aqui a coroutine ficava pendurada até o timeout (até
+                                // 3min) antes de "ela terminar de falar" pro resto do app.
+                                // Bug real confirmado em 15/10/2026 (barge-in "travava" a escuta).
+                                onDoneCallback = resumeOnce
+                                playAudioFile(tempFile, resumeOnce)
                                 cont.invokeOnCancellation { stopSpeaking() }
                             }
                         }
@@ -172,7 +183,16 @@ class ElevenLabsTts @Inject constructor(
         }
     }
 
+    /**
+     * MediaPlayer.stop() NÃO dispara onCompletion/onError — chamar isso de fora (barge-in
+     * da Fase 4, "Gabi, vai dormir", ou o próprio speak() interrompendo uma fala anterior)
+     * sem mais nada deixava a coroutine do speak() em andamento pendurada até o timeout
+     * (até 3min) esperando um callback que nunca vinha. Dispara o callback pendente
+     * manualmente pra "ela terminar de falar" ser reconhecido na hora.
+     */
     fun stopSpeaking() {
+        val pending = onDoneCallback
+        onDoneCallback = null
         try {
             mediaPlayer?.apply {
                 if (isPlaying) stop()
@@ -182,6 +202,7 @@ class ElevenLabsTts @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Stop error: ${e.message}")
         }
+        pending?.invoke()
     }
 
     fun isSpeaking(): Boolean = mediaPlayer?.isPlaying == true
